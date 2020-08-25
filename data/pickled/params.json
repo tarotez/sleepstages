@@ -1,0 +1,115 @@
+{
+
+"dataDir" : "data",
+"batchEvalDir" : "data/batchEval",
+"pickledDir" : "data/pickled",
+"deepParamsDir" : "data/deep_params",
+"standardMiceDir" : "data/standardMice",
+"ksDir" : "data/ks",
+"eegDir" : "data/pickled",
+"featureDir" : "data/pickled",
+"classifierDir" : "data/pickled",
+"finalclassifierDir" : "data/finalclassifier",
+"wavesDir" : "data/waves",
+"logDir" : "data/log",
+"predDir" : "data/prediction",
+"postDir" : "data/aipost",
+"modelDirRoot" : "../data/deep_params",
+
+"classifierPrefix" : "classifier",
+"label4withEMG" : "withEMG",
+"label4withoutEMG" : "withoutEMG",
+
+"extractorType" : "rawDataWithFreqHistoWithTime",
+"lightPeriodStartTime": "09:00:00.000",
+
+"classifierType" : "deep",
+"networkType" : "cnn_lstm",
+"classifierParams" : [10],
+
+"windowSizeInSec" : 10,
+"samplingFreq" : 128,
+
+"writeWholeWaves" : 1,
+"computeKS" : 0,
+
+"bandMin" : 1,
+"bandMax" : 12,
+"binWidth4freqHisto" : 0.5,
+
+"preContextSize" : 0,
+"postContextSize" : 0,
+"pastStageLookUpNum" : 0,
+
+"waveletWidths" : [1,2,4,8,16,32],
+
+"useEMG" : 0,
+"emgTimeFrameNum" : 3,
+
+"eegFilePrefix" : "eegAndStage",
+"trainDataFilePrefix" : "train_data",
+"featureFilePrefix" : "features",
+"classifierFilePrefix" : "classifier",
+
+"sampleClassLabels" : ["W", "S", "R"],
+"subsampleRatios" : [-1, -1, -1],
+"supersample" : 0,
+"numOfConsecutiveWsThatProhibitsR" : 0,
+"timeWindowStrideInSec" : 10,
+"lookBackTimeWindowNum" : 0,
+"predict_by_batch" : 0,
+
+"useRawData" : 0,
+"useFreqHisto" : 1,
+"useTime" : 0,
+
+"optimizerType" : "Adam",
+"adam_learningRate" : 0.001,
+"sgd_learningRate" : 0.001,
+"sgd_decay" : "1e-6",
+"sgd_momentum" : 0.1,
+
+"deep_epochs" : 200,
+"deep_steps_per_epoch" : 0,
+"deep_batch_size" : 64,
+"dropoutRate" : 0.25,
+
+"torch_loss_function" : "cross_entropy",
+"torch_filter_nums" : [64,64,64,64,64,64,64,128,128,128,128],
+"torch_kernel_sizes" : [11,11,9,9,7,7,7,5,5,5,5],
+"torch_strides" : [1,1,1,2,2,2,2,2,2,2,2],
+"torch_skip_by" : 4,
+"torch_patience" : 0,
+"torch_lstm_length" : 12,
+"torch_lstm_num_layers" : 3,
+"torch_lstm_hidden_size" : 64,
+"torch_lstm_inputDim" : 32,
+"torch_lstm_bidirectional" : 1,
+
+"torch_resnet_layer_nums" : [2,2,2,2],
+"torch_resnet_conv_channels" : 16,
+"torch_resnet_output_channels_coeffs" : [1,1,1,1],
+"torch_resnet_resblock_stride_nums" : [1,1,2,2],
+"torch_resnet_avg_pool_size" : 1,
+
+"deep_FCN_node_nums_by_layers" : [1280,320,160],
+"deep_CNN_filter_nums_by_layers" : [16,16,16,16,16,16,16,16],
+"deep_CNN_kernel_sizes_by_layers" : [8,8,8,8,8,8,6,6],
+"deep_CNN_kernel_stride_sizes_by_layers" : [2,2,2,2,2,2,2,1],
+"deep_skipConnectionLayerNum" : 3,
+
+"maxSampleNum" : 0,
+"downsample_outputDim" : 1280,
+"additionalFeatureDim" : 23,
+"markovOrderForTraining" : 6,
+"markovOrderForPrediction" : 0,
+"maximumStageNum" : 3,
+"useCh2ForReplace" : 0,
+"ch2IntensityFunc" : "max_mean",
+"ch2_thresh_default" : 1.0,
+
+"ch2_mean_init" : 0.7620,
+"ch2_variance_init" : 0.6962,
+"ch2_oldTotalSampleNum_init" : 460800
+
+}
