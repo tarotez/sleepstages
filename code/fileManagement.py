@@ -9,6 +9,22 @@ import random
 from classicalClassifier import ClassicalClassifier
 from deepClassifier import DeepClassifier
 
+def selectClassifierID(finalClassifierDir, classifier_type):
+    # all_files = listdir(self.params.finalClassifierDir)
+    classifierDict = {}
+    with open(finalClassifierDir + '/classifierTypes.csv') as f:
+        for line in f:
+            elems = [elem.strip() for elem in line.split(',')]
+            print('adding', elems[1], ':', elems[0], 'to dict.')
+            classifierDict.update({elems[1] : elems[0]})
+    classifierID = classifierDict[classifier_type]
+    print('in selectClassifierID(), classifierType =', classifier_type, 'and classifierID =', classifierID)
+    return classifierID
+    # prefix = 'params.'
+    # paramFiles = filterByPrefix(all_files, prefix)
+    # paramFile = paramFiles[np.random.randint(len(paramFiles))]
+    # return paramFile.split('.')[1]
+
 #--------------------------------------------
 # write names of files used for training the classifier
 def writeTrainFileIDsUsedForTraining(params, classifier, fileTripletL):

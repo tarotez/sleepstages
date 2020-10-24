@@ -16,7 +16,7 @@ from connectionCheckClient import ConnectionCheckClient
 # from drawGraph import DynamicGraphCanvas, DynamicGraphCanvas4KS, DynamicGraphCanvas4KSHist
 from drawGraph import DynamicGraphCanvas
 from predictionResultLabel import PredictionResultLabel
-from fileManagement import filterByPrefix, getAllEEGFiles, getFileIDFromEEGFile
+from fileManagement import filterByPrefix, getAllEEGFiles, getFileIDFromEEGFile, selectClassifierID
 
 class RemApplication(QMainWindow):
     """
@@ -241,7 +241,7 @@ class RemApplication(QMainWindow):
         print('classifier_choice() activated.')
         if not self.prediction_started:
             self.classifier_type = text
-            classifierID = self.selectClassifierID()
+            classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
             self.client.setStagePredictor(classifierID)
             print('classifier_type changed to', self.classifier_type)
 
@@ -469,11 +469,11 @@ class RemApplication(QMainWindow):
             if len(self.args) > 1:
                 classifierID = self.args[1]
                 if classifierID == 'm' or classifierID == 'o':
-                    classifierID = self.selectClassifierID()
+                    classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, self.inputFileID, self.offsetWindowID)
             else:   # Neither classifierID nor inputFileID are specified.
                 self.readFromDaq = True
-                classifierID = self.selectClassifierID()
+                classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
                 print('Data is read from DAQ. classifier ID is randomly selected.')
                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID)
             self.client.hasGUI = True
@@ -488,22 +488,6 @@ class RemApplication(QMainWindow):
     def randomlySelectInputFileID(self):
         eegFiles = getAllEEGFiles(self.params)
         return getFileIDFromEEGFile(eegFiles[np.random.randint(len(eegFiles))])
-
-    def selectClassifierID(self):
-        # all_files = listdir(self.params.finalClassifierDir)
-        classifierDict = {}
-        with open(self.params.finalClassifierDir + '/classifierTypes.csv') as f:
-            for line in f:
-                elems = [elem.strip() for elem in line.split(',')]
-                print('adding', elems[1], ':', elems[0], 'to dict.')
-                classifierDict.update({elems[1] : elems[0]})
-        classifierID = classifierDict[self.classifier_type]
-        print('in selectClassifierID(), classifierType =', self.classifier_type, 'and classifierID =', classifierID)
-        return classifierID
-        # prefix = 'params.'
-        # paramFiles = filterByPrefix(all_files, prefix)
-        # paramFile = paramFiles[np.random.randint(len(paramFiles))]
-        # return paramFile.split('.')[1]
 
 if __name__ == '__main__':
     args = sys.argv

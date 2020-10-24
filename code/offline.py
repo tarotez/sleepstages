@@ -7,11 +7,13 @@ from os.path import split, splitext, isfile
 from parameterSetup import ParameterSetup
 from classifierClient import ClassifierClient
 from eegFileReaderServer import EEGFileReaderServer
+from fileManagement import selectClassifierID
 
 class RemOfflineApplication:
 
     def __init__(self, args):
         self.args = args
+        self.classifier_type = 'UTSN-L'
         pass
 
     def start(self):
@@ -22,6 +24,7 @@ class RemOfflineApplication:
         self.classifierType = params.classifierType
         self.postDir = params.postDir
         self.predDir = params.predDir
+        self.finalClassifierDir = params.finalClassifierDir
 
         # eegFilePath = args[1]
         # inputFileID = splitext(split(eegFilePath)[1])[0]
@@ -36,11 +39,11 @@ class RemOfflineApplication:
                 print('predFileFullPath = ' + predFileFullPath)
 
                 if not isfile(predFileFullPath):
-
                     fileCnt += 1
                     print('  processing ' + inputFileID)
                     try:
-                        self.client = ClassifierClient(channelOpt, self.recordWaves, self.extractorType, self.classifierType, inputFileID=inputFileID)
+                        classifierID = selectClassifierID(self.finalClassifierDir, self.classifier_type)
+                        self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, inputFileID=inputFileID)
                         self.client.predictionStateOn()
                         self.client.hasGUI = False
                         # sys.stdout.write('classifierClient started by ' + str(channelOpt) + ' channel.')
