@@ -4,7 +4,7 @@ import string
 import datetime
 from functools import reduce
 from os.path import dirname, abspath
-from statistics import standardize
+from statistics import standardize, centralize, subtractLinearFit
 from connect_laser_device import connect_laser_device
 from parameterSetup import ParameterSetup
 from stagePredictor import StagePredictor
@@ -28,13 +28,18 @@ class ClassifierClient:
         self.samplingFreq = self.params.samplingFreq
         # strideInSec = 1
         # lookBackTimeWindowNum = 4
+        self.updateFreqInHz = 10
         self.samplePointNum = self.params.windowSizeInSec * self.samplingFreq  # the number of sample points received at once
+        self.updateGraph_samplePointNum = np.int(np.floor(self.samplingFreq / self.updateFreqInHz))
+        print('self.samplingFreq =', self.samplingFreq)
+        print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
         # self.strideSamplePointNum = strideInSec * self.samplingFreq
         # self.lookBackSamplePointNum = lookBackTimeWindowNum * self.strideSamplePointNum
         self.hasGUI = True
         self.graphColors = ['b','g']
         ### self.graphColorsForKS = ['b','g','r','m','c','y','b']
-        self.graph_ylim = [[-4,4], [-4,4]]
+        self.ylim_max = 2.0
+        self.graph_ylim = [[-self.ylim_max, self.ylim_max], [-self.ylim_max, self.ylim_max]]
 
         self.lightPeriodStartTime = self.params.lightPeriodStartTime
         self.segmentID = offsetWindowID
@@ -47,7 +52,8 @@ class ClassifierClient:
         self.minimumCh2Intensity = 0
         self.maximumCh2Intensity = 0
 
-        self.all_past_eeg, self.all_past_ch2 = np.array([]), np.array([])
+        self.past_eeg, self.past_ch2 = np.array([]), np.array([])
+        self.previous_eeg, self.previous_ch2 = np.array([]), np.array([])
 
         # extractorType = self.params.extractorType
         # classifierType = self.params.classifierType
@@ -105,7 +111,8 @@ class ClassifierClient:
 
         self.ch2_mode = "Video"
         self.ch2_thresh_value = self.params.ch2_thresh_default
-        self.ch2_standardize = 1
+        self.eeg_normalize = 1
+        self.ch2_normalize = 1
         self.currentCh2Intensity = 0
 
         if self.recordWaves:
@@ -260,18 +267,33 @@ class ClassifierClient:
 
             # print('sampleID = ' + str(sampleID) + ', self.samplePointNum = ' + str(self.samplePointNum))
             sampleID += 1
-            if sampleID == self.samplePointNum:
-                sampleID = 0
+            if sampleID % self.updateGraph_samplePointNum == 0 or sampleID == self.samplePointNum:
                 # standardize eeg and ch2
-                standardized_eegSegment, self.all_past_eeg = standardize(eegSegment, self.all_past_eeg)
-                one_record[:,0] = standardized_eegSegment
-                if self.ch2_standardize:
-                    standardized_ch2Segment, self.all_past_ch2 = standardize(ch2Segment, self.all_past_ch2)
-                    if self.params.useEMG:
-                        one_record[:,1] = standardized_ch2Segment
+                if self.eeg_normalize:
+                    processed_eegSegment, self.past_eeg = standardize(eegSegment, self.past_eeg)
                 else:
-                    if self.params.useEMG:
-                        one_record[:,1] = ch2Segment
+                    # processed_eegSegment, _ = subtractLinearFit(eegSegment, self.previous_eeg, sampleID)
+                    processed_eegSegment, self.past_eeg = centralize(eegSegment, self.past_eeg)
+                one_record[:,0] = processed_eegSegment
+                if self.ch2_normalize:
+                # processed_ch2Segment, self.past_ch2 = standardize(ch2Segment, self.past_ch2)
+                    processed_ch2Segment, self.past_ch2 = standardize(ch2Segment, self.past_ch2)
+                else:
+                    processed_ch2Segment = ch2Segment
+                if self.params.useEMG:
+                    one_record[:,1] = processed_ch2Segment
+
+                # draw a graph
+                if self.hasGUI:
+                    #print('segment ' + str(self.segmentID) + ' : prediction = ' + stagePrediction) #comentout-by-Natsu
+                    self.updateGraphPartially(one_record, self.segmentID)
+                    # print("eegSegment = " + str(eegSegment))
+                    ### time.sleep(0.1)
+
+            if sampleID == self.samplePointNum:
+                self.previous_eeg = eegSegment
+                self.previous_ch2 = ch2Segment
+                sampleID = 0
 
                 '''
                 eeg_old_mean = eeg_mean
@@ -282,7 +304,7 @@ class ClassifierClient:
                 # print('eegSegment = ' + str(eegSegment))
                 one_record[:,0] = (eegSegment - eeg_mean) / np.sqrt(eeg_variance)
                 eeg_oldTotalSampleNum += eegSegment.shape[0]
-                if self.ch2_standardize:
+                if self.ch2_normalize:
                     ch2_old_mean = self.ch2_mean
                     self.ch2_mean = recompMean(ch2Segment, self.ch2_mean, self.ch2_oldTotalSampleNum)
                     one_record[:,1] = ch2Segment - self.ch2_mean
@@ -383,7 +405,8 @@ class ClassifierClient:
                             timePoint = elems[0] + ':' + elems[1] + ':' + str(secFloat)
                             ### outLine += ',' + str(eegSegment[i])
                             outLine += str(timePoint) + ', ' + str(eegSegment[i]) + ', ' + str(ch2Segment[i]) + '\n'
-                            outLine_standardized += str(timePoint) + ', ' + str(standardized_eegSegment[i]) + ', ' + str(standardized_ch2Segment[i]) + '\n'
+                            outLine_standardized += str(timePoint) + ', ' + str(processed_eegSegment[i]) + ', ' + str(processed_ch2Segment[i]) + '\n'
+                            # outLine_standardized += str(timePoint) + ', ' + str(centralized_eegSegment[i]) + ', ' + str(processed_ch2Segment[i]) + '\n'
 
                         self.waveOutputFile.write(outLine)   # add at the end of the file
                         self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
@@ -410,7 +433,7 @@ class ClassifierClient:
                     #print('segment ' + str(self.segmentID) + ' : prediction = ' + stagePrediction) #comentout-by-Natsu
                     self.updateGraph(one_record, self.segmentID, stagePrediction, stagePrediction_before_overwrite)
                     # print("eegSegment = " + str(eegSegment))
-                    # time.sleep(0.01)
+                    ##### time.sleep(0.01)
                 else:
                     pass
                     #print('segment ' + str(self.segmentID) + ' : prediction = ' + stagePrediction) #cometouy-by-Natsu
@@ -518,6 +541,15 @@ class ClassifierClient:
         self.ksOutputFile.flush()
     '''
 
+    def updateGraphPartially(self, one_record, segmentID):
+        # eeg = self.filter(one_record[:,0])
+        eeg = one_record[:,0]
+        self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
+        # ch2 = self.filter(one_record[:,1])
+        ch2 = one_record[:,1]
+        self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
+        ########
+
     def updateGraph(self, one_record, segmentID, stagePrediction, stagePrediction_before_overwrite):
         # print('---- starting updateGraph()')
         for graphID in range(len(self.listOfGraphs[0])-1):
@@ -525,15 +557,15 @@ class ClassifierClient:
                 # print('channel = ' + str(targetChan)+ ', graphID = ' + str(graphID) + '/' + str(len(self.listOfGraphs[targetChan])))
                 self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
                 self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
-        eeg_filtered = self.filter(one_record[:,0])
-        # eeg = one_record[:,0]
-        self.listOfGraphs[0][-1].setData(eeg_filtered, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
+        # eeg = self.filter(one_record[:,0])
+        eeg = one_record[:,0]
+        self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
         # if self.params.useEMG:
             # ch2 = self.filter(one_record[:,1])
             # self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1])
-        ch2_filtered = self.filter(one_record[:,1])
-        # ch2 = one_record[:,1]
-        self.listOfGraphs[1][-1].setData(ch2_filtered, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
+        # ch2 = self.filter(one_record[:,1])
+        ch2 = one_record[:,1]
+        self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
         choice = self.params.capitalize_for_display[stagePrediction]
         choice_before_overwrite = self.params.capitalize_for_display[stagePrediction_before_overwrite]
         if choice != choice_before_overwrite:

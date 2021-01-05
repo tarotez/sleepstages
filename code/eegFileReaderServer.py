@@ -47,7 +47,7 @@ class EEGFileReaderServer:
         fileName = 'daq.' + presentTime + '.csv'
         self.logFile = open(self.params.logDir + '/' + fileName, 'a')
 
-        self.serve(client)
+        self.serve()
 
     def read_data(self, taskHandle, data):
         current_time = datetime.datetime.now()
@@ -64,7 +64,7 @@ class EEGFileReaderServer:
         current_time = now + delta
         return current_time
 
-    def serve(self, client):
+    def serve(self):
 
         global_t = 0
         dt = 1.0 / self.sampRate
@@ -102,17 +102,17 @@ class EEGFileReaderServer:
                 else:
                     dataToClient += '\n'
             # print('sending dataToClient to client')
-            client.process(dataToClient)
-                ###### connectedLine = connectedLine + dataFromDaq.decode('utf-8')
-                # if len(connectedLine.split('\n')) > self.connectedLineThresh:
-                #    break
+            self.client.process(dataToClient)
+            ###### connectedLine = connectedLine + dataFromDaq.decode('utf-8')
+            # if len(connectedLine.split('\n')) > self.connectedLineThresh:
+            #    break
 
-                # if len(dataToClient.encode('utf-8')) > self.dataToClientSizeLimit or t == (eegLength - 1):
-                    # print("len(dataToClient.encode('utf-8')) = " + str(len(dataToClient.encode('utf-8'))))
-                    # readDaqServerにデータを送信する
-                    # dataToClient = dataToClient.rstrip()
-                    ###### must send a whole data (connected)
-                    # client.process(dataToClient.encode('utf-8'))
-                    # dataToClient = ''
-                    ### time.sleep(0.01)
+            # if len(dataToClient.encode('utf-8')) > self.dataToClientSizeLimit or t == (eegLength - 1):
+                # print("len(dataToClient.encode('utf-8')) = " + str(len(dataToClient.encode('utf-8'))))
+                # readDaqServerにデータを送信する
+                # dataToClient = dataToClient.rstrip()
+                ###### must send a whole data (connected)
+                # client.process(dataToClient.encode('utf-8'))
+                # dataToClient = ''
+                ### time.sleep(0.01)
             # time.sleep(0.01)

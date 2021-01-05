@@ -7,9 +7,10 @@ from PyDAQmx import DAQmxStopTask
 from PyDAQmx import DAQmxClearTask
 from PyDAQmx import TaskHandle
 from PyDAQmx import DAQmx_Val_Volts
+from PyDAQmx import DAQmx_Val_Cfg_Default
 from PyDAQmx import DAQmx_Val_Diff
-# from PyDAQmx import DAQmx_Val_FiniteSamps
-from PyDAQmx import DAQmx_Val_ContSamps
+from PyDAQmx import DAQmx_Val_Rising, DAQmx_Val_Falling
+from PyDAQmx import DAQmx_Val_FiniteSamps, DAQmx_Val_ContSamps
 from PyDAQmx import DAQmx_Val_GroupByChannel
 from PyDAQmx import DAQError
 from PyDAQmx import int32
@@ -149,43 +150,51 @@ class ReadDAQServer:
                 if self.channelNum == 2:
                     try:
                         DAQmxCreateAIVoltageChan(taskHandle, "Dev1/ai1:2", "",
-                                         DAQmx_Val_Diff, -10.0, 10.0,
+                                         ### DAQmx_Val_Diff, -10.0, 10.0,
+                                         DAQmx_Val_Cfg_Default, -10.0, 10.0,
                                          DAQmx_Val_Volts, None)
+                        print("at DAQmxCreateAIVoltageChan, created succesfully with channelNum == 2.")
                     except DAQError as err:
                         print("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                         self.logFile.write("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                         self.logFile.flush()
                         try:
-                            DAQmxCreateAIVoltageChan(taskHandle, "Dev0/ai1:2", "",
-                                         DAQmx_Val_Diff, -10.0, 10.0,
+                            DAQmxCreateAIVoltageChan(taskHandle, "Dev1/ai1:2", "",
+                                         ### DAQmx_Val_Diff, -10.0, 10.0,
+                                         DAQmx_Val_Cfg_Default, -10.0, 10.0,
                                          DAQmx_Val_Volts, None)
                         except DAQError as err:
                             print("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                             self.logFile.write("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                             self.logFile.flush()
                             DAQmxCreateAIVoltageChan(taskHandle, "Dev2/ai1:2", "",
-                                         DAQmx_Val_Diff, -10.0, 10.0,
+                                         ### DAQmx_Val_Diff, -10.0, 10.0,
+                                         DAQmx_Val_Cfg_Default, -10.0, 10.0,
                                          DAQmx_Val_Volts, None)
 
                 else:
                     try:
                         DAQmxCreateAIVoltageChan(taskHandle, "Dev1/ai1", "",
-                                         DAQmx_Val_Diff, -10.0, 10.0,
+                                         ### DAQmx_Val_Diff, -10.0, 10.0,
+                                         DAQmx_Val_Cfg_Default, -10.0, 10.0,
                                          DAQmx_Val_Volts, None)
+                        print("at DAQmxCreateAIVoltageChan, created succesfully with channelNum == 1.")
                     except DAQError as err:
                         print("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                         self.logFile.write("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                         self.logFile.flush()
                         try:
                             DAQmxCreateAIVoltageChan(taskHandle, "Dev0/ai1", "",
-                                         DAQmx_Val_Diff, -10.0, 10.0,
+                                         ### DAQmx_Val_Diff, -10.0, 10.0,
+                                         DAQmx_Val_Cfg_Default, -10.0, 10.0,
                                          DAQmx_Val_Volts, None)
                         except DAQError as err:
                             print("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                             self.logFile.write("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                             self.logFile.flush()
                             DAQmxCreateAIVoltageChan(taskHandle, "Dev2/ai1", "",
-                                         DAQmx_Val_Diff, -10.0, 10.0,
+                                         ### DAQmx_Val_Diff, -10.0, 10.0,
+                                         DAQmx_Val_Cfg_Default, -10.0, 10.0,
                                          DAQmx_Val_Volts, None)
 
                 # param: taskHandle
@@ -197,7 +206,10 @@ class ReadDAQServer:
                 # param: numSampsPerChan (int) : number of samples per channel
                 DAQmxCfgSampClkTiming(taskHandle, "", self.sampRate,
                                       ### DAQmx_Val_Diff, DAQmx_Val_FiniteSamps,
-                                      DAQmx_Val_Diff, DAQmx_Val_ContSamps,
+                                      ### DAQmx_Val_Diff, DAQmx_Val_ContSamps,
+                                      ### DAQmx_Val_Falling, DAQmx_Val_ContSamps,
+                                      ### DAQmx_Val_Rising, DAQmx_Val_FiniteSamps,
+                                      DAQmx_Val_Rising, DAQmx_Val_ContSamps,
                                       self.numSampsPerChan)
 
                 # DAQmx Start Code

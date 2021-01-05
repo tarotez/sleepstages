@@ -1,0 +1,10 @@
+*.pyc
+*.tsv
+.*
+!.gitignore
+log
+*.pkl
+*.ipynb
+*~
+__pycache__/*
+*.pyc
