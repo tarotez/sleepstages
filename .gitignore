@@ -8,3 +8,5 @@ log
 *~
 __pycache__/*
 *.pyc
+data/waves/*
+data/prediction/*
