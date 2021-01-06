@@ -28,15 +28,27 @@ To obtain signals from DAQ, NI-DAQmx should be downloaded from the National Inst
 
 http://www.ni.com/download/ni-daqmx-base-15.0/5648/en/
 
-## Using the program
 
-Installation:
+## Installing the program
 
 Source code and data files can be downloaded from GitHub at:
 
 ```
 git clone git@github.com/tarotez/sleepstages
 ```
+
+## Running a demo
+
+Program can be run in a demo mode using the following commands.
+
+```
+cd sleepstages/code
+python app.py m
+```
+
+"m" is for mock-up. It reads a short pickled wave file stored as sleepstages/data/pickled/eegAndStage.sample.pkl.
+
+## Reading waves from a text file
 
 The "sleep stages" repository contains the source code and text files setting up default hyperparameters. The directory structure is as follows:
 
