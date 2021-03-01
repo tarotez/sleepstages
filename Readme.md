@@ -92,6 +92,16 @@ The latter is an alias to the former.
 
 In the offline mode, the program obtains EEG wave data from the "data/aipost" directory. The wave data should be provided as a text file. There is a sample file in the "data/aipost" directory.
 
+## Evaluating the results
+
+To evaluate the result of prediction,
+
+```
+python eval_offline.py PREDICTION_FILE JUDGE_PATH
+```
+
+where PREDICTION_FILE is the name of the prediction file in "data/prediction", and JUDGE_PATH is the path to the Judge file that contain ground-truth labels for each epoch.
+
 ## Sample wave file
 
 There is a sample wave file in the "data/aipost" directory. In this text file, each row (line) corresponds to a time point sampled at 128 Hz. The columns show time stamp, EEG amplitude, Channel 2 input, in this order, separated by commas.
