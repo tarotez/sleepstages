@@ -27,8 +27,8 @@ def selectClassifierID(finalClassifierDir, classifier_type):
 
 #--------------------------------------------
 # write names of files used for training the classifier
-def writeTrainFileIDsUsedForTraining(params, classifier, fileTripletL):
-    f = open(params.classifierDir + '/files_used_for_training.' + params.classifierID + '.csv', 'w')
+def writeTrainFileIDsUsedForTraining(params, classifierID, fileTripletL):
+    f = open(params.classifierDir + '/files_used_for_training.' + classifierID + '.csv', 'w')
     for trip in fileTripletL:
         f.write(str(trip[0]) + ',' + trip[1] + ',' + trip[2] + '\n')
     f.close()
@@ -115,12 +115,16 @@ def excludeFiles(originalL, parser, targetValues):
 
 def getEEGFiles(params, fileIDs):
     f0 = filterEEGFiles(params, listdir(params.eegDir))
+    # print('in getEEGFiles, f0 =', f0)
     return filterFiles(f0, getFileIDFromEEGFile, fileIDs)
 
 def getFeatureFiles(params, fileIDs):
     f0 = filterFeatureFiles(params, listdir(params.featureDir))
+    # print('in getFeatureFiles, f0 =', f0)
     f1 = filterFiles(f0, getFileIDFromFeatureFile, fileIDs)
+    # print('in getFeatureFiles, f1 =', f1)
     f2 = filterFiles(f1, getExtractorFromFeatureFile, [params.extractorType])
+    # print('in getFeatureFiles, f2 =', f2)
     return filterFiles(f2, getEMGLabelFromFeatureFile, [params.label4withoutEMG])
 
 def sortAndMerge(s1, s2, s3):
@@ -132,15 +136,26 @@ def getEEGAndFeatureFiles(params, testNum, offset, randomize):
     # print('train_eegAndStageFiles =', train_eegAndStageFiles)
     train_fileIDs, test_fileIDs = list(map(fileIDsFromEEGFiles, (train_eegAndStageFiles, test_eegAndStageFiles)))
     train_featureFiles, test_featureFiles = list(map(lambda fileIDs: getFeatureFiles(params, fileIDs), (train_fileIDs, test_fileIDs)))
+    # print('in getEEGAndFeatureFiles() : train_featureFiles =', train_featureFiles)
+    # print('in getEEGAndFeatureFiles() : test_featureFiles =', test_featureFiles)
     train_fileTripletL = list(sortAndMerge(train_eegAndStageFiles, train_featureFiles, train_fileIDs))
     test_fileTripletL = list(sortAndMerge(test_eegAndStageFiles, test_featureFiles, test_fileIDs))
+    # print('in getEEGAndFeatureFiles() : train_fileTripletL =', train_fileTripletL)
+    # print('in getEEGAndFeatureFiles() : test_fileTripletL =', test_fileTripletL)
     return train_fileTripletL, test_fileTripletL
 
 def fileIDs2triplets(params, train_fileIDs, test_fileIDs):
+    # print('in fileIDs2triplets(): train_fileIDs =', train_fileIDs)
+    # print('in fileIDs2triplets(): test_fileIDs =', test_fileIDs)
     train_eegAndStageFiles, test_eegAndStageFiles = list(map(lambda fileIDs: getEEGFiles(params, fileIDs), (train_fileIDs, test_fileIDs)))
     train_featureFiles, test_featureFiles = list(map(lambda fileIDs: getFeatureFiles(params, fileIDs), (train_fileIDs, test_fileIDs)))
+    # print('in fileIDs2triplets(): train_eegAndStageFiles =', train_eegAndStageFiles)
+    # print('in fileIDs2triplets(): test_eegAndStageFiles =', test_eegAndStageFiles)
+    # print('in fileIDs2triplets(): train_featureFiles =', train_featureFiles)
+    # print('in fileIDs2triplets(): test_featureFiles =', test_featureFiles)
     train_fileTripletL = list(sortAndMerge(train_eegAndStageFiles, train_featureFiles, train_fileIDs))
     test_fileTripletL = list(sortAndMerge(test_eegAndStageFiles, test_featureFiles, test_fileIDs))
+    # print('in fileIDs2triplets, train_fileTripletL =', train_fileTripletL)
     return train_fileTripletL, test_fileTripletL
 
 def getEEGAndFeatureFilesByClassifierID(params,classifierIDforTrainingFiles):
@@ -156,14 +171,15 @@ def getEEGAndFeatureFilesByExcludingFromTrainingByPrefix(params, test_file_prefi
     all_fileIDs = fileIDsFromEEGFiles(all_eegAndStageFiles)
     train_fileIDs = reduce(lambda a, x: a + [x] if not x.startswith(test_file_prefix) else a, all_fileIDs, [])
     test_fileIDs = reduce(lambda a, x: a + [x] if x.startswith(test_file_prefix) else a, all_fileIDs, [])
-    [print('included ', fileID) for fileID in train_fileIDs]
-    [print('excluded ', fileID) for fileID in test_fileIDs]
+    # [print('included ', fileID) for fileID in train_fileIDs]
+    # [print('excluded ', fileID) for fileID in test_fileIDs]
     return fileIDs2triplets(params, train_fileIDs, test_fileIDs)
 
 def getEEGAndFeatureFilesByExcludingFromTrainingByMouseIDs(params, mouseIDs):
     all_eegAndStageFiles = getAllEEGFiles(params)
     all_fileIDs = fileIDsFromEEGFiles(all_eegAndStageFiles)
-    print('mouseIDs =', mouseIDs)
+    # print('all_fileIDs =', all_fileIDs)
+    # print('mouseIDs =', mouseIDs)
     def contains(targetstr, patterns):
         # print('targetstr =', targetstr)
         for pattern in patterns:
@@ -175,8 +191,8 @@ def getEEGAndFeatureFilesByExcludingFromTrainingByMouseIDs(params, mouseIDs):
         return False
     train_fileIDs = reduce(lambda a, x: a + [x] if not contains(x, mouseIDs) else a, all_fileIDs, [])
     test_fileIDs = reduce(lambda a, x: a + [x] if contains(x, mouseIDs) else a, all_fileIDs, [])
-    [print('included ', fileID) for fileID in train_fileIDs]
-    [print('excluded ', fileID) for fileID in test_fileIDs]
+    # [print('included ', fileID) for fileID in train_fileIDs]
+    # [print('excluded ', fileID) for fileID in test_fileIDs]
     return fileIDs2triplets(params, train_fileIDs, test_fileIDs)
 
 def getFilesNotUsedInTrain(params, train_fileIDs):
@@ -195,8 +211,8 @@ def getFilesNotUsedInTrain(params, train_fileIDs):
 
 #----------------------------------------
 # choose a classifier based on parameters
-def findClassifier(params, paramID, classLabels):
-    classifierID = params.classifierID   # classifierID is generated each time ParameterSetup is called
+def findClassifier(params, paramID, classLabels, classifierID):
+    # classifierID = params.classifierID   # classifierID is generated each time ParameterSetup is called
     classifierType = params.classifierType
     classifierParams = params.classifierParams
     # for reading data

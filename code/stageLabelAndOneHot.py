@@ -8,7 +8,7 @@ def seq2labelFreqs(stageSeq_arr):
     labelFreqs = np.zeros((labelNum))
     for label, labelID in zip(labels, range(labelNum)):
         matches = np.argwhere(stageSeq_arr==label)
-        print('label ' + label + ' appears ' + str(matches.size) + ' times.')
+        # print('label ' + label + ' appears ' + str(matches.size) + ' times.')
         if matches.size > 0:
             labelFreqs[labelID] = matches.shape[0]
     return labelFreqs

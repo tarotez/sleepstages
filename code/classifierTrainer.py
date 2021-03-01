@@ -2,11 +2,11 @@ from __future__ import print_function
 # from os import listdir
 import pickle
 import numpy as np
+import string
+import random
 from sklearn import linear_model, svm, ensemble, neural_network
 from stageLabelAndOneHot import restrictStages
 from fileManagement import getEEGAndFeatureFiles, findClassifier, writeTrainFileIDsUsedForTraining, getEEGAndFeatureFilesByClassifierID, getEEGAndFeatureFilesByExcludingFromTrainingByPrefix, getEEGAndFeatureFilesByExcludingFromTrainingByMouseIDs
-from processFeatures import trimFeatures
-# from sampler import supersample
 
 #-----------------------
 def extract(featureFilePath, stageFilePath):
@@ -38,7 +38,7 @@ def extract(featureFilePath, stageFilePath):
 #--------------------------------------------
 # connect samples and train a model
 # def connectSamplesAndTrain(params, paramID, classifier, featureAndStageFileFullPathsL):
-def connectSamplesAndTrain(params, paramID, fileTripletL):
+def connectSamplesAndTrain(params, fileTripletL, paramID=0):
     # label4EMG = params.label4withEMG if params.useEMG else params.label4withoutEMG
     # count mouseNum and get resampleNumPerMouse
     # mouseNum = -1 # subtract one because there's one excluded file
@@ -52,7 +52,7 @@ def connectSamplesAndTrain(params, paramID, fileTripletL):
     #else:
     #    resampleNumPerMouse = 0
     # print('maxSampleNum = ', params.maxSampleNum, ' mouseNum = ', mouseNum, ', resampleNumPerMouse = ', resampleNumPerMouse)
-    print('&%&%&% in classifierTrainer.connectSamplesAndTrain(), params.networkType =', params.networkType)
+    print('in classifierTrainer.connectSamplesAndTrain(), params.networkType =', params.networkType)
     if params.networkType == 'cnn_lstm':
         print('using cnn_lstm in connectSamplesAndTrain')
         if params.classifierType == 'deep':
@@ -65,7 +65,7 @@ def connectSamplesAndTrain(params, paramID, fileTripletL):
             featureFileFullPath = params.featureDir + '/' + featureFile
             stageFileFullPath = params.eegDir + '/' + eegAndStageFile
             (x, y) = extract(featureFileFullPath, stageFileFullPath)
-            x = trimFeatures(params, x)
+            # x = trimFeatures(params, x)
             # print('after trimming, x.shape =', x.shape)
             x = np.array([x]).transpose((1,0,2))
             y = restrictStages(params, y, params.maximumStageNum)
@@ -76,7 +76,7 @@ def connectSamplesAndTrain(params, paramID, fileTripletL):
                 y_train.append(y[offset+subseqLen])
         x_train = np.array(x_train)
         y_train = np.array(y_train)
-        print('eegAndStageFile = ', eegAndStageFile, ', x_train.shape = ', x_train.shape)
+        # print('eegAndStageFile = ', eegAndStageFile, ', x_train.shape = ', x_train.shape)
         classLabels = np.unique(y_train)
     else:
         for fileCnt, (eegAndStageFile, featureFile, fileID) in enumerate(fileTripletL):
@@ -93,8 +93,8 @@ def connectSamplesAndTrain(params, paramID, fileTripletL):
             else:
                 x_train = np.append(x_train, x, axis=0)
                 y_train = np.append(y_train, y)
-                print('eegAndStageFile = ' + eegAndStageFile + ', x_train.shape = ' + str(x_train.shape))
-        x_train = trimFeatures(params, x_train)
+                # print('eegAndStageFile = ' + eegAndStageFile + ', x_train.shape = ' + str(x_train.shape))
+        # x_train = trimFeatures(params, x_train)
         # print('%%% after trimming, x_train.shape =', x_train.shape)
         y_train = restrictStages(params, y_train, params.maximumStageNum)
         classLabels = np.unique(y_train)
@@ -105,22 +105,20 @@ def connectSamplesAndTrain(params, paramID, fileTripletL):
     print('  y_train = ' + str(y_train))
     print('  y_train.shape = ' + str(y_train.shape))
 
-    # print('&%&%&% before calling findClassifier, params.networkType =', params.networkType)
-    classifier = findClassifier(params, paramID, classLabels)
-    #------
-    # write out metadata to file
-    writeTrainFileIDsUsedForTraining(params, classifier, fileTripletL)
-
+    # print('before calling findClassifier. params.networkType =', params.networkType)
+    classifierID = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+    params.writeAllParams(params.classifierDir, classifierID)
+    writeTrainFileIDsUsedForTraining(params, classifierID, fileTripletL)
+    classifier = findClassifier(params, paramID, classLabels, classifierID)
     classifier.train(x_train, y_train)
     if params.classifierType != 'deep':
-        classifierFileName = params.classifierDir + '/' + params.classifierPrefix + '.' + params.classifierID + '.pkl'
-        classifierFileHandler = open(classifierFileName, 'wb')
-        pickle.dump(classifier, classifierFileHandler)
-        classifierFileHandler.close()
+        classifierFileName = params.classifierDir + '/' + params.classifierPrefix + '.' + classifierID + '.pkl'
+        with open(classifierFileName, 'wb') as classifierFileHandler:
+            pickle.dump(classifier, classifierFileHandler)
+    return classifierID
 
 #-----------------------
 def trainClassifier(params, outputDir, optionType, optionVals):
-    params.writeAllParams(outputDir)
     if optionType == '-o':
         testNum, offset = optionVals
         randomize = False
@@ -144,6 +142,6 @@ def trainClassifier(params, outputDir, optionType, optionVals):
     # print('train_fileTripletL =', train_fileTripletL)
     paramID = 0
     if len(train_fileTripletL) > 0:
-        connectSamplesAndTrain(params, paramID, train_fileTripletL)
+        connectSamplesAndTrain(params, train_fileTripletL)
     else:
         print('%%% No file for training.')

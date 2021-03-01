@@ -37,6 +37,9 @@ class AlgorithmFactory:
         elif self.extractorType == 'rawDataWithFreqHistoWithTime':
             module = importlib.import_module('featureExtractorRawDataWithFreqHistoWithTime')
             extractor = module.FeatureExtractorRawDataWithFreqHistoWithTime()
+        elif self.extractorType == 'rawDataWithSTFTWithTime':
+            module = importlib.import_module('featureExtractorRawDataWithSTFTWithTime')
+            extractor = module.FeatureExtractorRawDataWithSTFTWithTime()
         elif self.extractorType.fine(',') > -1:
             module = importlib.import_module('featureExtractorMerged')
             print('using FeatureExtractorMerged')

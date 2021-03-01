@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 from emgProcessing import emg2feature
 from stageLabelAndOneHot import constructPastStagesOneHots, oneHot2stageLabel
-from processFeatures import trimFeatures
+# from processFeatures import trimFeatures
 
 class StagePredictor(object):
 
@@ -206,7 +206,7 @@ class StagePredictor(object):
             timeStampSegment = timeStampSegments[wID]
             featureIncrement = np.array([self.extractor.getFeatures(eegSegment, timeStampSegment, self.time_step)])
             # print('&&& before trimming, featureIncrement.shape =', featureIncrement.shape)
-            featureIncrement = trimFeatures(self.params, featureIncrement)
+            # featureIncrement = trimFeatures(self.params, featureIncrement)
             # print('&&& after trimming, featureIncrement.shape =', featureIncrement.shape)
 
             if wID == 0:
@@ -262,7 +262,7 @@ class StagePredictor(object):
         # print('featureVec = ' + str(featureVec))
         featureMat = np.array([featureVec])
         # print('&&& before trimming, featureMat.shape =', featureMat.shape)
-        featureMat = trimFeatures(self.params, featureMat)
+        # featureMat = trimFeatures(self.params, featureMat)
         # print('&&& after trimming, featureMat.shape =', featureMat.shape)
 
         if self.useEMG:

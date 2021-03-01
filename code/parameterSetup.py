@@ -1,8 +1,6 @@
 from __future__ import print_function
 from freqAnalysisTools import band
 import json
-import string
-import random
 import numpy as np
 
 class ParameterSetup(object):
@@ -114,6 +112,11 @@ class ParameterSetup(object):
         self.useFreqHisto = d['useFreqHisto']
         self.useTime = d['useTime']
 
+        if 'useSTFT' in d:
+            self.useSTFT =  d['useSTFT']
+        else:
+            self.useSTFT = 0
+
         # parameters for the optimzer
         self.optimizerType = d['optimizerType']
         self.adam_learningRate = d['adam_learningRate']
@@ -189,6 +192,16 @@ class ParameterSetup(object):
         else:
             self.ch2IntensityFunc = 'max_mean'
 
+        if 'stft_time_bin_in_seconds' in d:
+            self.stft_time_bin_in_seconds =  d['stft_time_bin_in_seconds']
+        else:
+            self.stft_time_bin_in_seconds = 1
+
+        if 'outputDim_cnn_for_stft' in d:
+            self.outputDim_cnn_for_stft = d['outputDim_cnn_for_stft']
+        else:
+            self.outputDim_cnn_for_stft = 8 * 3 * 2
+
         # label correction (dictionary)
         self.labelCorrectionDict = {'S' : 'n', 'W' : 'w', 'R' : 'r', 'RW' : 'w', 'M' : 'm', 'P' : 'P', 'F2' : 'F2', '?' : '?', '-' : '-'}
         ### self.stageLabel2stageID = {'W': 0, 'S': 1, 'R': 2, 'M': 3, 'P': 4, 'RW': 5, 'F2' : 6}
@@ -206,7 +219,7 @@ class ParameterSetup(object):
         self.cueWhereStageDataStarts = ',,,%,%,uV^2,,uV^2'
 
         # ID for the classifierp
-        self.classifierID = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+        # self.classifierID = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
 
         orig_stageLabels = ['S', 'W', 'R', 'RW', 'M', 'P', 'F2', '?', '-']
         self.stagesByDepth = ['r', 'n', 'w', '?']
@@ -218,7 +231,6 @@ class ParameterSetup(object):
         self.ch2_mean_init = d['ch2_mean_init']
         self.ch2_variance_init = d['ch2_variance_init']
         self.ch2_oldTotalSampleNum_init = d['ch2_oldTotalSampleNum_init']
-
 
     def stageID2stageLabel(self, stageID):
         for key in self.stageLabel2stageID.keys():
@@ -232,20 +244,18 @@ class ParameterSetup(object):
                 return key
         return ''
 
-    def writeAllParams(self, outputDir):
-        if outputDir == '':
-            outputDir = self.pickledDir
+    def writeAllParams(self, outputDir, classifierID):
+        outputDir = self.pickledDir if outputDir == '' else outputDir
         # outputPath = outputDir + '/params_used_' + self.paramSetupType + '_' + self.classifierID + '.txt'
-        outputPath = outputDir + '/parameterSetup.' + self.classifierID + '.json'
-        print('writing parameterSetup.__dict__ to', outputPath)
-        fileHandler = open(outputPath, 'w')
-        for key in self.__dict__:
-            fileHandler.write(key + ' : ' + str(self.__dict__[key]) + '\n')
-        backupPath = outputDir + '/params.' + self.classifierID + '.json'
+        # outputPath = outputDir + '/parameterSetup.' + classifierID + '.json'
+        # print('writing parameterSetup.__dict__ to', outputPath)
+        # fileHandler = open(outputPath, 'w')
+        # for key in self.__dict__:
+            # fileHandler.write(key + ' : ' + str(self.__dict__[key]) + '\n')
+        backupPath = outputDir + '/params.' + classifierID + '.json'
         print('copying params.json to', backupPath)
-        backupFileHandler = open(backupPath, 'w')
-        self.parameterFileHandler.seek(0)
-        for line in self.parameterFileHandler:
-            backupFileHandler.write(line)
-        self.parameterFileHandler.seek(0)
-        backupFileHandler.close()
+        with open(backupPath, 'w') as backupFileHandler:
+            self.parameterFileHandler.seek(0)
+            for line in self.parameterFileHandler:
+                backupFileHandler.write(line)
+            self.parameterFileHandler.seek(0)
