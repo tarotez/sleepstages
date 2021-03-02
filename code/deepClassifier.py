@@ -913,7 +913,7 @@ class DeepClassifier():
           print('len(featuresBySamples) =', len(featuresBySamples))
           # print('np.array(featuresBySamples).shape() =', np.array(featuresBySamples).shape())
           # print('np.array(labels).shape() =', np.array(labels).shape())
-          validationRatio = 0.1
+          validationRatio = 0.05
 
           #--------
           # converts labels to integers

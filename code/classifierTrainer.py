@@ -6,7 +6,7 @@ import string
 import random
 from sklearn import linear_model, svm, ensemble, neural_network
 from stageLabelAndOneHot import restrictStages
-from fileManagement import getEEGAndFeatureFiles, findClassifier, writeTrainFileIDsUsedForTraining, getEEGAndFeatureFilesByClassifierID, getEEGAndFeatureFilesByExcludingFromTrainingByPrefix, getEEGAndFeatureFilesByExcludingFromTrainingByMouseIDs
+from fileManagement import getEEGAndFeatureFiles, findClassifier, writeTrainFileIDsUsedForTraining, getEEGAndFeatureFilesByClassifierID, getEEGAndFeatureFilesByExcludingFromTrainingByPrefix, getEEGAndFeatureFilesByExcludingTestMouseIDs
 
 #-----------------------
 def extract(featureFilePath, stageFilePath):
@@ -133,14 +133,13 @@ def trainClassifier(params, outputDir, optionType, optionVals):
     elif optionType == '-e':   # specify excluded files
         test_file_prefix = optionVals[0]
         train_fileTripletL, test_fileTripletL = getEEGAndFeatureFilesByExcludingFromTrainingByPrefix(params, test_file_prefix)
-    elif optionType == '-m':   # specify mouseID
-        mouseIDs = optionVals
-        train_fileTripletL, test_fileTripletL = getEEGAndFeatureFilesByExcludingFromTrainingByMouseIDs(params, mouseIDs)
+    elif optionType == '-m':   # specify test mouseID
+        test_mouseIDs = optionVals
+        train_fileTripletL, test_fileTripletL = getEEGAndFeatureFilesByExcludingTestMouseIDs(params, test_mouseIDs)
     else:
         testNum, offset, randomize = 10, 0, True
         train_fileTripletL, test_fileTripletL = getEEGAndFeatureFiles(params, testNum, offset, randomize)
     # print('train_fileTripletL =', train_fileTripletL)
-    paramID = 0
     if len(train_fileTripletL) > 0:
         connectSamplesAndTrain(params, train_fileTripletL)
     else:

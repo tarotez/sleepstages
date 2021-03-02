@@ -175,11 +175,11 @@ def getEEGAndFeatureFilesByExcludingFromTrainingByPrefix(params, test_file_prefi
     # [print('excluded ', fileID) for fileID in test_fileIDs]
     return fileIDs2triplets(params, train_fileIDs, test_fileIDs)
 
-def getEEGAndFeatureFilesByExcludingFromTrainingByMouseIDs(params, mouseIDs):
+def getEEGAndFeatureFilesByExcludingTestMouseIDs(params, test_mouseIDs):
     all_eegAndStageFiles = getAllEEGFiles(params)
     all_fileIDs = fileIDsFromEEGFiles(all_eegAndStageFiles)
     # print('all_fileIDs =', all_fileIDs)
-    # print('mouseIDs =', mouseIDs)
+    # print('test_mouseIDs =', test_mouseIDs)
     def contains(targetstr, patterns):
         # print('targetstr =', targetstr)
         for pattern in patterns:
@@ -189,11 +189,30 @@ def getEEGAndFeatureFilesByExcludingFromTrainingByMouseIDs(params, mouseIDs):
                 return True
         # print('no match.')
         return False
-    train_fileIDs = reduce(lambda a, x: a + [x] if not contains(x, mouseIDs) else a, all_fileIDs, [])
-    test_fileIDs = reduce(lambda a, x: a + [x] if contains(x, mouseIDs) else a, all_fileIDs, [])
+    train_fileIDs = reduce(lambda a, x: a + [x] if not contains(x, test_mouseIDs) else a, all_fileIDs, [])
+    test_fileIDs = reduce(lambda a, x: a + [x] if contains(x, test_mouseIDs) else a, all_fileIDs, [])
     # [print('included ', fileID) for fileID in train_fileIDs]
     # [print('excluded ', fileID) for fileID in test_fileIDs]
     return fileIDs2triplets(params, train_fileIDs, test_fileIDs)
+
+'''
+def getFileIDsOtherThanTest(params, test_fileIDs):
+    eegAndStageFiles = getAllEEGFiles(params)
+    # print('after eegAndStageFiles = getAllEEGFiles(params):')
+    # [print('fileName =', fileName) for fileName in eegAndStageFiles]
+    all_fileIDs = fileIDsFromEEGFiles(eegAndStageFiles)
+    # print('after all_fileIDs = fileIDsFromEEGFiles(eegAndStageFiles):')
+    # [print('fileID =', fileID) for fileID in all_fileIDs]
+    train_fileIDs = excludeFiles(all_fileIDs, lambda x: x, test_fileIDs)
+    return train_fileIDs
+'''
+
+def getFileIDsFromRemainingBlocks(fileIDsByBlocks, excluding_blockID):
+    concatenated = []
+    for blockID, block in enumerate(fileIDsByBlocks):
+        if blockID != excluding_blockID:
+            concatenated += block
+    return concatenated
 
 def getFilesNotUsedInTrain(params, train_fileIDs):
     eegAndStageFiles = getAllEEGFiles(params)

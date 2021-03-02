@@ -9,7 +9,7 @@ from parameterSetup import ParameterSetup
 from evaluationCriteria import labels2ID, getEpisodeLengths
 from sequentialPrediction import classifySequentially
 from writePredictionResults import writePredictionResults
-from fileManagement import readTrainFileIDsUsedForTraining, getFilesNotUsedInTrain
+from fileManagement import readTrainFileIDsUsedForTraining, getFileIDsFromRemainingBlocks
 
 # crossValidationID = 'ARS0Q'
 # crossValidationID = '6S3BL'
@@ -24,7 +24,7 @@ paramID, markovOrder = 0, 0
 outputDir = '../data/pickled'
 
 with open(outputDir + '/crossvalidation_metadata.' + crossValidationID + '.pkl', 'rb') as f:
-    splitID, classifierIDsByParam = pickle.load(f)
+    splitID, classifierIDsByMethod = pickle.load(f)
     print('splitID =', splitID)
 
 fileIDsByBlocks = []
@@ -35,18 +35,15 @@ with open(outputDir + '/blocks_of_records.' + splitID + '.csv') as f:
 
 testFileIDandClassifierIDs_byMethod, y_test_byMethod, y_pred_byMethod = [], [], []
 # loopCnt = 0
-for methodID, classifierIDsByBlockID in enumerate(classifierIDsByParam):
+for methodID, classifierIDsByBlockID in enumerate(classifierIDsByMethod):
     testFileIDandClassifierIDs_byBlock, y_test_byBlock, y_pred_byBlock = [], [], []
-    for blockID, (classifierID, train_fileIDs) in enumerate(zip(classifierIDsByBlockID, fileIDsByBlocks)):
+    for blockID, (classifierID, test_fileIDs) in enumerate(zip(classifierIDsByBlockID, fileIDsByBlocks)):
         print('')
         print('blockID =', blockID)
         print('classifierID =', classifierID)
-        # train_fileTripletL = readTrainFileIDsUsedForTraining(params, classifierID)
-        # train_fileIDs = [train_fileID for _, _, train_fileID in train_fileTripletL]
-        test_fileTripletL = getFilesNotUsedInTrain(params, train_fileIDs)
-        # print('test_fileTripletL =', test_fileTripletL)
-        # all_fileTripletL = test_fileTripletL
-        test_fileIDs = [test_fileTriplet[2] for test_fileTriplet in test_fileTripletL]
+        train_fileIDs = getFileIDsFromRemainingBlocks(fileIDsByBlocks, blockID)
+        print('%%% len(train_fileIDs) =', len(train_fileIDs))
+        print('%%% len(test_fileIDs) =', len(test_fileIDs))
         # pairing to predict and evaluate a file (test_fileID) using a classifier (classifierID)
         testFileIDandClassifierIDs = [(test_fileID, classifierID) for test_fileID in test_fileIDs]
         # print('# testFileIDandClassifierIDs =', testFileIDandClassifierIDs)
