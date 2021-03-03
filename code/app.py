@@ -11,8 +11,8 @@ from PyQt5.QtWidgets import QMainWindow, QLineEdit, QLabel, QSlider, QComboBox
 from parameterSetup import ParameterSetup
 import importlib
 from dummyReadDaqServer import DummyReadDAQServer
-from classifierClient import ClassifierClient
 from eegFileReaderServer import EEGFileReaderServer
+from classifierClient import ClassifierClient
 from connectionCheckClient import ConnectionCheckClient
 # from drawGraph import DynamicGraphCanvas, DynamicGraphCanvas4KS, DynamicGraphCanvas4KSHist
 from drawGraph import DynamicGraphCanvas
@@ -523,8 +523,11 @@ class RemApplication(QMainWindow):
                 classifierID = self.args[1]
                 if classifierID == 'm' or classifierID == 'o':
                     classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
-                self.inputFileID = self.args[2] if len(self.args) > 2 else self.randomlySelectInputFileID()
-                print('reading', self.inputFileID)
+                if classifierID == 'm':
+                    self.inputFileID = self.args[2] if len(self.args) > 2 else self.randomlySelectInputFileID()
+                    print('reading', self.inputFileID)
+                else:
+                    self.inputFileID = ''
                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, self.inputFileID, self.offsetWindowID)
             else:   # Neither classifierID nor inputFileID are specified.
                 self.readFromDaq = True
