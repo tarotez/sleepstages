@@ -62,7 +62,7 @@ class RemOfflineApplication:
                         raise e
 
                 else:
-                    print('  skipping ' + inputFileID)
+                    print('  skipping ' + inputFileID + ' because ' + predFileFullPath + ' exists.')
 
 
 if __name__ == '__main__':
