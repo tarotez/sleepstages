@@ -46,7 +46,7 @@ cd sleepstages/code
 python app.py m
 ```
 
-"m" is for mock-up. It reads a short pickled wave file stored as sleepstages/data/pickled/eegAndStage.sample.pkl.
+"m" is for mock-up. It reads a short pickled wave file stored as "data/pickled/eegAndStage.sample.pkl".
 
 ## Reading waves from a text file
 
@@ -92,9 +92,21 @@ The latter is an alias to the former.
 
 In the offline mode, the program obtains EEG wave data from the "data/aipost" directory. The wave data should be provided as a text file. There is a sample file in the "data/aipost" directory.
 
+The predicted result is written out as files in the "data/prediction" directory.
+
+## Predicting without using GUI
+
+Sleep stages for wave files in the "data/aipost" directory can be predicted without activating the GUI. Instead of running applpy, run
+
+```
+python offline.py
+```
+
+The predicted result is written out as files in the "data/prediction" directory.
+
 ## Evaluating the results
 
-To evaluate the result of prediction,
+To evaluate the result of prediction, use
 
 ```
 python eval_offline.py PREDICTION_FILE JUDGE_PATH
@@ -104,7 +116,7 @@ where PREDICTION_FILE is the name of the prediction file in "data/prediction", a
 
 ## Sample wave file
 
-There is a sample wave file in the "data/aipost" directory. In this text file, each row (line) corresponds to a time point sampled at 128 Hz. The columns show time stamp, EEG amplitude, Channel 2 input, in this order, separated by commas.
+There is a sample wave file in the "data/aipost" directory. In this text file, each row (line) corresponds to a time point sampled at 128 Hz. The columns are the time stamp, EEG amplitude, Channel 2 input, in this order, separated by commas.
 
 ## Training and testing a classifier
 
@@ -118,9 +130,9 @@ python computeTrainingError.py
 python computeTestError.py
 ```
 
-readOfflineEEGandStageLabels2pickle.py reads text files containing EEG raw data signals and ground truth stage labels from the WAVEDIR directory. It writes files starting with "EEGAndStage" into the "data/pickled" directory. These files are in Python's pickle format to enable faster access.
+readOfflineEEGandStageLabels2pickle.py reads text files containing EEG raw data signals and ground truth stage labels from the WAVEDIR directory. It writes files starting with "eegAndStage" into the "data/pickled" directory. These files are in Python's pickle format to enable faster access.
 
-extractFeatures.py reads "EEGAndStage" files and write files starting with "features". These files contain feature vectors used for training classifiers.
+extractFeatures.py reads "eegAndStage" files and write files starting with "features". These files contain feature vectors used for training classifiers.
 
 trainClassifier.py reads "features" and writes files starting with "weights", "params", and "files_used_for_training". These files contain randomly generated six-character IDs (i.e., classifier IDs) in their file names.
 
