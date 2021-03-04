@@ -520,14 +520,16 @@ class RemApplication(QMainWindow):
             self.sleepTime = float(self.args[4]) if len(self.args) > 4 else self.defaultSleepTime
             self.offsetWindowID = int(self.args[3]) if len(self.args) > 3 else 0
             if len(self.args) > 1:
-                classifierID = self.args[1]
-                if classifierID == 'm':
+                optionID = self.args[1]
+                if optionID == 'm':
+                    classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
                     self.inputFileID = self.args[2] if len(self.args) > 2 else self.randomlySelectInputFileID()
-                    print('reading', self.inputFileID)
+                    print('demo mode: reading inputFileID=', self.inputFileID)
+                elif optionID == 'o':
                     classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
-                if classifierID == 'o':
-                    classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
+                    self.inputFileID = ''
                 else:
+                    classifierID = optionID
                     self.inputFileID = ''
                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, self.inputFileID, self.offsetWindowID)
             else:   # Neither classifierID nor inputFileID are specified.
