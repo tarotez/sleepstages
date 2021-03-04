@@ -39,7 +39,7 @@ git clone git@github.com/tarotez/sleepstages
 
 ## Running a demo
 
-Program can be run in a demo mode using the following commands.
+Program can be run in a demo mode (mockup mode) using the following commands.
 
 ```
 cd sleepstages/code

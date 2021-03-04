@@ -521,11 +521,12 @@ class RemApplication(QMainWindow):
             self.offsetWindowID = int(self.args[3]) if len(self.args) > 3 else 0
             if len(self.args) > 1:
                 classifierID = self.args[1]
-                if classifierID == 'm' or classifierID == 'o':
-                    classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
                 if classifierID == 'm':
                     self.inputFileID = self.args[2] if len(self.args) > 2 else self.randomlySelectInputFileID()
                     print('reading', self.inputFileID)
+                    classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
+                if classifierID == 'o':
+                    classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
                 else:
                     self.inputFileID = ''
                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, self.inputFileID, self.offsetWindowID)
