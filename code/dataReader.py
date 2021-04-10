@@ -221,7 +221,10 @@ class DataReader:
                     timeStampsL.append(elems[0])
                 eegL.append(float(elems[1]))
                 if len(elems) > 2:
-                    emgL.append(float(elems[2]))
+                    try:
+                        emgL.append(float(elems[2]))
+                    except ValueError:
+                        emgL.append(0)
 
         eeg = np.array(eegL)
         emg = np.array(emgL)
