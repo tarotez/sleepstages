@@ -149,7 +149,7 @@ class ReadDAQServer:
                         DAQmxCreateAIVoltageChan(taskHandle, "Dev" + str(devID) + "/ai" + channelIDs, "",
                                          ### DAQmx_Val_Diff, -10.0, 10.0,
                                          ### DAQmx_Val_Cfg_Default, -10.0, 10.0,
-                                         DAQmx_Val_Cfg_Constant, -10.0, 10.0,
+                                         DAQmx_Val_NRSE, -10.0, 10.0,
                                          DAQmx_Val_Volts, None)
                         channelNum = 2 if len(channelIDs) > 1 else 1
                         print("at DAQmxCreateAIVoltageChan, created succesfully with channelNum == " + str(channelNum) + ".")
@@ -158,17 +158,17 @@ class ReadDAQServer:
                         print("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                         self.logFile.write("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
                         self.logFile.flush()
-                        return -1
+                        return 0
 
                 if self.channelNum == 2:
-                    if not createChannel("0", "1:2"):
+                    if not createChannel("1", "1:2"):
                         if not createChannel("2","1:2"):
-                            if not createChannel("2","1:2"):
+                            if not createChannel("0","1:2"):
                                 pass
                 else:
-                    if not createChannel("0", "1"):
+                    if not createChannel("1", "1"):
                         if not createChannel("2","1"):
-                            if not createChannel("2","1"):
+                            if not createChannel("0","1"):
                                 pass
                     '''
                     try:
