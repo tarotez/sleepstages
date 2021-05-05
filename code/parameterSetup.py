@@ -59,7 +59,7 @@ class ParameterSetup(object):
         if 'terminalConfigDefaultValue' in d:
             self.terminal_config_default_value = d['terminalConfigDefaultValue']
         else:
-            self.terminal_config_default_value = 'NRSE'
+            self.terminal_config_default_value = 'RSE'
 
         self.writeWholeWaves = d['writeWholeWaves']   # sampling frequency of data
         self.computeKS = d['computeKS']
