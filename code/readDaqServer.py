@@ -149,8 +149,12 @@ class ReadDAQServer:
                         print('type(devID) =', type(devID))
                         print('type(str(devID)) =', type(str(devID)))
                         print('type(chanelIDs) =', type(channelIDs))
-
-                        DAQmxCreateAIVoltageChan(taskHandle, "Dev" + str(devID) + "/ai" + channelIDs, "",
+                        print('devID =', devID)
+                        print('str(devID) =', str(devID))
+                        print('chanelIDs =', channelIDs)
+                        device_and_channels = "Dev" + str(devID) + "/ai" + channelIDs
+                        print('ddevice_and_channels =', device_and_channels)
+                        DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
                                          ### DAQmx_Val_Cfg_Default, -10.0, 10.0,
                                          ### DAQmx_Val_Diff, -10.0, 10.0,
                                          ### DAQmx_Val_NRSE, -10.0, 10.0,
