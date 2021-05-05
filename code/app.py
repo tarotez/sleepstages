@@ -112,10 +112,10 @@ class RemApplication(QMainWindow):
             statusbar.showMessage(str(e))
             raise e
 
-        self.server.serve()
         self.server.DAQmx_Val_dict = {'DIFF' : 'DAQmx_Val_Diff', 'RSE' : 'DAQmx_Val_RSE', 'NRSE' : 'DAQmx_Val_NRSE'}
-        self.server.terminal_config = self.server.terminal_config
-        message = 'successfully started with terminal_config = ' + self.server.terminal_config 
+        self.server.terminal_config = self.terminal_config
+        self.server.serve()
+        message = 'successfully started with terminal_config = ' + self.server.terminal_config
         statusbar.showMessage(message)
 
     def predictionStateOnEEGandCh2(self):
