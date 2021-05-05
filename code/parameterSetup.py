@@ -55,6 +55,12 @@ class ParameterSetup(object):
         self.windowSizeInSec = d['windowSizeInSec']   # size of window in time for estimating the state
         self.samplingFreq = d['samplingFreq']   # sampling frequency of data
 
+
+        if 'terminalConfigDefaultValue' in d:
+            self.terminal_config_default_value = d['terminalConfigDefaultValue']
+        else:
+            self.terminal_config_default_value = 'NRSE'
+
         self.writeWholeWaves = d['writeWholeWaves']   # sampling frequency of data
         self.computeKS = d['computeKS']
 
