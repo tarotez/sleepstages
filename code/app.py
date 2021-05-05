@@ -45,7 +45,7 @@ class RemApplication(QMainWindow):
         self.terminal_str_diff = "DIFF"
         self.terminal_str_rse = "RSE"
         self.terminal_str_nrse = "NRSE"
-        self.terminal_config_default_value = self.params.terminal_config_default_value
+        self.terminal_config = self.params.terminal_config_default_value
 
         self.eeg_mode_str_normalize = "Normalize-ON"
         self.eeg_mode_str_none = "Normalize-OFF"
