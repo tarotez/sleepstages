@@ -146,16 +146,7 @@ class ReadDAQServer:
 
                 def createChannel(devID, channelIDs):
                     try:
-                        '''
-                        print('type(devID) =', type(devID))
-                        print('type(str(devID)) =', type(str(devID)))
-                        print('type(chanelIDs) =', type(channelIDs))
-                        print('devID =', devID)
-                        print('str(devID) =', str(devID))
-                        print('chanelIDs =', channelIDs)
                         device_and_channels = "Dev" + str(devID) + "/ai" + channelIDs
-                        print('ddevice_and_channels =', device_and_channels)
-                        '''
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE}
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
                                          ### DAQmx_Val_Cfg_Default, -10.0, 10.0,
