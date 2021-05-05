@@ -35,18 +35,17 @@ class RemApplication(QMainWindow):
         self.label_notRecordWaves = 'No wave recording'
         self.label_override = 'ON'
         self.label_notOverride = 'OFF'
-        ### self.classifier_types = ['UTSN-L', 'UTSN-F', 'UTSN']
         self.classifier_types = ['UTSN-L', 'UTSN']
         self.classifier_type = self.classifier_types[0]
 
         self.recordWaves = self.params.writeWholeWaves
-        # self.str_method_deep = "Deep Learning"
-        # self.str_method_rf = "Random Forest"
-        # self.str_method_classical = "Classical"
-        # self.methodName = self.str_method_deep
-        # self.setClassifierType(self.params)
         self.classifierType = "deep"
         self.extractorType = self.params.extractorType
+
+        self.terminal_str_diff = "DIFF"
+        self.terminal_str_rse = "RSE"
+        self.terminal_str_nrse = "NRSE"
+        self.terminal_config_default_value = self.params.terminal_config_default_value
 
         self.eeg_mode_str_normalize = "Normalize-ON"
         self.eeg_mode_str_none = "Normalize-OFF"
@@ -60,7 +59,6 @@ class RemApplication(QMainWindow):
         self.defaultSleepTime = 1
         self.overrideByCh2 = False
         self.prediction_started = False
-        # self.channelNumForPrediction = 0
 
         if platform.system() == 'Windows':
             self.scale = 1.5
@@ -69,12 +67,6 @@ class RemApplication(QMainWindow):
 
         super(RemApplication, self).__init__()
         self.initUI()
-        # self.graph = tf.get_default_graph()
-        ### moved below on 2020.2.24
-        '''
-        self.t = threading.Thread(target=self.start_reader, daemon=True)
-        self.t.start()
-        '''
 
     def start_reader(self):
         def to_f(inpt):
@@ -85,27 +77,11 @@ class RemApplication(QMainWindow):
 
         statusbar = self.statusBar()
         try:
-            '''
-            if len(self.args) > 1:
-                inputFileID = self.args[1]
-                if inputFileID == 'm':
-                    print('@ self.client = ClassifierClient(...) for len(self.args) > 1 and inputFileID == m')
-                    self.client = ClassifierClient(channelOpt, self.recordWaves, self.extractorType, self.classifierType)
-                else:
-                    print('@ self.client = ClassifierClient(...) for len(self.args) > 1 and inputFileID != m')
-                    self.client = ClassifierClient(channelOpt, self.recordWaves, self.extractorType, self.classifierType, inputFileID=inputFileID)
-            else:
-                print('@ self.client = ClassifierClient(...) for len(self.args) <= 1')
-                self.client = ClassifierClient(channelOpt, self.recordWaves, self.extractorType, self.classifierType)
-            self.client.hasGUI = True
-            # print('classifierClient started by ' + str(channelOpt) + ' channel.')
-            '''
             # freeze pulldown menu (combobox) after prediction started
             while self.classifier_combobox.count() > 1:
                 for itemID in range(self.classifier_combobox.count()):
                     if self.classifier_combobox.itemText(itemID) != self.classifier_combobox.currentText():
                         self.classifier_combobox.removeItem(itemID)
-            # below added on 2020.2.24
             self.prediction_started = True
             self.client.predictionStateOn()
 
@@ -116,10 +92,6 @@ class RemApplication(QMainWindow):
 
         self.client.setGraph(self.listOfGraphs)
         self.client.setPredictionResult(self.listOfPredictionResults)
-        # self.client.setchi2ResLabel(self.chi2ResLabel)
-        # self.client.setdResLabel(self.dResLabel)
-        # self.client.setdGraph(self.dGraph)
-        # self.client.setdHist(self.dHist)
 
         try:
             if self.readFromDaq:
@@ -141,43 +113,15 @@ class RemApplication(QMainWindow):
             raise e
 
         self.server.serve()
-        # self.t.start()
-        ### if len(self.args) > 1:
-        ###    self.server.setTrueLabels(self.listOfTrueLabels)
-        message = 'successfully started!'
+        self.server.DAQmx_Val_dict = {'DIFF' : 'DAQmx_Val_Diff', 'RSE' : 'DAQmx_Val_RSE', 'NRSE' : 'DAQmx_Val_NRSE'}
+        self.server.terminal_config = self.server.terminal_config
+        message = 'successfully started with terminal_config = ' + self.server.terminal_config 
         statusbar.showMessage(message)
 
-    # def stop_reader(self):
-        # self.t.terminate()
-        # self.t.join()
-
-    # def run(self):
-        ### with self.graph.as_default():
-            # self.server.serve()
-
-    ### below commented out on 2020.2.24
-    '''
-    def predictionStateOnEEGonly(self):
-        if self.channelNumAlreadySelected == 0:
-            self.client.params.useCh2ForReplace = False
-            self.client.predictionStateOn()
-            self.clientButton1chan.setChecked(True)
-            self.channelNumAlreadySelected = 1
-        else:
-            if self.client.params.useCh2ForReplace == False:
-                self.clientButton1chan.setChecked(True)
-            else:
-                self.clientButton1chan.setChecked(False)
-        '''
-
     def predictionStateOnEEGandCh2(self):
-        ### below added on 2020.2.24
         self.t = threading.Thread(target=self.start_reader, daemon=True)
         self.t.start()
         if self.channelNumAlreadySelected == 0:
-            ### below commented out on 2020.2.24
-            # self.client.params.useCh2ForReplace = True
-            # self.client.predictionStateOn()
             self.clientButton2chan.setChecked(True)
             self.channelNumAlreadySelected = 1
         else:
@@ -215,25 +159,6 @@ class RemApplication(QMainWindow):
         self.waveRecordButton.setChecked(False)
         self.waveNotRecordButton.setChecked(True)
 
-    '''
-    def method_choice(self, text):
-        self.methodName = text
-        self.setClassifierType(self.params)
-    '''
-
-    '''
-    def setClassifierType(self, params):
-        if self.methodName == self.str_method_deep:
-            self.classifierType = 'deep'
-            self.extractorType = params.extractorType
-        if self.methodName == self.str_method_rf:
-            self.extractorType = 'freqHistoWithTime'
-            self.classifierType = 'rf'
-        if self.methodName == self.str_method_classical:
-            self.extractorType = 'classical'
-            self.classifierType = 'static'
-    '''
-
     def ylim_change(self):
         self.client.ylim_max = self.ylim_slider.value() / 10
         self.client.graph_ylim[0] = [-self.client.ylim_max, self.client.ylim_max]
@@ -243,6 +168,9 @@ class RemApplication(QMainWindow):
         ch2_thresh_slider_value = self.ch2_thresh_slider.value()
         self.client.ch2_thresh_value = ch2_thresh_slider_value / 4
         self.ch2_thresh.setText(str(self.client.ch2_thresh_value))
+
+    def terminal_choice(self, text):
+        self.terminal_config = text
 
     def eeg_mode_choice(self, text):
         self.eeg_mode = text
@@ -269,30 +197,16 @@ class RemApplication(QMainWindow):
             print('classifier_type changed to', self.classifier_type)
 
     def initUI(self):
-        ### below commented out on 2020.2.24
-        '''
-        self.clientButton1chan = QtWidgets.QPushButton('Predict (EEG only)', self)
-        self.clientButton1chan.setCheckable(True)
-        # self.channelNumForPrediction = 1
-        self.clientButton1chan.clicked.connect(self.predictionStateOnEEGonly)
-        self.clientButton1chan.resize(self.clientButton1chan.sizeHint())
-        self.clientButton1chan.move(5 * self.scale, 10 * self.scale)
-        '''
 
         self.clientButton2chan = QtWidgets.QPushButton('Predict', self)
         self.clientButton2chan.setCheckable(True)
-        # self.channelNumForPrediction = 2
         self.clientButton2chan.clicked.connect(self.predictionStateOnEEGandCh2)
         self.clientButton2chan.resize(self.clientButton2chan.sizeHint())
-        ### self.clientButton2chan.move(145 * self.scale, 10 * self.scale)
         self.clientButton2chan.move(5 * self.scale, 10 * self.scale)
 
         quitButton = QtWidgets.QPushButton('Quit', self)
-        ### commented out on 2020.2.24
-        ### quitButton.clicked.connect(self.stop_reader)
         quitButton.clicked.connect(QtCore.QCoreApplication.instance().quit)
         quitButton.resize(quitButton.sizeHint())
-        # quitButton.move(230 * self.scale, 10 * self.scale)
         quitButton.move(85 * self.scale, 10 * self.scale)
 
         checkConnectionButton = QtWidgets.QPushButton('Test connection', self)
@@ -300,45 +214,30 @@ class RemApplication(QMainWindow):
         checkConnectionButton.resize(checkConnectionButton.sizeHint())
         checkConnectionButton.move(160 * self.scale, 10 * self.scale)
 
+        # change standardization of ch2
+        self.nameLabel_terminal_label = QLabel(self)
+        self.nameLabel_terminal_label.setText('Terminal:')
+        self.nameLabel_terminal_label.move(160 * self.scale, 35 * self.scale)
+        self.terminal_combobox = QtWidgets.QComboBox(self)
+        self.terminal_combobox.addItem(self.terminal_str_diff)
+        self.terminal_combobox.addItem(self.terminal_str_rse)
+        self.terminal_combobox.addItem(self.terminal_str_nrse)
+        self.terminal_combobox.move(230 * self.scale, 38 * self.scale)
+        self.terminal_combobox.resize(self.terminal_combobox.sizeHint())
+        self.terminal_combobox.activated[str].connect(self.terminal_choice)
+        self.terminal_combobox.setCurrentText(self.terminal_config_default_value)
+
+        # change model
         self.nameLabel_classifier = QLabel(self)
         self.nameLabel_classifier.setText('Model:')
         self.nameLabel_classifier.move(300 * self.scale, 10 * self.scale)
 
-        # self.classifier_combobox = QtWidgets.QPushButton(self.classifier_types[0], self)
         self.classifier_combobox = QtWidgets.QComboBox(self)
         for classifier_type in self.classifier_types:
             self.classifier_combobox.addItem(classifier_type)
         self.classifier_combobox.resize(self.classifier_combobox.sizeHint())
-        # self.classifier_combobox.update()
         self.classifier_combobox.move(340 * self.scale, 10 * self.scale)
-        # self.classifier_combobox.setCheckable(True)
         self.classifier_combobox.activated[str].connect(self.classifier_choice)
-
-        '''
-        self.methodName = self.str_method_deep
-        method_combobox = QtWidgets.QComboBox(self)
-        method_combobox.addItem(self.str_method_deep)
-        method_combobox.addItem(self.str_method_classical)
-        method_combobox.addItem(self.str_method_rf)
-        method_combobox.move(335 * self.scale, 10 * self.scale)
-        method_combobox.activated[str].connect(self.method_choice)
-        '''
-
-        '''
-        self.nameLabel_eeg = QLabel(self)
-        self.nameLabel_eeg.setText('EEG std:')
-        self.nameLabel_eeg.move(10 * self.scale, 35 * self.scale)
-        self.eeg_std = QLineEdit(self)
-        self.eeg_std.move(65 * self.scale, 40 * self.scale)
-        self.eeg_std.resize(30, 20)
-
-        self.nameLabel_ch2 = QLabel(self)
-        self.nameLabel_ch2.setText('Ch.2 std:')
-        self.nameLabel_ch2.move(105 * self.scale, 35 * self.scale)
-        self.ch2_std = QLineEdit(self)
-        self.ch2_std.move(160 * self.scale, 40 * self.scale)
-        self.ch2_std.resize(30, 20)
-        '''
 
         self.nameLabel_ch2_override_label = QLabel(self)
         self.nameLabel_ch2_override_label.setText('Ch2 override:')
@@ -357,7 +256,6 @@ class RemApplication(QMainWindow):
         self.nameLabel_eeg_mode_label.move(610 * self.scale, 2 * self.scale)
         self.eeg_mode_combobox = QtWidgets.QComboBox(self)
         self.eeg_mode_combobox.addItem(self.eeg_mode_str_normalize)
-        # self.eeg_mode_combobox.addItem(self.eeg_mode_str_video)
         self.eeg_mode_combobox.addItem(self.eeg_mode_str_none)
         self.eeg_mode_combobox.move(680 * self.scale, 5 * self.scale)
         self.eeg_mode_combobox.resize(self.eeg_mode_combobox.sizeHint())
@@ -367,13 +265,8 @@ class RemApplication(QMainWindow):
         self.nameLabel_ch2_mode_label = QLabel(self)
         self.nameLabel_ch2_mode_label.setText('Ch2 mode:')
         self.nameLabel_ch2_mode_label.move(610 * self.scale, 30 * self.scale)
-        # if self.params.useCh2ForReplace:
-        #    self.ch2_mode = self.ch2_mode_str_normalize
-        # else:
-        #    self.ch2_mode = self.ch2_mode_str_none
         self.ch2_mode_combobox = QtWidgets.QComboBox(self)
         self.ch2_mode_combobox.addItem(self.ch2_mode_str_normalize)
-        # self.ch2_mode_combobox.addItem(self.ch2_mode_str_video)
         self.ch2_mode_combobox.addItem(self.ch2_mode_str_none)
         self.ch2_mode_combobox.move(680 * self.scale, 33 * self.scale)
         self.ch2_mode_combobox.resize(self.ch2_mode_combobox.sizeHint())
@@ -382,7 +275,6 @@ class RemApplication(QMainWindow):
         self.nameLabel_ch2_thresh = QLabel(self)
         self.nameLabel_ch2_thresh.setText('Override threshold to W:')
         self.nameLabel_ch2_thresh.resize(self.nameLabel_ch2_thresh.sizeHint())
-        # self.nameLabel_ch2_thresh.resize(150, 20)
         self.nameLabel_ch2_thresh.move(840 * self.scale, 15 * self.scale)
         self.ch2_thresh = QLineEdit(self)
         self.ch2_thresh.setText(str(self.params.ch2_thresh_default))
@@ -421,7 +313,6 @@ class RemApplication(QMainWindow):
         self.label_graph_ch2.setText('Epoch# : Prediction')
         self.label_graph_ch2.resize(self.label_graph_ch2.sizeHint())
         self.label_graph_ch2.move(500 * self.scale, 50 * self.scale)
-        # self.label_graph_ch2.resize(250, 30)
 
         self.label_graph_eeg = QLabel(self)
         self.label_graph_eeg.setFont(QtGui.QFont('SansSerif', 20))
@@ -438,51 +329,6 @@ class RemApplication(QMainWindow):
         self.font.setBold(True)
         self.font.setWeight(75)
 
-        '''
-        self.nameLabel_chi2 = QLabel(self)
-        self.nameLabel_chi2.setText('KS chi2:')
-        self.nameLabel_chi2.move(540 * self.scale, 35 * self.scale)
-        self.nameLabel_chi2.setFont(self.font)
-        self.chi2ResLabel = QLabel(self)
-        self.chi2ResLabel.move(620 * self.scale, 35 * self.scale)
-        self.chi2ResLabel.resize(70, 30)
-        self.chi2ResLabel.setFont(self.font)
-
-        self.dHist = DynamicGraphCanvas4KSHist(self, width=1.5, height=0.8, dpi=100)
-        self.dHist.move(690 * self.scale, 5 * self.scale)
-
-        self.dGraph = DynamicGraphCanvas4KS(self, width=4.5, height=0.8, dpi=100)
-        self.dGraph.move(830 * self.scale, 5 * self.scale)
-
-        self.nameLabel_d = QLabel(self)
-        self.nameLabel_d.setText('d:')
-        self.nameLabel_d.move(520 * self.scale, 60 * self.scale)
-        self.nameLabel_d.setFont(self.font)
-        self.dResLabel = QLabel(self)
-        self.dResLabel.move(580 * self.scale, 60 * self.scale)
-        self.dResLabel.resize(90, 30)
-        self.dResLabel.setFont(self.font)
-        '''
-        '''
-        self.waveRecordButton = QtWidgets.QPushButton(self.label_recordWaves, self)
-        self.waveRecordButton.clicked.connect(self.toggleWaveRecord)
-        self.waveRecordButton.resize(self.waveRecordButton.sizeHint())
-        self.waveRecordButton.update()
-        self.waveRecordButton.move(10 * self.scale, 60 * self.scale)
-        self.waveRecordButton.setCheckable(True)
-
-        self.waveNotRecordButton = QtWidgets.QPushButton(self.label_notRecordWaves, self)
-        self.waveNotRecordButton.clicked.connect(self.toggleWaveNotRecord)
-        self.waveNotRecordButton.resize(self.waveNotRecordButton.sizeHint())
-        self.waveNotRecordButton.update()
-        self.waveNotRecordButton.move(180 * self.scale, 60 * self.scale)
-        self.waveNotRecordButton.setCheckable(True)
-        if self.recordWaves:
-            self.toggleWaveRecord()
-        else:
-            self.toggleWaveNotRecord()
-        '''
-
         self.listOfPredictionResults = []
         self.listOfGraphs = []
         self.listOfGraphs.append([])
@@ -491,13 +337,10 @@ class RemApplication(QMainWindow):
         for graphID in range(self.graphNum):
 
             self.listOfPredictionResults.append(PredictionResultLabel(self))
-            ### predXLoc = (graphID * 300) + 110
             predXLoc = (graphID * 300) + 125
             predYLoc = 90
             self.listOfPredictionResults[graphID].move(predXLoc * self.scale, predYLoc * self.scale)
-            # self.listOfPredictionResults[graphID].resize(80, 50)
 
-            ### xLoc = (graphID * 300) + 10
             xLoc = (graphID * 300) + 50
             for chanID in range(2):
                 yLoc = (chanID * 200) + 120
@@ -507,7 +350,6 @@ class RemApplication(QMainWindow):
         self.setWindowTitle('Sleep stage classifier')
         xSize = self.graphNum * 310
         ySize = 550
-        ### self.resize(xSize, 550)
         self.resize(xSize * self.scale, ySize * self.scale)
         self.show()
         self.activateWindow()
@@ -545,9 +387,6 @@ class RemApplication(QMainWindow):
             print('Exception in self.client = ...')
             statusbar.showMessage(str(e))
             raise e
-
-    # def NoEEGFileException(Exception):
-    #    pass
 
     def randomlySelectInputFileID(self):
         eegFiles = getAllEEGFiles(self.params)
