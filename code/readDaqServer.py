@@ -144,8 +144,12 @@ class ReadDAQServer:
                 # param: :units
                 # param: :customScaleName
 
-                def createChannel(devID, channelIDs):                    
+                def createChannel(devID, channelIDs):
                     try:
+                        print('type(devID) =', type(devID))
+                        print('type(str(devID)) =', type(str(devID)))
+                        print('type(chanelIDs) =', type(channelIDs))
+
                         DAQmxCreateAIVoltageChan(taskHandle, "Dev" + str(devID) + "/ai" + channelIDs, "",
                                          ### DAQmx_Val_Cfg_Default, -10.0, 10.0,
                                          ### DAQmx_Val_Diff, -10.0, 10.0,
