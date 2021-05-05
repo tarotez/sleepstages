@@ -225,7 +225,7 @@ class RemApplication(QMainWindow):
         self.terminal_combobox.move(230 * self.scale, 38 * self.scale)
         self.terminal_combobox.resize(self.terminal_combobox.sizeHint())
         self.terminal_combobox.activated[str].connect(self.terminal_choice)
-        self.terminal_combobox.setCurrentText(self.terminal_config_default_value)
+        self.terminal_combobox.setCurrentText(self.terminal_config)
 
         # change model
         self.nameLabel_classifier = QLabel(self)
