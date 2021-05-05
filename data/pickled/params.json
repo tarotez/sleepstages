@@ -30,6 +30,8 @@
 "windowSizeInSec" : 10,
 "samplingFreq" : 128,
 
+"terminalConfigDefaultValue" : "NRSE",
+
 "writeWholeWaves" : 1,
 "computeKS" : 0,
 
