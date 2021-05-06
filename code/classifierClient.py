@@ -26,10 +26,10 @@ class ClassifierClient:
 
         self.params = ParameterSetup()
         self.samplingFreq = self.params.samplingFreq
-        self.updateFreqInHz = 2
         self.samplePointNum = self.params.windowSizeInSec * self.samplingFreq  # the number of sample points received at once
-        self.updateGraph_samplePointNum = np.int(np.floor(self.samplingFreq / self.updateFreqInHz))
-        print('self.samplingFreq =', self.samplingFreq)
+        self.graphUpdateFreqInHz = 2
+        assert self.samplingFreq % self.graphUpdateFreqInHz == 0   # graphUpdateFreq should divide samplingFreq
+        self.updateGraph_samplePointNum = np.int(self.samplingFreq / self.graphUpdateFreqInHz)
         print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
         self.hasGUI = True
         self.graphColors = ['b','g']
@@ -143,7 +143,7 @@ class ClassifierClient:
         ch2Segment = np.zeros((self.samplePointNum))
         eegPartlyRevisedSegment = np.zeros((self.samplePointNum))
         one_record = np.zeros((self.samplePointNum, 2))
-        previous_one_record = np.zeros((self.samplePointNum, 2))
+        # previous_one_record = np.zeros((self.samplePointNum, 2))
         ch2Segment = np.zeros((self.samplePointNum))
         self.channelNum = 2
 
@@ -180,7 +180,8 @@ class ClassifierClient:
                 windowStartTime = timeStampSegment[sampleID]
 
             sampleID += 1
-            if sampleID % self.updateGraph_samplePointNum == 0 or sampleID == self.samplePointNum:
+            if sampleID == self.samplePointNum:
+                sampleID = 0
                 # standardize eeg and ch2
                 if self.eeg_normalize:
                     processed_eegSegment, self.past_eeg = standardize(eegSegment, self.past_eeg)
@@ -194,14 +195,9 @@ class ClassifierClient:
                 if self.params.useEMG:
                     one_record[:,1] = processed_ch2Segment
 
-                # draw a graph
-                if self.hasGUI:
-                    self.updateGraphPartially(one_record, self.segmentID)
-
-            if sampleID == self.samplePointNum:
+                # copy to previous
                 self.previous_eeg = eegSegment
                 self.previous_ch2 = ch2Segment
-                sampleID = 0
 
                 # print('self.predictionState =', self.predictionState)
                 if self.predictionState:
@@ -219,8 +215,17 @@ class ClassifierClient:
                         one_record_ch2 = one_record[:,1]
                         stagePrediction = self.replaceToWake(stagePrediction, one_record_ch2)
 
-                    previous_one_record = one_record
+                else:
+                    stagePrediction = '?'
 
+                # previous_one_record = one_record
+
+                # update prediction results in graphs
+                if self.hasGUI:
+                    self.updatePredictionResults(one_record, self.segmentID, stagePrediction, stagePrediction_before_overwrite)
+
+                # write out to file
+                if self.predictionState:
                     #----
                     # if the prediction is P, then use the previous one
                     if stagePrediction == 'P':
@@ -233,7 +238,6 @@ class ClassifierClient:
 
                     # print('pred = ', stagePrediction)
                     self.writeToPredFile(stagePrediction, stagePrediction_before_overwrite, timeStampSegment)
-
                     y_pred_L.append(stagePrediction)
 
                     #------------------------------------------
@@ -265,25 +269,7 @@ class ClassifierClient:
                         stagePrediction_replaced = 'w' if stagePrediction == '?' else stagePrediction
                         # print(' -> sending', stagePrediction_replaced, 'to serialClient')
                         serialClient.write(stagePrediction_replaced.encode('utf-8'))
-                else:
-                    stagePrediction = '?'
 
-                # draw a graph
-                if self.hasGUI:
-                    self.updateGraph(one_record, self.segmentID, stagePrediction, stagePrediction_before_overwrite)
-                else:
-                    pass
-                    #print('segment ' + str(self.segmentID) + ' : prediction = ' + stagePrediction) #cometouy-by-Natsu
-
-                '''
-                # update KS (Kolmogorov-Smirnov test)
-                if self.params.computeKS:
-                    if len(one_record.shape) > 1:
-                        eeg4KS = one_record[:,0]
-                    else:
-                        eeg4KS = one_record
-                    self.updateKS(eeg4KS, self.segmentID)
-                '''
                 self.segmentID += 1
 
     def writeToPredFile(self, prediction, prediction_before_overwrite, timeStampSegment):
@@ -380,11 +366,23 @@ class ClassifierClient:
         for graphID in range(len(self.listOfGraphs[0])-1):
             for targetChan in range(2):
                 self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
-                self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
+                # self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
         eeg = one_record[:,0]
         self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
         ch2 = one_record[:,1]
         self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
+        # choice = self.params.capitalize_for_display[stagePrediction]
+        # choice_before_overwrite = self.params.capitalize_for_display[stagePrediction_before_overwrite]
+        # if choice != choice_before_overwrite:
+        #    choiceLabel = choice_before_overwrite + '->' + choice
+        #else:
+        #    choiceLabel = choice
+        # self.listOfPredictionResults[-1].setChoice(segmentID, choice, choiceLabel)
+
+    def updatePredictionResults(self, one_record, segmentID, stagePrediction, stagePrediction_before_overwrite):
+        for graphID in range(len(self.listOfGraphs[0])-1):
+            for targetChan in range(2):
+                self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
         choice = self.params.capitalize_for_display[stagePrediction]
         choice_before_overwrite = self.params.capitalize_for_display[stagePrediction_before_overwrite]
         if choice != choice_before_overwrite:

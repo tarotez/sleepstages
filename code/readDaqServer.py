@@ -209,6 +209,8 @@ class ReadDAQServer:
 
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
+                sampleID = 0
+                self.segmentID = 0
                 for timestep in tqdm.tqdm(range(1, self.numEpoch + 1)):
 
                     # self.logFile.write('before read_data\n')
@@ -252,9 +254,22 @@ class ReadDAQServer:
                         self.logFile.write(presentTime + ', ' + str(eeg_data.shape[0]) + '\n')
                     self.logFile.flush()
 
+                    # update graphs
+                    sampleID += 1
+                    if sampleID % self.client.updateGraph_samplePointNum == 0 or sampleID == self.client.samplePointNum:
+                        if self.client.hasGUI:
+                            self.client.updateGraphPartially(one_record, self.segmentID)
+
+                    if sampleID == self.client.samplePointNum:
+                        sampleID = 0
+                        if self.client.hasGUI:
+                            self.client.updateGraph(one_record, self.segmentID)
+                        self.segmentID += 1
+
                     # classifierClientにデータを送信する
                     # dataToClient = dataToClient.rstrip()
                     self.client.process(dataToClient)
+
 
             except DAQError as err:
                 print("DAQmx Error: %s" % err)
