@@ -102,6 +102,7 @@ class ClassifierClient:
 
         self.predictionState = 0
         self.one_record = np.zeros((self.samplePointNum, 2))
+        self.windowStartTime = ''
         self.y_pred_L = []
 
         '''
@@ -153,6 +154,8 @@ class ClassifierClient:
         timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
         eegSegment = np.zeros((self.updateGraph_samplePointNum))
         ch2Segment = np.zeros((self.updateGraph_samplePointNum))
+        if self.sampleID == 0:
+            self.windowStartTime = timeStampSegment[0]
 
         timeNow = str(datetime.datetime.now())
         self.logFile.write('timeNow = ' + timeNow + ', len(dataFromDaq) = ' + str(len(dataFromDaq)) + ', R->W thresh = ' + str(self.ch2_thresh_value) + ', self.currentCh2Intensity = ' + str(self.currentCh2Intensity) + '\n')
@@ -182,13 +185,9 @@ class ClassifierClient:
             eegSegment[sampleCnt] = float(input_elems[1])
             if len(input_elems) > 2:
                 ch2Segment[sampleCnt] = float(input_elems[2])
-            if self.sampleID == 0 and sampleCnt == 0:
-                windowStartTime = timeStampSegment[0]
 
         one_record_partial, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
-        print('before: self.one_record.shape =', self.one_record.shape)
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum)] = one_record_partial
-        print('after: self.one_record.shape =', self.one_record.shape)
         if self.hasGUI:
             self.updateGraphPartially(self.one_record)
         self.sampleID += self.updateGraph_samplePointNum
@@ -246,7 +245,7 @@ class ClassifierClient:
                     eegOutputLimitNum = eegSegment.shape[0]
                     # below is for testing, print out only first 5 amplitudes
                     # eegOutputLimitNum = 5
-                    elems = windowStartTime.split(':')
+                    elems = self.windowStartTime.split(':')
                     windowStartSecFloat = float(elems[-1])
                     outLine = ''
                     outLine_standardized = ''
@@ -270,7 +269,7 @@ class ClassifierClient:
                     stagePrediction_replaced = 'w' if stagePrediction == '?' else stagePrediction
                     # print(' -> sending', stagePrediction_replaced, 'to serialClient')
                     serialClient.write(stagePrediction_replaced.encode('utf-8'))
-                                        
+
             self.one_record = np.zeros((self.samplePointNum, 2))
             self.segmentID += 1
 
