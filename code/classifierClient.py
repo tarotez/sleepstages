@@ -389,7 +389,7 @@ class ClassifierClient:
             for targetChan in range(2):
                 self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
                 self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
-        self.listOfPredictionResults[-1].setLabel(str(segmentID + 1) + ' : ', 0)
+        # self.listOfPredictionResults[-1].setLabel(str(segmentID + 2) + ' : ', 0)
         # eeg = one_record[:,0]
         # self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
         # ch2 = one_record[:,1]
