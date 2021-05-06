@@ -197,7 +197,7 @@ class ClassifierClient:
             sampleID += 1
             if sampleID == self.samplePointNum:
                 sampleID = 0
-                one_record, self.past_eeg, self.past_ch2 = normalize_eeg(self, eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
+                one_record, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
                 '''
                 # standardize eeg and ch2
                 if self.eeg_normalize:

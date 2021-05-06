@@ -254,7 +254,7 @@ class ReadDAQServer:
                         eegSegment[sampleID] = float(eeg_data[sampleID])
                         if self.channelNum == 2:
                             ch2Segment[sampleID] = float(ch2_data[sampleID])
-                        one_record, self.past_eeg, self.past_ch2 = self.client.normalize_eeg(self, eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
+                        one_record, self.past_eeg, self.past_ch2 = self.client.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
                         if sampleID % self.client.updateGraph_samplePointNum == 0 or sampleID == self.client.samplePointNum:
                             if self.client.hasGUI:
                                 self.client.updateGraphPartially(one_record, self.segmentID)
