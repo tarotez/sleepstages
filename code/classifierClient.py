@@ -374,12 +374,14 @@ class ClassifierClient:
     '''
 
     def updateGraphPartially(self, one_record, segmentID):
+        print('in updateGraphPartially()')
         eeg = one_record[:,0]
         self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
         ch2 = one_record[:,1]
         self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
 
     def updateGraph(self, one_record, segmentID, stagePrediction, stagePrediction_before_overwrite):
+        print('in updateGraph()')
         for graphID in range(len(self.listOfGraphs[0])-1):
             for targetChan in range(2):
                 self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])

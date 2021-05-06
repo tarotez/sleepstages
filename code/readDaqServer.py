@@ -239,6 +239,9 @@ class ReadDAQServer:
                     dataToClient = ''
                     eegSegment = np.zeros((sampleNum))
                     ch2Segment = np.zeros((sampleNum))
+                    print('in server, sampleNum =', sampleNum)
+                    print('self.client.samplePointNum =', self.client.samplePointNum)
+                    print('self.segmentID =', self.segmentID)                    
                     for sampleID in range(sampleNum):
                         current_time = self.updateTimeStamp(now, sampleID, dt)
                         ftime = current_time.strftime('%H:%M:%S.')
