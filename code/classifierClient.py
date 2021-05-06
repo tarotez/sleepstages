@@ -138,6 +138,7 @@ class ClassifierClient:
 
     def normalize_eeg(self, eegSegment, ch2Segment, past_eeg, past_ch2):
         one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
+        raw_one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
         if self.eeg_normalize:
             processed_eegSegment, past_eeg = standardize(eegSegment, past_eeg)
         else:
