@@ -131,6 +131,21 @@ class ClassifierClient:
         classifier.load_weights(model_path)
         self.stagePredictor = StagePredictor(paramsForNetworkStructure, self.extractor, classifier, finalClassifierDir, classifierID, self.params.markovOrderForPrediction)
 
+    def normalize_eeg(self, eegSegment, ch2Segment, past_eeg, past_ch2):
+        one_record = np.zeros((self.samplePointNum, 2))
+        if self.eeg_normalize:
+            processed_eegSegment, past_eeg = standardize(eegSegment, past_eeg)
+        else:
+            processed_eegSegment, past_eeg = centralize(eegSegment, past_eeg)
+        one_record[:,0] = processed_eegSegment
+        if self.ch2_normalize:
+            processed_ch2Segment, past_ch2 = standardize(ch2Segment, past_ch2)
+        else:
+            processed_ch2Segment = ch2Segment
+        if self.params.useEMG:
+            one_record[:,1] = processed_ch2Segment
+        return one_record, past_eeg, past_ch2
+
     def process(self, dataFromDaq):
         if self.connected2serialClient:
             serialClient = self.serialClient
@@ -142,7 +157,7 @@ class ClassifierClient:
         eegSegment = np.zeros((self.samplePointNum))
         ch2Segment = np.zeros((self.samplePointNum))
         eegPartlyRevisedSegment = np.zeros((self.samplePointNum))
-        one_record = np.zeros((self.samplePointNum, 2))
+        # one_record = np.zeros((self.samplePointNum, 2))
         # previous_one_record = np.zeros((self.samplePointNum, 2))
         ch2Segment = np.zeros((self.samplePointNum))
         self.channelNum = 2
@@ -182,6 +197,8 @@ class ClassifierClient:
             sampleID += 1
             if sampleID == self.samplePointNum:
                 sampleID = 0
+                one_record, self.past_eeg, self.past_ch2 = normalize_eeg(self, eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
+                '''
                 # standardize eeg and ch2
                 if self.eeg_normalize:
                     processed_eegSegment, self.past_eeg = standardize(eegSegment, self.past_eeg)
@@ -194,7 +211,7 @@ class ClassifierClient:
                     processed_ch2Segment = ch2Segment
                 if self.params.useEMG:
                     one_record[:,1] = processed_ch2Segment
-
+                '''
                 # copy to previous
                 self.previous_eeg = eegSegment
                 self.previous_ch2 = ch2Segment
