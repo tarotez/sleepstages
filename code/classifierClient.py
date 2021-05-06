@@ -102,6 +102,7 @@ class ClassifierClient:
 
         self.predictionState = 0
         self.one_record = np.zeros((self.samplePointNum, 2))
+        self.raw_one_record = np.zeros((self.samplePointNum, 2))
         self.windowStartTime = ''
         self.y_pred_L = []
 
@@ -142,13 +143,15 @@ class ClassifierClient:
         else:
             processed_eegSegment, past_eeg = centralize(eegSegment, past_eeg)
         one_record_partial[:,0] = processed_eegSegment
+        raw_one_record_partial[:,0] = eegSegment
         if self.ch2_normalize:
             processed_ch2Segment, past_ch2 = standardize(ch2Segment, past_ch2)
         else:
             processed_ch2Segment = ch2Segment
         if self.params.useEMG:
             one_record_partial[:,1] = processed_ch2Segment
-        return one_record_partial, processed_eegSegment, processed_ch2Segment, past_eeg, past_ch2
+            raw_one_record_partial[:,1] = ch2Segment
+        return one_record_partial, raw_one_record_partial, past_eeg, past_ch2
 
     def process(self, dataFromDaq):
         timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
@@ -187,8 +190,9 @@ class ClassifierClient:
         if self.sampleID == 0:
             self.windowStartTime = timeStampSegment[0]
 
-        one_record_partial, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
-        self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum)] = one_record_partial
+        one_record_partial, raw_one_record_partial, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
+        self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_partial
+        self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial
         print('self.sampleID =', self.sampleID)
         print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
         print('eegSegment.shape =', eegSegment.shape)
@@ -248,6 +252,7 @@ class ClassifierClient:
                 # writes to waveOutputFile
                 if self.recordWaves:
                     # records raw data without standardization
+
                     eegOutputLimitNum = eegSegment.shape[0]
                     # below is for testing, print out only first 5 amplitudes
                     # eegOutputLimitNum = 5
@@ -258,8 +263,8 @@ class ClassifierClient:
                     for i in range(eegOutputLimitNum):
                         secFloat = windowStartSecFloat + (i / self.samplingFreq)
                         timePoint = elems[0] + ':' + elems[1] + ':' + str(secFloat)
-                        outLine += str(timePoint) + ', ' + str(eegSegment[i]) + ', ' + str(ch2Segment[i]) + '\n'
-                        outLine_standardized += str(timePoint) + ', ' + str(processed_eegSegment[i]) + ', ' + str(processed_ch2Segment[i]) + '\n'
+                        outLine += str(timePoint) + ', ' + str(raw_one_record[i,0]) + ', ' + str(raw_one_record[i,1]) + '\n'
+                        outLine_standardized += str(timePoint) + ', ' + str(one_record[i,0]) + ', ' + str(one)record[i,1]) + '\n'
 
                     self.waveOutputFile.write(outLine)   # add at the end of the file
                     self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
