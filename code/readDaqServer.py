@@ -212,21 +212,8 @@ class ReadDAQServer:
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
                 sampleID = 0
-                self.segmentID = 0
                 for timestep in tqdm.tqdm(range(1, self.numEpoch + 1)):
-
-                    # self.logFile.write('before read_data\n')
-                    # self.logFile.flush()
-
-                    # Starting a new task for each segment may make delays,
-                    # so it's better to move it outside "for timestep" loop,
-                    # but then there will be an error stating
-                    # "PyDAQmx.DAQmxFunctions.DAQError: <err>Attempted to read a sample beyond the final sample acquired. The acquisition has stopped, therefore the sample specified will never be available."
-                    #### DAQmxStartTask(taskHandle)
-
                     now, data = self.read_data(taskHandle, data)
-                    # self.logFile.write('after read_data\n')
-                    # self.logFile.flush()
 
                     if self.channelNum == 2:
                         sampleNum = data.shape[0] // 2
@@ -239,9 +226,6 @@ class ReadDAQServer:
                     dataToClient = ''
                     eegSegment = np.zeros((sampleNum))
                     ch2Segment = np.zeros((sampleNum))
-                    print('in server, sampleNum =', sampleNum)
-                    print('self.client.samplePointNum =', self.client.samplePointNum)
-                    print('self.segmentID =', self.segmentID)
                     for sampleID in range(sampleNum):
                         current_time = self.updateTimeStamp(now, sampleID, dt)
                         ftime = current_time.strftime('%H:%M:%S.')
@@ -261,10 +245,9 @@ class ReadDAQServer:
                             one_record, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.client.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
                             if (sampleID + 1) == self.client.samplePointNum:
                                 sampleID = 0
-                                self.client.updateGraph(one_record, self.segmentID)
-                                self.segmentID += 1
+                                self.client.updateGraph(one_record)                                
                             elif (sampleID + 1) % self.client.updateGraph_samplePointNum == 0:
-                                self.client.updateGraphPartially(one_record, self.segmentID)
+                                self.client.updateGraphPartially(one_record)
 
                     # classifierClientにデータを送信する
                     # dataToClient = dataToClient.rstrip()
