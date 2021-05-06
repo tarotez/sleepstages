@@ -187,9 +187,10 @@ class ClassifierClient:
         if self.sampleID == 0:
             self.windowStartTime = timeStampSegment[0]
 
-
         one_record_partial, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum)] = one_record_partial
+        print('self.sampleID =', self.sampleID)
+        print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
         print('eegSegment.shape =', eegSegment.shape)
         print('one_record_partial.shape =', one_record_partial.shape)
         print('self.one_record.shape =', self.one_record.shape)
