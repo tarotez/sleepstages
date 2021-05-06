@@ -179,7 +179,7 @@ class ReadDAQServer:
                             dataToClient += '\n'
 
                     # dataToClient = dataToClient.rstrip()
-                    print('in server, dataToClient.shape =', dataToClient.shape)
+                    # print('in server, dataToClient.shape =', dataToClient.shape)
                     print('in server, dataToClient =', dataToClient)
                     self.client.process(dataToClient)
 

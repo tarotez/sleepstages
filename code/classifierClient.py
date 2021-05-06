@@ -155,7 +155,7 @@ class ClassifierClient:
         return one_record_partial, raw_one_record_partial, past_eeg, past_ch2
 
     def process(self, dataFromDaq):
-        print('in client, dataToClient.shape =', dataToClient.shape)
+        # print('in client, dataToClient.shape =', dataToClient.shape)
         print('in client, dataToClient =', dataToClient)
         timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
         eegSegment = np.zeros((self.updateGraph_samplePointNum))
