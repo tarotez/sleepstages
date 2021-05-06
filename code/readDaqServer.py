@@ -14,7 +14,7 @@ from PyDAQmx import DAQmx_Val_GroupByChannel
 from PyDAQmx import DAQError
 from PyDAQmx import int32
 from ctypes import byref
-import numpy
+import numpy as np
 import datetime
 import tqdm
 import time
@@ -78,7 +78,7 @@ class ReadDAQServer:
         - numSampsPerChan (int) : number of samples per channel
         - timeout (float) : time out in sec
         - fillMode:
-        - readArray (numpy.ndarray): array for writing out output
+        - readArray (np.ndarray): array for writing out output
         - arraySizeInSamps : the size of the readArray array
         - numSampsPerChanRead : the number of samples that were actually read out
         - reserved
@@ -128,7 +128,7 @@ class ReadDAQServer:
             dt = 1.0 / self.sampRate
 
             taskHandle = TaskHandle()
-            data = numpy.zeros((self.numSampsPerChan * self.channelNum,), dtype=numpy.float64)
+            data = np.zeros((self.numSampsPerChan * self.channelNum,), dtype=np.float64)
 
             try:
                 # DAQmx Configure Code
