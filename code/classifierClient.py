@@ -47,7 +47,7 @@ class ClassifierClient:
         self.maximumCh2Intensity = 0
 
         self.past_eeg, self.past_ch2 = np.array([]), np.array([])
-        self.previous_eeg, self.previous_ch2 = np.array([]), np.array([])
+        # self.previous_eeg, self.previous_ch2 = np.array([]), np.array([])
 
         classifierFilePrefix = self.params.classifierFilePrefix
 
@@ -155,6 +155,8 @@ class ClassifierClient:
         return one_record_partial, raw_one_record_partial, past_eeg, past_ch2
 
     def process(self, dataFromDaq):
+        print('in client, dataToClient.shape =', dataToClient.shape)
+        print('in client, dataToClient =', dataToClient)
         timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
         eegSegment = np.zeros((self.updateGraph_samplePointNum))
         ch2Segment = np.zeros((self.updateGraph_samplePointNum))
@@ -207,10 +209,10 @@ class ClassifierClient:
             self.sampleID = 0
             # copy to previous
             eegSegment = self.one_record[:,0]
-            self.previous_eeg = eegSegment
+            # self.previous_eeg = eegSegment
             if self.params.useCh2ForReplace:
                 ch2Segment = self.one_record[:,1]
-                self.previous_ch2 = ch2Segment
+                # self.previous_ch2 = ch2Segment
 
             # print('self.predictionState =', self.predictionState)
             if self.predictionState:
@@ -264,8 +266,8 @@ class ClassifierClient:
                     for i in range(eegOutputLimitNum):
                         secFloat = windowStartSecFloat + (i / self.samplingFreq)
                         timePoint = elems[0] + ':' + elems[1] + ':' + str(secFloat)
-                        outLine += str(timePoint) + ', ' + str(raw_one_record[i,0]) + ', ' + str(raw_one_record[i,1]) + '\n'
-                        outLine_standardized += str(timePoint) + ', ' + str(one_record[i,0]) + ', ' + str(one_record[i,1]) + '\n'
+                        outLine += str(timePoint) + ', ' + str(self.raw_one_record[i,0]) + ', ' + str(self.raw_one_record[i,1]) + '\n'
+                        outLine_standardized += str(timePoint) + ', ' + str(self.one_record[i,0]) + ', ' + str(self.one_record[i,1]) + '\n'
 
                     self.waveOutputFile.write(outLine)   # add at the end of the file
                     self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file

@@ -72,7 +72,6 @@ class ReadDAQServer:
         - numSampsPerChanRead : the number of samples that were actually read out
         - reserved
         """
-
         try:
             DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
                            DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum,
@@ -93,7 +92,6 @@ class ReadDAQServer:
         - t (float)
         - dt (float)
         """
-
         delta = datetime.timedelta(microseconds=t * dt * 1000 * 1000)
         current_time = now + delta
         return current_time
@@ -156,7 +154,7 @@ class ReadDAQServer:
 
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
-                sampleID = 0
+
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
                     now, data = self.read_data(taskHandle, data)
 
@@ -181,6 +179,8 @@ class ReadDAQServer:
                             dataToClient += '\n'
 
                     # dataToClient = dataToClient.rstrip()
+                    print('in server, dataToClient.shape =', dataToClient.shape)
+                    print('in server, dataToClient =', dataToClient)
                     self.client.process(dataToClient)
 
                     # record log
