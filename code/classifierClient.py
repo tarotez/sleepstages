@@ -157,7 +157,7 @@ class ClassifierClient:
         self.logFile.write('timeNow = ' + timeNow + ', len(dataFromDaq) = ' + str(len(dataFromDaq)) + ', R->W thresh = ' + str(self.ch2_thresh_value) + ', self.currentCh2Intensity = ' + str(self.currentCh2Intensity) + '\n')
         self.logFile.flush()
 
-        for inputLine in dataFromDaq.split('\n'):
+        for sampleCnt, inputLine in enumerate(dataFromDaq.split('\n')):
             if not inputLine:
                 continue
 
@@ -177,20 +177,19 @@ class ClassifierClient:
                 continue
 
             input_elems = inputLine.split()
-            timeStampSegment[sampleID] = input_elems[0]
-            eegSegment[sampleID] = float(input_elems[1])
+            timeStampSegment[sampleCnt] = input_elems[0]
+            eegSegment[sampleCnt] = float(input_elems[1])
             if len(input_elems) > 2:
-                ch2Segment[sampleID] = float(input_elems[2])
-
-            if sampleID == 0:
-                windowStartTime = timeStampSegment[sampleID]
+                ch2Segment[sampleCnt] = float(input_elems[2])
+            if self.sampleID == 0 and sampleCnt == 0:
+                windowStartTime = timeStampSegment[0]
 
         one_record_partial, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
         if self.hasGUI:
             self.updateGraphPartially(one_record_partial)
         print('before: self.one_record.shape =', self.one_record.shape)
         self.one_record = np.r_(self.one_record, one_record_partial)
-        print('after: self.one_record.shape =', self.one_record.shape)            
+        print('after: self.one_record.shape =', self.one_record.shape)
         self.sampleID += self.updateGraph_samplePointNum
 
         if self.sampleID == self.samplePointNum:
