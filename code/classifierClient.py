@@ -37,6 +37,7 @@ class ClassifierClient:
         self.graph_ylim = [[-self.ylim_max, self.ylim_max], [-self.ylim_max, self.ylim_max]]
 
         self.lightPeriodStartTime = self.params.lightPeriodStartTime
+        self.sampleID = 0
         self.segmentID = offsetWindowID
 
         # makes a classifier class
@@ -100,6 +101,7 @@ class ClassifierClient:
             self.waveOutputFile_standardized = open(self.params.waveOutputDir + '/standardized_' + waveFileName, 'a')
 
         self.predictionState = 0
+        self.y_pred_L = []
 
         '''
         try:
@@ -147,20 +149,9 @@ class ClassifierClient:
         return one_record, processed_eegSegment, processed_ch2Segment, past_eeg, past_ch2
 
     def process(self, dataFromDaq):
-        if self.connected2serialClient:
-            serialClient = self.serialClient
-            print('in classifierClient.process(), serialClient = self.serialClient')
-
-        y_pred_L = []
-        sampleID = 0
         timeStampSegment = [_ for _ in range(self.samplePointNum)]
         eegSegment = np.zeros((self.samplePointNum))
         ch2Segment = np.zeros((self.samplePointNum))
-        eegPartlyRevisedSegment = np.zeros((self.samplePointNum))
-        # one_record = np.zeros((self.samplePointNum, 2))
-        # previous_one_record = np.zeros((self.samplePointNum, 2))
-        ch2Segment = np.zeros((self.samplePointNum))
-        self.channelNum = 2
 
         timeNow = str(datetime.datetime.now())
         self.logFile.write('timeNow = ' + timeNow + ', len(dataFromDaq) = ' + str(len(dataFromDaq)) + ', R->W thresh = ' + str(self.ch2_thresh_value) + ', self.currentCh2Intensity = ' + str(self.currentCh2Intensity) + '\n')
@@ -194,100 +185,94 @@ class ClassifierClient:
             if sampleID == 0:
                 windowStartTime = timeStampSegment[sampleID]
 
-            sampleID += 1
-            if sampleID == self.samplePointNum:
-                sampleID = 0
-                one_record, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
-                '''
-                # standardize eeg and ch2
-                if self.eeg_normalize:
-                    processed_eegSegment, self.past_eeg = standardize(eegSegment, self.past_eeg)
-                else:
-                    processed_eegSegment, self.past_eeg = centralize(eegSegment, self.past_eeg)
-                one_record[:,0] = processed_eegSegment
-                if self.ch2_normalize:
-                    processed_ch2Segment, self.past_ch2 = standardize(ch2Segment, self.past_ch2)
-                else:
-                    processed_ch2Segment = ch2Segment
-                if self.params.useEMG:
-                    one_record[:,1] = processed_ch2Segment
-                '''
-                # copy to previous
-                self.previous_eeg = eegSegment
+        one_record_partial, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
+        if self.hasGUI:
+            self.updateGraphPartially(one_record_partial)
+        print('before: self.one_record.shape =', self.one_record.shape)
+        self.one_record = np.r_(self.one_record, one_record_partial)
+        print('after: self.one_record.shape =', self.one_record.shape)            
+        self.sampleID += self.updateGraph_samplePointNum
+
+        if self.sampleID == self.samplePointNum:
+            self.sampleID = 0
+
+            # copy to previous
+            eegSegment = self.one_record[:,0]
+            self.previous_eeg = eegSegment
+            if self.params.useCh2ForReplace:
+                ch2Segment = self.one_record[:,1]
                 self.previous_ch2 = ch2Segment
 
-                # print('self.predictionState =', self.predictionState)
-                if self.predictionState:
-                    # stageEstimate is one of ['w', 'n', 'r']
-                    if self.connected2serialClient:
-                        serialClient.write(b'c')
-                        print('clear sent to serialClient to reset')
+            # print('self.predictionState =', self.predictionState)
+            if self.predictionState:
+                # stageEstimate is one of ['w', 'n', 'r']
+                if self.connected2serialClient:
+                    serialClient.write(b'c')
+                    print('clear sent to serialClient to reset')
 
-                    one_record_ch1 = one_record[:,0]
-                    stagePrediction = self.stagePredictor.predict(one_record_ch1, timeStampSegment, self.params.stageLabels4evaluation, self.params.stageLabel2stageID)
+                stagePrediction = self.stagePredictor.predict(eegSegment, timeStampSegment, self.params.stageLabels4evaluation, self.params.stageLabel2stageID)
 
-                    # print('stagePrediction =', stagePrediction)
-                    stagePrediction_before_overwrite = stagePrediction
-                    if self.params.useCh2ForReplace:
-                        one_record_ch2 = one_record[:,1]
-                        stagePrediction = self.replaceToWake(stagePrediction, one_record_ch2)
+                # print('stagePrediction =', stagePrediction)
+                stagePrediction_before_overwrite = stagePrediction
+                if self.params.useCh2ForReplace:
+                    stagePrediction = self.replaceToWake(stagePrediction, ch2Segment)
 
-                else:
-                    stagePrediction = '?'
+            else:
+                stagePrediction = '?'
 
-                # previous_one_record = one_record
+            # update prediction results in graphs
+            if self.hasGUI:
+                self.updateGraph(self.one_record, self.segmentID, stagePrediction, stagePrediction_before_overwrite)
 
-                # update prediction results in graphs
-                if self.hasGUI:
-                    self.updatePredictionResults(one_record, self.segmentID, stagePrediction, stagePrediction_before_overwrite)
+            # write out to file
+            if self.predictionState:
+                #----
+                # if the prediction is P, then use the previous one
+                if stagePrediction == 'P':
+                    # print('stagePrediction == P for wID = ' + str(wID))
+                    if len(self.y_pred_L) > 0:
+                        finalClassifierDirPrediction = self.y_pred_L[len(self.y_pred_L)-1]
+                        # print('stagePrediction replaced to ' + stagePrediction + ' at ' + str(segmentID))
+                    else:
+                        stagePrediction = 'M'
 
-                # write out to file
-                if self.predictionState:
-                    #----
-                    # if the prediction is P, then use the previous one
-                    if stagePrediction == 'P':
-                        # print('stagePrediction == P for wID = ' + str(wID))
-                        if len(y_pred_L) > 0:
-                            finalClassifierDirPrediction = y_pred_L[len(y_pred_L)-1]
-                            # print('stagePrediction replaced to ' + stagePrediction + ' at ' + str(segmentID))
-                        else:
-                            stagePrediction = 'M'
+                # print('pred = ', stagePrediction)
+                self.writeToPredFile(stagePrediction, stagePrediction_before_overwrite, timeStampSegment)
+                self.y_pred_L.append(stagePrediction)
 
-                    # print('pred = ', stagePrediction)
-                    self.writeToPredFile(stagePrediction, stagePrediction_before_overwrite, timeStampSegment)
-                    y_pred_L.append(stagePrediction)
+                #------------------------------------------
+                # writes to waveOutputFile
+                if self.recordWaves:
+                    # records raw data without standardization
+                    eegOutputLimitNum = eegSegment.shape[0]
+                    # below is for testing, print out only first 5 amplitudes
+                    # eegOutputLimitNum = 5
+                    elems = windowStartTime.split(':')
+                    windowStartSecFloat = float(elems[-1])
+                    outLine = ''
+                    outLine_standardized = ''
+                    for i in range(eegOutputLimitNum):
+                        secFloat = windowStartSecFloat + (i / self.samplingFreq)
+                        timePoint = elems[0] + ':' + elems[1] + ':' + str(secFloat)
+                        outLine += str(timePoint) + ', ' + str(eegSegment[i]) + ', ' + str(ch2Segment[i]) + '\n'
+                        outLine_standardized += str(timePoint) + ', ' + str(processed_eegSegment[i]) + ', ' + str(processed_ch2Segment[i]) + '\n'
 
-                    #------------------------------------------
-                    # writes to waveOutputFile
-                    if self.recordWaves:
-                        # records raw data without standardization
-                        eegOutputLimitNum = eegSegment.shape[0]
-                        # below is for testing, print out only first 5 amplitudes
-                        # eegOutputLimitNum = 5
-                        elems = windowStartTime.split(':')
-                        windowStartSecFloat = float(elems[-1])
-                        outLine = ''
-                        outLine_standardized = ''
-                        for i in range(eegOutputLimitNum):
-                            secFloat = windowStartSecFloat + (i / self.samplingFreq)
-                            timePoint = elems[0] + ':' + elems[1] + ':' + str(secFloat)
-                            outLine += str(timePoint) + ', ' + str(eegSegment[i]) + ', ' + str(ch2Segment[i]) + '\n'
-                            outLine_standardized += str(timePoint) + ', ' + str(processed_eegSegment[i]) + ', ' + str(processed_ch2Segment[i]) + '\n'
+                    self.waveOutputFile.write(outLine)   # add at the end of the file
+                    self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
+                    self.waveOutputFile.flush()
+                    self.waveOutputFile_standardized.flush()
 
-                        self.waveOutputFile.write(outLine)   # add at the end of the file
-                        self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
-                        self.waveOutputFile.flush()
-                        self.waveOutputFile_standardized.flush()
+                #------------------------------------------
+                # Encode to binary for serial connection.
+                # print('stagePrediction =', stagePrediction)
+                if self.connected2serialClient:
+                    serialClient = self.serialClient
+                    print('in classifierClient.process(), serialClient = self.serialClient')
+                    stagePrediction_replaced = 'w' if stagePrediction == '?' else stagePrediction
+                    # print(' -> sending', stagePrediction_replaced, 'to serialClient')
+                    serialClient.write(stagePrediction_replaced.encode('utf-8'))
 
-                    #------------------------------------------
-                    # Encode to binary for serial connection.
-                    # print('stagePrediction =', stagePrediction)
-                    if self.connected2serialClient:
-                        stagePrediction_replaced = 'w' if stagePrediction == '?' else stagePrediction
-                        # print(' -> sending', stagePrediction_replaced, 'to serialClient')
-                        serialClient.write(stagePrediction_replaced.encode('utf-8'))
-
-                self.segmentID += 1
+            self.segmentID += 1
 
     def writeToPredFile(self, prediction, prediction_before_overwrite, timeStampSegment):
         prediction_in_capital = self.params.capitalize_for_writing_prediction_to_file[prediction]
@@ -379,7 +364,7 @@ class ClassifierClient:
         ch2 = one_record[:,1]
         self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
 
-    def updateGraph(self, one_record):
+    def updateGraph(self, one_record, segmentID, stagePrediction, stagePrediction_before_overwrite):
     # def updateGraph(self, one_record, segmentID, stagePrediction, stagePrediction_before_overwrite):
         for graphID in range(len(self.listOfGraphs[0])-1):
             for targetChan in range(2):
@@ -389,14 +374,15 @@ class ClassifierClient:
         self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
         ch2 = one_record[:,1]
         self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
-        # choice = self.params.capitalize_for_display[stagePrediction]
-        # choice_before_overwrite = self.params.capitalize_for_display[stagePrediction_before_overwrite]
-        # if choice != choice_before_overwrite:
-        #    choiceLabel = choice_before_overwrite + '->' + choice
-        #else:
-        #    choiceLabel = choice
-        # self.listOfPredictionResults[-1].setChoice(segmentID, choice, choiceLabel)
+        choice = self.params.capitalize_for_display[stagePrediction]
+        choice_before_overwrite = self.params.capitalize_for_display[stagePrediction_before_overwrite]
+        if choice != choice_before_overwrite:
+            choiceLabel = choice_before_overwrite + '->' + choice
+        else:
+            choiceLabel = choice
+        self.listOfPredictionResults[-1].setChoice(segmentID, choice, choiceLabel)
 
+    '''
     def updatePredictionResults(self, one_record, segmentID, stagePrediction, stagePrediction_before_overwrite):
         for graphID in range(len(self.listOfGraphs[0])-1):
             for targetChan in range(2):
@@ -408,6 +394,7 @@ class ClassifierClient:
         else:
             choiceLabel = choice
         self.listOfPredictionResults[-1].setChoice(segmentID, choice, choiceLabel)
+    '''
 
     def setGraph(self, listOfGraphs):
         self.listOfGraphs = listOfGraphs

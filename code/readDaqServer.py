@@ -27,20 +27,16 @@ import timeFormatting
 
 class ReadDAQServer:
     def __init__(self, client, recordWaves, channelNum, sampRate=128, dataAcquisitionFreq=0.1,
-                 timeout=500, numEpoch=600000, eeg_std=None, ch2_std=None,
-                 prefix='/Users/ssg/Projects/rem'):
+                 timeout=500, maxNumEpoch=600000, eeg_std=None, ch2_std=None):
         """
         # Params
-
         - sampRate (float): サンプリングレート (Hz)
         - dataAcquisitionFreq (float): data acuisition frequency (Hz)
         - timeout (float): how long the program waits in sec (set to -1 to wait indefinitely)
-        - numEpoch (int): 予測を行うエポック数
+        - maxNumEpoch (int): 予測を行うエポック数
         - eeg_std (float?): EEGについて決め打ちstdがある場合はこれを指定する
         - ch2_std (float?): ch2について決め打ちstdがある場合はこれを指定する
-        - prefix (str): このリポジトリのディレクトリパス
-
-        float? はオプショナル型的な何かのつもり (= float or None)．
+        float? はオプショナル型的 (= float or None)．
         """
 
         self.client = client
@@ -49,16 +45,11 @@ class ReadDAQServer:
         self.sampRate = sampRate
         self.dataAcquisitionFreq = dataAcquisitionFreq
         self.timeout = timeout  # set to -1 to wait indefinitely
-        self.numEpoch = numEpoch
-        self.numSampsPerChan = round(self.sampRate / self.dataAcquisitionFreq)
+        self.maxNumEpoch = maxNumEpoch
+        # self.numSampsPerChan = round(self.sampRate / self.dataAcquisitionFreq)
+        self.numSampsPerChan = self.client.updateGraph_samplePointNum
 
-        # prefixはこのプログラムが存在するディレクトリを指定する変数
-        # 現在は/Users/ssg/Projects/remというディレクトリに配置されてるため、
-        # prefix = '/Users/ssg/Projects/rem'
-        self.prefix = prefix
-
-        # あらかじめ定められた標準偏差がある場合、
-        # その値を保存する
+        # あらかじめ定められた標準偏差がある場合、その値を保存する
         self.eeg_std = eeg_std
         self.ch2_std = ch2_std
 
@@ -69,10 +60,8 @@ class ReadDAQServer:
         fileName = 'daq.' + presentTime + '.csv'
         self.logFile = open(self.params.logDir + '/' + fileName, 'a')
 
-
     def read_data(self, taskHandle, data):
         """ read data points
-
         # Params
         - taskHandle (taskHandle型)
         - numSampsPerChan (int) : number of samples per channel
@@ -83,12 +72,6 @@ class ReadDAQServer:
         - numSampsPerChanRead : the number of samples that were actually read out
         - reserved
         """
-
-        # self.logFile.write('in read_data, self.numSampsPerChan = ' + str(self.numSampsPerChan) + '\n')
-        # self.logFile.write('in read_data, self.channelNum = ' + str(self.channelNum) + '\n')
-        # self.logFile.write('in read_data, data.shape = ' + str(data.shape) + '\n')
-        # self.logFile.write('in read_data, self.timeout = ' + str(self.timeout) + '\n')
-        # self.logFile.flush()
 
         try:
             DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
@@ -107,7 +90,6 @@ class ReadDAQServer:
     def updateTimeStamp(now, t, dt):
         """
         # Params
-
         - t (float)
         - dt (float)
         """
@@ -122,7 +104,7 @@ class ReadDAQServer:
             now = datetime.datetime.now()
             print('sampling rate             : {}'.format(self.sampRate))
             print('samples per channel : {}'.format(self.numSampsPerChan))
-            print('number of epochs          : {}'.format(self.numEpoch))
+            print('maximum number of epochs    : {}'.format(self.maxNumEpoch))
             print('number of channels          : {}'.format(self.channelNum))
 
             dt = 1.0 / self.sampRate
@@ -133,22 +115,12 @@ class ReadDAQServer:
             try:
                 # DAQmx Configure Code
                 DAQmxCreateTask("", byref(taskHandle))
-                # param: :physicalChannel
-                # param: :nameToAssignToChannel
-                # param: :terminalConfig
-                # param: :minVal
-                # param: :maxVal
-                # param: :units
-                # param: :customScaleName
 
                 def createChannel(devID, channelIDs):
                     try:
                         device_and_channels = "Dev" + str(devID) + "/ai" + channelIDs
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE}
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
-                                         ### DAQmx_Val_Cfg_Default, -10.0, 10.0,
-                                         ### DAQmx_Val_Diff, -10.0, 10.0,
-                                         ### DAQmx_Val_NRSE, -10.0, 10.0,
                                          DAQmx_Val_dict[self.terminal_config], -10.0, 10.0,
                                          DAQmx_Val_Volts, None)
                         channelNum = 2 if len(channelIDs) > 1 else 1
@@ -170,31 +142,6 @@ class ReadDAQServer:
                         if not createChannel("2", "1"):
                             if not createChannel("0", "1"):
                                 pass
-                    '''
-                    try:
-                        DAQmxCreateAIVoltageChan(taskHandle, "Dev1/ai1", "",
-                                         ### DAQmx_Val_Diff, -10.0, 10.0,
-                                         DAQmx_Val_Cfg_Default, -10.0, 10.0,
-                                         DAQmx_Val_Volts, None)
-                        print("at DAQmxCreateAIVoltageChan, created succesfully with channelNum == 1.")
-                    except DAQError as err:
-                        print("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
-                        self.logFile.write("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
-                        self.logFile.flush()
-                        try:
-                            DAQmxCreateAIVoltageChan(taskHandle, "Dev0/ai1", "",
-                                         ### DAQmx_Val_Diff, -10.0, 10.0,
-                                         DAQmx_Val_Cfg_Default, -10.0, 10.0,
-                                         DAQmx_Val_Volts, None)
-                        except DAQError as err:
-                            print("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
-                            self.logFile.write("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
-                            self.logFile.flush()
-                            DAQmxCreateAIVoltageChan(taskHandle, "Dev2/ai1", "",
-                                         ### DAQmx_Val_Diff, -10.0, 10.0,
-                                         DAQmx_Val_Cfg_Default, -10.0, 10.0,
-                                         DAQmx_Val_Volts, None)
-                                         '''
 
                 # param: taskHandle
                 # param: source (const char[])
@@ -204,15 +151,13 @@ class ReadDAQServer:
                 #        or DAQmx_Val_ContSamps or DAQmx_Val_HWTimedSinglePoint
                 # param: numSampsPerChan (int) : number of samples per channel
                 DAQmxCfgSampClkTiming(taskHandle, "", self.sampRate,
-                                      ### DAQmx_Val_Diff, DAQmx_Val_ContSamps,
-                                      ### DAQmx_Val_Falling, DAQmx_Val_ContSamps,
                                       DAQmx_Val_Rising, DAQmx_Val_ContSamps,
                                       self.numSampsPerChan)
 
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
                 sampleID = 0
-                for timestep in tqdm.tqdm(range(1, self.numEpoch + 1)):
+                for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
                     now, data = self.read_data(taskHandle, data)
 
                     if self.channelNum == 2:
@@ -224,8 +169,6 @@ class ReadDAQServer:
                         eeg_data = data[:]
 
                     dataToClient = ''
-                    eegSegment = np.zeros((sampleNum))
-                    ch2Segment = np.zeros((sampleNum))
                     for sampleID in range(sampleNum):
                         current_time = self.updateTimeStamp(now, sampleID, dt)
                         ftime = current_time.strftime('%H:%M:%S.')
@@ -237,19 +180,6 @@ class ReadDAQServer:
                         else:
                             dataToClient += '\n'
 
-                        # update graphs
-                        if self.client.hasGUI:
-                            eegSegment[sampleID] = float(eeg_data[sampleID])
-                            if self.channelNum == 2:
-                                ch2Segment[sampleID] = float(ch2_data[sampleID])
-                            one_record, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.client.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
-                            if (sampleID + 1) == self.client.samplePointNum:
-                                sampleID = 0
-                                self.client.updateGraph(one_record)                                
-                            elif (sampleID + 1) % self.client.updateGraph_samplePointNum == 0:
-                                self.client.updateGraphPartially(one_record)
-
-                    # classifierClientにデータを送信する
                     # dataToClient = dataToClient.rstrip()
                     self.client.process(dataToClient)
 
@@ -265,7 +195,6 @@ class ReadDAQServer:
                 print("DAQmx Error: %s" % err)
                 self.logFile.write("DAQmx Error: %s" % err)
                 self.logFile.flush()
-                # raise err
 
             finally:
                 if taskHandle:
