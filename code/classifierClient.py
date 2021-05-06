@@ -156,7 +156,7 @@ class ClassifierClient:
 
     def process(self, dataFromDaq):
         # print('in client, dataToClient.shape =', dataToClient.shape)
-        print('in client, dataToClient =', dataToClient)
+        print('in client, dataFromDaq =', dataFromDaq)
         timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
         eegSegment = np.zeros((self.updateGraph_samplePointNum))
         ch2Segment = np.zeros((self.updateGraph_samplePointNum))
