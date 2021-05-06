@@ -241,7 +241,7 @@ class ReadDAQServer:
                     ch2Segment = np.zeros((sampleNum))
                     print('in server, sampleNum =', sampleNum)
                     print('self.client.samplePointNum =', self.client.samplePointNum)
-                    print('self.segmentID =', self.segmentID)                    
+                    print('self.segmentID =', self.segmentID)
                     for sampleID in range(sampleNum):
                         current_time = self.updateTimeStamp(now, sampleID, dt)
                         ftime = current_time.strftime('%H:%M:%S.')
@@ -254,18 +254,21 @@ class ReadDAQServer:
                             dataToClient += '\n'
 
                         # update graphs
-                        eegSegment[sampleID] = float(eeg_data[sampleID])
-                        if self.channelNum == 2:
-                            ch2Segment[sampleID] = float(ch2_data[sampleID])
-                        one_record, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.client.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
-                        if sampleID % self.client.updateGraph_samplePointNum == 0 or sampleID == self.client.samplePointNum:
-                            if self.client.hasGUI:
-                                self.client.updateGraphPartially(one_record, self.segmentID)
-                        if sampleID == self.client.samplePointNum:
-                            sampleID = 0
-                            if self.client.hasGUI:
+                        if self.client.hasGUI:
+                            eegSegment[sampleID] = float(eeg_data[sampleID])
+                            if self.channelNum == 2:
+                                ch2Segment[sampleID] = float(ch2_data[sampleID])
+                            one_record, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.client.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
+                            if (sampleID + 1) == self.client.samplePointNum:
+                                sampleID = 0
                                 self.client.updateGraph(one_record, self.segmentID)
-                            self.segmentID += 1
+                                self.segmentID += 1
+                            elif (sampleID + 1) % self.client.updateGraph_samplePointNum == 0:
+                                self.client.updateGraphPartially(one_record, self.segmentID)
+
+                    # classifierClientにデータを送信する
+                    # dataToClient = dataToClient.rstrip()
+                    self.client.process(dataToClient)
 
                     # record log
                     presentTime = timeFormatting.presentTimeEscaped()
@@ -274,12 +277,6 @@ class ReadDAQServer:
                     else:
                         self.logFile.write(presentTime + ', ' + str(eeg_data.shape[0]) + '\n')
                     self.logFile.flush()
-
-
-                    # classifierClientにデータを送信する
-                    # dataToClient = dataToClient.rstrip()
-                    self.client.process(dataToClient)
-
 
             except DAQError as err:
                 print("DAQmx Error: %s" % err)
