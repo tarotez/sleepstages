@@ -47,6 +47,8 @@ class RemApplication(QMainWindow):
         self.terminal_str_nrse = "NRSE"
         self.terminal_config = self.params.terminal_config_default_value
 
+        self.channelNum = 1
+
         self.eeg_mode_str_normalize = "Normalize-ON"
         self.eeg_mode_str_none = "Normalize-OFF"
 
@@ -97,7 +99,7 @@ class RemApplication(QMainWindow):
             if self.readFromDaq:
                 module = importlib.import_module('readDaqServer')
                 ReadDAQServer = getattr(module, 'ReadDAQServer')
-                self.server = ReadDAQServer(self.client, self.recordWaves)
+                self.server = ReadDAQServer(self.client, self.recordWaves, self.channelNum)
             else:
                 if self.args[1] == 'o':
                     postFiles = listdir(self.params.postDir)
@@ -112,7 +114,6 @@ class RemApplication(QMainWindow):
             statusbar.showMessage(str(e))
             raise e
 
-        self.server.DAQmx_Val_dict = {'DIFF' : 'DAQmx_Val_Diff', 'RSE' : 'DAQmx_Val_RSE', 'NRSE' : 'DAQmx_Val_NRSE'}
         self.server.terminal_config = self.terminal_config
         self.server.serve()
         message = 'successfully started with terminal_config = ' + self.server.terminal_config

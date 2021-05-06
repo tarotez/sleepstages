@@ -26,7 +26,7 @@ from parameterSetup import ParameterSetup
 import timeFormatting
 
 class ReadDAQServer:
-    def __init__(self, client, recordWaves, channelOpt=2, sampRate=128, dataAcquisitionFreq=0.1,
+    def __init__(self, client, recordWaves, channelNum, sampRate=128, dataAcquisitionFreq=0.1,
                  timeout=500, numEpoch=600000, eeg_std=None, ch2_std=None,
                  prefix='/Users/ssg/Projects/rem'):
         """
@@ -45,12 +45,7 @@ class ReadDAQServer:
 
         self.client = client
         self.recordWaves = recordWaves
-
-        if channelOpt == 1:
-            self.channelNum = 1
-        else:
-            self.channelNum = 2
-
+        self.channelNum = channelNum
         self.sampRate = sampRate
         self.dataAcquisitionFreq = dataAcquisitionFreq
         self.timeout = timeout  # set to -1 to wait indefinitely
@@ -165,13 +160,13 @@ class ReadDAQServer:
 
                 if self.channelNum == 2:
                     if not createChannel("1", "1:2"):
-                        if not createChannel("2","1:2"):
-                            if not createChannel("0","1:2"):
+                        if not createChannel("2", "1:2"):
+                            if not createChannel("0", "1:2"):
                                 pass
                 else:
                     if not createChannel("1", "1"):
-                        if not createChannel("2","1"):
-                            if not createChannel("0","1"):
+                        if not createChannel("2", "1"):
+                            if not createChannel("0", "1"):
                                 pass
                     '''
                     try:
