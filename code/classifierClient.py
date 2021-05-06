@@ -154,8 +154,6 @@ class ClassifierClient:
         timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
         eegSegment = np.zeros((self.updateGraph_samplePointNum))
         ch2Segment = np.zeros((self.updateGraph_samplePointNum))
-        if self.sampleID == 0:
-            self.windowStartTime = timeStampSegment[0]
 
         timeNow = str(datetime.datetime.now())
         self.logFile.write('timeNow = ' + timeNow + ', len(dataFromDaq) = ' + str(len(dataFromDaq)) + ', R->W thresh = ' + str(self.ch2_thresh_value) + ', self.currentCh2Intensity = ' + str(self.currentCh2Intensity) + '\n')
@@ -186,8 +184,15 @@ class ClassifierClient:
             if len(input_elems) > 2:
                 ch2Segment[sampleCnt] = float(input_elems[2])
 
+        if self.sampleID == 0:
+            self.windowStartTime = timeStampSegment[0]
+
+
         one_record_partial, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum)] = one_record_partial
+        print('eegSegment.shape =', eegSegment.shape)
+        print('one_record_partial.shape =', one_record_partial.shape)
+        print('self.one_record.shape =', self.one_record.shape)
         if self.hasGUI:
             self.updateGraphPartially(self.one_record)
         self.sampleID += self.updateGraph_samplePointNum
