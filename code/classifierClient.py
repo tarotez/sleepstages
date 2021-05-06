@@ -135,19 +135,19 @@ class ClassifierClient:
         self.stagePredictor = StagePredictor(paramsForNetworkStructure, self.extractor, classifier, finalClassifierDir, classifierID, self.params.markovOrderForPrediction)
 
     def normalize_eeg(self, eegSegment, ch2Segment, past_eeg, past_ch2):
-        one_record = np.zeros((self.samplePointNum, 2))
+        one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
         if self.eeg_normalize:
             processed_eegSegment, past_eeg = standardize(eegSegment, past_eeg)
         else:
             processed_eegSegment, past_eeg = centralize(eegSegment, past_eeg)
-        one_record[:,0] = processed_eegSegment
+        one_record_partial[:,0] = processed_eegSegment
         if self.ch2_normalize:
             processed_ch2Segment, past_ch2 = standardize(ch2Segment, past_ch2)
         else:
             processed_ch2Segment = ch2Segment
         if self.params.useEMG:
-            one_record[:,1] = processed_ch2Segment
-        return one_record, processed_eegSegment, processed_ch2Segment, past_eeg, past_ch2
+            one_record_partial[:,1] = processed_ch2Segment
+        return one_record_partial, processed_eegSegment, processed_ch2Segment, past_eeg, past_ch2
 
     def process(self, dataFromDaq):
         timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
@@ -190,7 +190,7 @@ class ClassifierClient:
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum)] = one_record_partial
         print('after: self.one_record.shape =', self.one_record.shape)
         if self.hasGUI:
-            self.updateGraphPartially(one_record)
+            self.updateGraphPartially(self.one_record)
         self.sampleID += self.updateGraph_samplePointNum
 
         if self.sampleID == self.samplePointNum:
@@ -270,7 +270,8 @@ class ClassifierClient:
                     stagePrediction_replaced = 'w' if stagePrediction == '?' else stagePrediction
                     # print(' -> sending', stagePrediction_replaced, 'to serialClient')
                     serialClient.write(stagePrediction_replaced.encode('utf-8'))
-
+                                        
+            self.one_record = np.zeros((self.samplePointNum, 2))
             self.segmentID += 1
 
     def writeToPredFile(self, prediction, prediction_before_overwrite, timeStampSegment):
