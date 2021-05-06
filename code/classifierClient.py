@@ -378,21 +378,21 @@ class ClassifierClient:
         self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
 
     def updateGraph(self, one_record, segmentID, stagePrediction, stagePrediction_before_overwrite):
-        for graphID in range(len(self.listOfGraphs[0])-1):
-            for targetChan in range(2):
-                self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
-                self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
-        eeg = one_record[:,0]
-        self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
-        ch2 = one_record[:,1]
-        self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
+        self.listOfPredictionResults[-1].setChoice(segmentID, choice, choiceLabel)
         choice = self.params.capitalize_for_display[stagePrediction]
         choice_before_overwrite = self.params.capitalize_for_display[stagePrediction_before_overwrite]
         if choice != choice_before_overwrite:
             choiceLabel = choice_before_overwrite + '->' + choice
         else:
             choiceLabel = choice
-        self.listOfPredictionResults[-1].setChoice(segmentID, choice, choiceLabel)
+        for graphID in range(len(self.listOfGraphs[0])-1):
+            for targetChan in range(2):
+                self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
+                self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
+        # eeg = one_record[:,0]
+        # self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
+        # ch2 = one_record[:,1]
+        # self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
 
     def setGraph(self, listOfGraphs):
         self.listOfGraphs = listOfGraphs
