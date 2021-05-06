@@ -264,7 +264,7 @@ class ClassifierClient:
                         secFloat = windowStartSecFloat + (i / self.samplingFreq)
                         timePoint = elems[0] + ':' + elems[1] + ':' + str(secFloat)
                         outLine += str(timePoint) + ', ' + str(raw_one_record[i,0]) + ', ' + str(raw_one_record[i,1]) + '\n'
-                        outLine_standardized += str(timePoint) + ', ' + str(one_record[i,0]) + ', ' + str(one)record[i,1]) + '\n'
+                        outLine_standardized += str(timePoint) + ', ' + str(one_record[i,0]) + ', ' + str(one_record[i,1]) + '\n'
 
                     self.waveOutputFile.write(outLine)   # add at the end of the file
                     self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
