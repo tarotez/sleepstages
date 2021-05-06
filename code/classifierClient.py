@@ -144,7 +144,7 @@ class ClassifierClient:
             processed_ch2Segment = ch2Segment
         if self.params.useEMG:
             one_record[:,1] = processed_ch2Segment
-        return one_record, past_eeg, past_ch2
+        return one_record, processed_eegSegment, processed_ch2Segment, past_eeg, past_ch2
 
     def process(self, dataFromDaq):
         if self.connected2serialClient:
@@ -197,7 +197,7 @@ class ClassifierClient:
             sampleID += 1
             if sampleID == self.samplePointNum:
                 sampleID = 0
-                one_record, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
+                one_record, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
                 '''
                 # standardize eeg and ch2
                 if self.eeg_normalize:
