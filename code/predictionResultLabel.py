@@ -10,14 +10,6 @@ class PredictionResultLabel(QtWidgets.QLabel):
         self.stageCode = 0
 
         self.setText(self.labelContent)
-        # label2 = QtWidgets.QLabel(widget)
-        # label3 = QtWidgets.QLabel(widget)
-
-        # vbox = QtGui.QHBoxLayout(widget)
-        # for w in [resLabel, label2, label3]
-        # for w in [self.resLabel]:
-            # vbox.addWidget(w)
-        # widget.setLayout(vbox)
 
     def setChoice(self, segmentID, choice, choiceLabel):
         if choice == 'Wake':
