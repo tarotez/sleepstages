@@ -101,6 +101,7 @@ class ClassifierClient:
             self.waveOutputFile_standardized = open(self.params.waveOutputDir + '/standardized_' + waveFileName, 'a')
 
         self.predictionState = 0
+        self.one_record = np.zeros((self.samplePointNum, 2))
         self.y_pred_L = []
 
         '''
@@ -149,9 +150,9 @@ class ClassifierClient:
         return one_record, processed_eegSegment, processed_ch2Segment, past_eeg, past_ch2
 
     def process(self, dataFromDaq):
-        timeStampSegment = [_ for _ in range(self.samplePointNum)]
-        eegSegment = np.zeros((self.samplePointNum))
-        ch2Segment = np.zeros((self.samplePointNum))
+        timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
+        eegSegment = np.zeros((self.updateGraph_samplePointNum))
+        ch2Segment = np.zeros((self.updateGraph_samplePointNum))
 
         timeNow = str(datetime.datetime.now())
         self.logFile.write('timeNow = ' + timeNow + ', len(dataFromDaq) = ' + str(len(dataFromDaq)) + ', R->W thresh = ' + str(self.ch2_thresh_value) + ', self.currentCh2Intensity = ' + str(self.currentCh2Intensity) + '\n')
@@ -185,16 +186,15 @@ class ClassifierClient:
                 windowStartTime = timeStampSegment[0]
 
         one_record_partial, processed_eegSegment, processed_ch2Segment, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
-        if self.hasGUI:
-            self.updateGraphPartially(one_record_partial)
         print('before: self.one_record.shape =', self.one_record.shape)
-        self.one_record = np.r_(self.one_record, one_record_partial)
+        self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum)] = one_record_partial
         print('after: self.one_record.shape =', self.one_record.shape)
+        if self.hasGUI:
+            self.updateGraphPartially(one_record)
         self.sampleID += self.updateGraph_samplePointNum
 
         if self.sampleID == self.samplePointNum:
             self.sampleID = 0
-
             # copy to previous
             eegSegment = self.one_record[:,0]
             self.previous_eeg = eegSegment
