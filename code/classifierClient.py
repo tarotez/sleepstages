@@ -33,8 +33,8 @@ class ClassifierClient:
         print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
         self.hasGUI = True
         self.graphColors = ['b','g']
-        self.ylim_max = 2.0
-        self.graph_ylim = [[-self.ylim_max, self.ylim_max], [-self.ylim_max, self.ylim_max]]
+        self.ylim_max_eeg, self.ylim_max_ch2 = 2.0, 2.0
+        self.graph_ylim = [[-self.ylim_max_eeg, self.ylim_max_eeg], [-self.ylim_max_ch2, self.ylim_max_ch2]]
 
         self.lightPeriodStartTime = self.params.lightPeriodStartTime
         self.sampleID = 0
@@ -378,11 +378,15 @@ class ClassifierClient:
         self.ksOutputFile.flush()
     '''
 
+    def update_ylim(self, targetChan):
+        if hasattr(self, 'listOfGraphs'):
+            for graphID in range(len(self.listOfGraphs[0])):
+                for targetChan in range(2):
+                    self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
+
     def updateGraphPartially(self, one_record):
-        eeg = one_record[:,0]
-        self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
-        ch2 = one_record[:,1]
-        self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
+        for targetChan in range(2):
+            self.listOfGraphs[targetChan][-1].setData(one_record[:,targetChan], color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
 
     def updateGraph(self, one_record, segmentID, stagePrediction, stagePrediction_before_overwrite):
         choice = self.params.capitalize_for_display[stagePrediction]

@@ -93,6 +93,8 @@ class RemApplication(QMainWindow):
             raise e
 
         self.client.setGraph(self.listOfGraphs)
+        for targetChan in range(2):
+            self.client.update_ylim(targetChan)
         self.client.setPredictionResult(self.listOfPredictionResults)
 
         try:
@@ -160,10 +162,17 @@ class RemApplication(QMainWindow):
         self.waveRecordButton.setChecked(False)
         self.waveNotRecordButton.setChecked(True)
 
-    def ylim_change(self):
-        self.client.ylim_max = self.ylim_slider.value() / 10
-        self.client.graph_ylim[0] = [-self.client.ylim_max, self.client.ylim_max]
-        self.ylim_value_box.setText(str(self.client.ylim_max))
+    def ylim_change_eeg(self):
+        self.client.ylim_max_eeg = self.ylim_slider_eeg.value() / 10
+        self.client.graph_ylim[0] = [-self.client.ylim_max_eeg, self.client.ylim_max_eeg]
+        self.ylim_value_eeg_box.setText(str(self.client.ylim_max_eeg))
+        self.client.update_ylim(targetChan=0)
+
+    def ylim_change_ch2(self):
+        self.client.ylim_max_ch2 = self.ylim_slider_ch2.value() / 10
+        self.client.graph_ylim[1] = [-self.client.ylim_max_ch2, self.client.ylim_max_ch2]
+        self.ylim_value_ch2_box.setText(str(self.client.ylim_max_ch2))
+        self.client.update_ylim(targetChan=1)
 
     def ch2_thresh_change(self):
         ch2_thresh_slider_value = self.ch2_thresh_slider.value()
@@ -218,12 +227,12 @@ class RemApplication(QMainWindow):
         # change standardization of ch2
         self.nameLabel_terminal_label = QLabel(self)
         self.nameLabel_terminal_label.setText('Terminal:')
-        self.nameLabel_terminal_label.move(80 * self.scale, 35 * self.scale)
+        self.nameLabel_terminal_label.move(200 * self.scale, 35 * self.scale)
         self.terminal_combobox = QtWidgets.QComboBox(self)
         self.terminal_combobox.addItem(self.terminal_str_diff)
         self.terminal_combobox.addItem(self.terminal_str_rse)
         self.terminal_combobox.addItem(self.terminal_str_nrse)
-        self.terminal_combobox.move(130 * self.scale, 38 * self.scale)
+        self.terminal_combobox.move(260 * self.scale, 38 * self.scale)
         self.terminal_combobox.resize(self.terminal_combobox.sizeHint())
         self.terminal_combobox.activated[str].connect(self.terminal_choice)
         self.terminal_combobox.setCurrentText(self.terminal_config)
@@ -282,22 +291,39 @@ class RemApplication(QMainWindow):
         self.ch2_thresh.move(1000 * self.scale, 15 * self.scale)
         self.ch2_thresh.resize(30, 20)
 
-        self.ylim_label = QLabel(self)
-        self.ylim_label.setText('y-max:')
-        self.ylim_label.move(40 * self.scale, 60 * self.scale)
-        self.ylim_label.resize(60, 20)
-        self.ylim_value_box = QLineEdit(self)
-        self.ylim_value_box.move(45 * self.scale, 80 * self.scale)
-        self.ylim_value_box.resize(40, 20)
+        self.ylim_label_eeg = QLabel(self)
+        self.ylim_label_eeg.setText('eeg y-max:')
+        self.ylim_label_eeg.move(40 * self.scale, 60 * self.scale)
+        self.ylim_label_eeg.resize(self.ylim_label_eeg.sizeHint())
+        self.ylim_value_eeg_box = QLineEdit(self)
+        self.ylim_value_eeg_box.move(45 * self.scale, 80 * self.scale)
+        self.ylim_value_eeg_box.resize(40, 20)
 
-        self.ylim_slider = QSlider(Qt.Vertical, self)
-        self.ylim_slider.move(10 * self.scale, 40 * self.scale)
-        self.ylim_slider.resize(20, 160)
-        self.ylim_slider.setMinimum(0)
-        self.ylim_slider.setMaximum(100)
-        self.ylim_slider.setTickPosition(QSlider.TicksBelow)
-        self.ylim_slider.setTickInterval(1)
-        self.ylim_slider.valueChanged.connect(self.ylim_change)
+        self.ylim_slider_eeg = QSlider(Qt.Vertical, self)
+        self.ylim_slider_eeg.move(10 * self.scale, 40 * self.scale)
+        self.ylim_slider_eeg.resize(20, 80)
+        self.ylim_slider_eeg.setMinimum(0)
+        self.ylim_slider_eeg.setMaximum(100)
+        self.ylim_slider_eeg.setTickPosition(QSlider.TicksBelow)
+        self.ylim_slider_eeg.setTickInterval(1)
+        self.ylim_slider_eeg.valueChanged.connect(self.ylim_change_eeg)
+
+        self.ylim_label_ch2 = QLabel(self)
+        self.ylim_label_ch2.setText('ch2 y-max:')
+        self.ylim_label_ch2.move(140 * self.scale, 60 * self.scale)
+        self.ylim_label_ch2.resize(self.ylim_label_ch2.sizeHint())
+        self.ylim_value_ch2_box = QLineEdit(self)
+        self.ylim_value_ch2_box.move(145 * self.scale, 80 * self.scale)
+        self.ylim_value_ch2_box.resize(40, 20)
+
+        self.ylim_slider_ch2 = QSlider(Qt.Vertical, self)
+        self.ylim_slider_ch2.move(110 * self.scale, 40 * self.scale)
+        self.ylim_slider_ch2.resize(20, 80)
+        self.ylim_slider_ch2.setMinimum(0)
+        self.ylim_slider_ch2.setMaximum(100)
+        self.ylim_slider_ch2.setTickPosition(QSlider.TicksBelow)
+        self.ylim_slider_ch2.setTickInterval(1)
+        self.ylim_slider_ch2.valueChanged.connect(self.ylim_change_ch2)
 
         self.ch2_thresh_slider = QSlider(Qt.Horizontal, self)
         self.ch2_thresh_slider.move(1035 * self.scale, 20 * self.scale)
@@ -381,8 +407,10 @@ class RemApplication(QMainWindow):
                 print('Data is read from DAQ. classifier ID is randomly selected.')
                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID)
             self.client.hasGUI = True
-            self.ylim_value_box.setText(str(self.client.ylim_max))
-            self.ylim_slider.setValue(self.client.ylim_max * 10)
+            self.ylim_value_eeg_box.setText(str(self.client.ylim_max_eeg))
+            self.ylim_value_ch2_box.setText(str(self.client.ylim_max_ch2))
+            self.ylim_slider_eeg.setValue(self.client.ylim_max_eeg * 10)
+            self.ylim_slider_ch2.setValue(self.client.ylim_max_ch2 * 10)
 
         except Exception as e:
             print('Exception in self.client = ...')
