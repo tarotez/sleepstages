@@ -92,8 +92,8 @@ class ClassifierClient:
 
         self.ch2_mode = "Video"
         self.ch2_thresh_value = self.params.ch2_thresh_default
-        self.eeg_normalize = 1
-        self.ch2_normalize = 1
+        self.eeg_normalize = 0
+        self.ch2_normalize = 0
         self.currentCh2Intensity = 0
 
         if self.recordWaves:
