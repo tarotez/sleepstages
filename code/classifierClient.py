@@ -156,7 +156,7 @@ class ClassifierClient:
 
     def process(self, dataFromDaq):
         # print('in client, dataToClient.shape =', dataToClient.shape)
-        print('in client, dataFromDaq =', dataFromDaq)
+        # print('in client, dataFromDaq =', dataFromDaq)
         timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
         eegFragment = np.zeros((self.updateGraph_samplePointNum))
         ch2Fragment = np.zeros((self.updateGraph_samplePointNum))
@@ -193,17 +193,17 @@ class ClassifierClient:
         if self.sampleID == 0:
             self.windowStartTime = timeStampSegment[0]
 
-        print('eegFragment =', eegFragment)
+        # print('eegFragment =', eegFragment)
         one_record_partial, raw_one_record_partial = self.normalize_eeg(eegFragment, ch2Fragment, self.past_eegSegment, self.past_ch2Segment)
-        print('one_record_partial =', one_record_partial)
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_partial
         self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial
-        print('self.sampleID =', self.sampleID)
-        print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
-        print('eegFragment.shape =', eegFragment.shape)
-        print('one_record_partial.shape =', one_record_partial.shape)
-        print('self.one_record.shape =', self.one_record.shape)
-        print('self.one_record[:32,0] =', self.one_record[:32,0])
+        # print('one_record_partial =', one_record_partial)
+        # print('self.sampleID =', self.sampleID)
+        # print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
+        # print('eegFragment.shape =', eegFragment.shape)
+        # print('one_record_partial.shape =', one_record_partial.shape)
+        # print('self.one_record.shape =', self.one_record.shape)
+        # print('self.one_record[:32,0] =', self.one_record[:32,0])
         # if self.sampleID > 32:
         #    exit()
         if self.hasGUI:
@@ -396,7 +396,7 @@ class ClassifierClient:
             for targetChan in range(2):
                 self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
                 self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
-        # self.listOfPredictionResults[-1].setLabel(str(segmentID + 2) + ' : ', 0)
+        self.listOfPredictionResults[-1].setLabel(str(segmentID + 2) + ' : ', 0)
 
     def setGraph(self, listOfGraphs):
         self.listOfGraphs = listOfGraphs
