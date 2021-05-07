@@ -203,7 +203,7 @@ class ClassifierClient:
         print('self.one_record.shape =', self.one_record.shape)
         print('self.one_record[:32,0] =', self.one_record[:32,0])
         if self.sampleID > 32:
-            raise Error('')
+            raise exit()
         if self.hasGUI:
             self.updateGraphPartially(self.one_record)
         self.sampleID += self.updateGraph_samplePointNum
