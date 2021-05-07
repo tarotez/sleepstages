@@ -30,6 +30,8 @@
 "windowSizeInSec" : 10,
 "samplingFreq" : 128,
 
+"graphUpdateFreqInHz" : 1,
+
 "terminalConfigDefaultValue" : "RSE",
 
 "writeWholeWaves" : 1,

@@ -27,7 +27,7 @@ class ClassifierClient:
         self.params = ParameterSetup()
         self.samplingFreq = self.params.samplingFreq
         self.samplePointNum = self.params.windowSizeInSec * self.samplingFreq  # the number of sample points received at once
-        self.graphUpdateFreqInHz = 1   # frequency of updating the graph (if set to 1, redraws graph every second)
+        self.graphUpdateFreqInHz = self.params.graphUpdateFreqInHz   # frequency of updating the graph (if set to 1, redraws graph every second)
         assert self.samplingFreq % self.graphUpdateFreqInHz == 0   # graphUpdateFreq should divide samplingFreq
         self.updateGraph_samplePointNum = np.int(self.samplingFreq / self.graphUpdateFreqInHz)
         print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)

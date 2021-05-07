@@ -55,6 +55,10 @@ class ParameterSetup(object):
         self.windowSizeInSec = d['windowSizeInSec']   # size of window in time for estimating the state
         self.samplingFreq = d['samplingFreq']   # sampling frequency of data
 
+        if 'graphUpdateFreqInHz' in d:
+            self.graphUpdateFreqInHz = d['graphUpdateFreqInHz']
+        else:
+            self.graphUpdateFreqInHz = 1
 
         if 'terminalConfigDefaultValue' in d:
             self.terminal_config_default_value = d['terminalConfigDefaultValue']
