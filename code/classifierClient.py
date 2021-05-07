@@ -46,7 +46,7 @@ class ClassifierClient:
         self.minimumCh2Intensity = 0
         self.maximumCh2Intensity = 0
 
-        self.past_eeg, self.past_ch2 = np.array([]), np.array([])
+        self.past_eegSegment, self.past_ch2Segment = np.array([]), np.array([])
         # self.previous_eeg, self.previous_ch2 = np.array([]), np.array([])
 
         classifierFilePrefix = self.params.classifierFilePrefix
