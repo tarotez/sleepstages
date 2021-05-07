@@ -92,8 +92,8 @@ class ClassifierClient:
 
         self.ch2_mode = "Video"
         self.ch2_thresh_value = self.params.ch2_thresh_default
-        self.eeg_normalize = 0
-        self.ch2_normalize = 0
+        self.eeg_normalize = 1
+        self.ch2_normalize = 1
         self.currentCh2Intensity = 0
 
         if self.recordWaves:
@@ -136,30 +136,30 @@ class ClassifierClient:
         classifier.load_weights(model_path)
         self.stagePredictor = StagePredictor(paramsForNetworkStructure, self.extractor, classifier, finalClassifierDir, classifierID, self.params.markovOrderForPrediction)
 
-    def normalize_eeg(self, eegSegment, ch2Segment, past_eeg, past_ch2):
+    def normalize_eeg(self, eegFragment, ch2Fragment, past_eegSegment, past_ch2Segment):
         one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
         raw_one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
         if self.eeg_normalize:
-            processed_eegSegment, past_eeg = standardize(eegSegment, past_eeg)
+            processed_eegFragment, _ = standardize(eegFragment, past_eegSegment)
         else:
-            processed_eegSegment, past_eeg = centralize(eegSegment, past_eeg)
-        one_record_partial[:,0] = processed_eegSegment
-        raw_one_record_partial[:,0] = eegSegment
+            processed_eegFragment, _ = centralize(eegFragment, past_eegSegment)
+        one_record_partial[:,0] = processed_eegFragment
+        raw_one_record_partial[:,0] = eegFragment
         if self.ch2_normalize:
-            processed_ch2Segment, past_ch2 = standardize(ch2Segment, past_ch2)
+            processed_ch2Fragment, _ = standardize(ch2Fragment, past_ch2Segment)
         else:
-            processed_ch2Segment = ch2Segment
-        if self.params.useEMG:
-            one_record_partial[:,1] = processed_ch2Segment
-            raw_one_record_partial[:,1] = ch2Segment
-        return one_record_partial, raw_one_record_partial, past_eeg, past_ch2
+            processed_ch2Fragment = ch2Fragment
+        if self.params.useCh2ForReplace:
+            one_record_partial[:,1] = processed_ch2Fragment
+            raw_one_record_partial[:,1] = ch2Fragment
+        return one_record_partial, raw_one_record_partial
 
     def process(self, dataFromDaq):
         # print('in client, dataToClient.shape =', dataToClient.shape)
         print('in client, dataFromDaq =', dataFromDaq)
         timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
-        eegSegment = np.zeros((self.updateGraph_samplePointNum))
-        ch2Segment = np.zeros((self.updateGraph_samplePointNum))
+        eegFragment = np.zeros((self.updateGraph_samplePointNum))
+        ch2Fragment = np.zeros((self.updateGraph_samplePointNum))
 
         timeNow = str(datetime.datetime.now())
         self.logFile.write('timeNow = ' + timeNow + ', len(dataFromDaq) = ' + str(len(dataFromDaq)) + ', R->W thresh = ' + str(self.ch2_thresh_value) + ', self.currentCh2Intensity = ' + str(self.currentCh2Intensity) + '\n')
@@ -186,26 +186,26 @@ class ClassifierClient:
 
             input_elems = inputLine.split()
             timeStampSegment[sampleCnt] = input_elems[0]
-            eegSegment[sampleCnt] = float(input_elems[1])
+            eegFragment[sampleCnt] = float(input_elems[1])
             if len(input_elems) > 2:
-                ch2Segment[sampleCnt] = float(input_elems[2])
+                ch2Fragment[sampleCnt] = float(input_elems[2])
 
         if self.sampleID == 0:
             self.windowStartTime = timeStampSegment[0]
 
-        print('eegSegment =', eegSegment)
-        one_record_partial, raw_one_record_partial, self.past_eeg, self.past_ch2 = self.normalize_eeg(eegSegment, ch2Segment, self.past_eeg, self.past_ch2)
+        print('eegFragment =', eegFragment)
+        one_record_partial, raw_one_record_partial = self.normalize_eeg(eegFragment, ch2Fragment, self.past_eegSegment, self.past_ch2Segment)
         print('one_record_partial =', one_record_partial)
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_partial
         self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial
         print('self.sampleID =', self.sampleID)
         print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
-        print('eegSegment.shape =', eegSegment.shape)
+        print('eegFragment.shape =', eegFragment.shape)
         print('one_record_partial.shape =', one_record_partial.shape)
         print('self.one_record.shape =', self.one_record.shape)
         print('self.one_record[:32,0] =', self.one_record[:32,0])
-        if self.sampleID > 32:
-            exit()
+        # if self.sampleID > 32:
+        #    exit()
         if self.hasGUI:
             self.updateGraphPartially(self.one_record)
         self.sampleID += self.updateGraph_samplePointNum
@@ -214,9 +214,11 @@ class ClassifierClient:
             self.sampleID = 0
             # copy to previous
             eegSegment = self.one_record[:,0]
+            self.past_eegSegment = np.r_[self.past_eegSegment, eegSegment]
             # self.previous_eeg = eegSegment
             if self.params.useCh2ForReplace:
                 ch2Segment = self.one_record[:,1]
+                self.past_ch2Segment = np.r_[self.past_ch2Segment, ch2Segment]
                 # self.previous_ch2 = ch2Segment
 
             # print('self.predictionState =', self.predictionState)
