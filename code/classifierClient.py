@@ -201,6 +201,7 @@ class ClassifierClient:
         print('eegSegment.shape =', eegSegment.shape)
         print('one_record_partial.shape =', one_record_partial.shape)
         print('self.one_record.shape =', self.one_record.shape)
+        print('self.one_record[:32,0] =', self.one_record[:32,0])
         if self.hasGUI:
             self.updateGraphPartially(self.one_record)
         self.sampleID += self.updateGraph_samplePointNum
@@ -390,10 +391,6 @@ class ClassifierClient:
                 self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
                 self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
         # self.listOfPredictionResults[-1].setLabel(str(segmentID + 2) + ' : ', 0)
-        # eeg = one_record[:,0]
-        # self.listOfGraphs[0][-1].setData(eeg, color=self.graphColors[0], graph_ylim=self.graph_ylim[0])
-        # ch2 = one_record[:,1]
-        # self.listOfGraphs[1][-1].setData(ch2, color=self.graphColors[1], graph_ylim=self.graph_ylim[1])
 
     def setGraph(self, listOfGraphs):
         self.listOfGraphs = listOfGraphs
