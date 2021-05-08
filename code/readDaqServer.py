@@ -121,8 +121,7 @@ class ReadDAQServer:
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
                                          DAQmx_Val_dict[self.terminal_config], -10.0, 10.0,
                                          DAQmx_Val_Volts, None)
-                        channelNum = 2 if len(channelIDs) > 1 else 1
-                        print("at DAQmxCreateAIVoltageChan, created succesfully with channelNum == " + str(channelNum) + ".")
+                        print("at DAQmxCreateAIVoltageChan, created succesfully with channelNum == " + str(self.channelNum) + ".")
                         return 1
                     except DAQError as err:
                         print("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
@@ -165,6 +164,9 @@ class ReadDAQServer:
                     else:
                         sampleNum = data.shape[0]
                         eeg_data = data[:]
+
+                    print('eeg_data =', eeg_data)
+                    print('ch2_data =', ch2_data)
 
                     dataToClient = ''
                     for sampleID in range(sampleNum):
