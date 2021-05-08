@@ -10,7 +10,7 @@ from PyDAQmx import DAQmx_Val_Volts
 from PyDAQmx import DAQmx_Val_Cfg_Default, DAQmx_Val_Diff, DAQmx_Val_RSE, DAQmx_Val_NRSE
 from PyDAQmx import DAQmx_Val_Rising, DAQmx_Val_Falling
 from PyDAQmx import DAQmx_Val_FiniteSamps, DAQmx_Val_ContSamps
-from PyDAQmx import DAQmx_Val_GroupByChannel
+from PyDAQmx import DAQmx_Val_GroupByChannel, DAQmx_Val_GroupByScanNumber
 from PyDAQmx import DAQError
 from PyDAQmx import int32
 from ctypes import byref
