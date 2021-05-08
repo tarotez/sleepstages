@@ -158,6 +158,7 @@ class ReadDAQServer:
 
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
                     now, data = self.read_data(taskHandle, data)
+                    print('data.shape =', data.shape)
 
                     if self.channelNum == 2:
                         sampleNum = data.shape[0] // 2
