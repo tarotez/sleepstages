@@ -117,7 +117,7 @@ class ReadDAQServer:
                 def createChannel(devID, channelIDs):
                     try:
                         device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
-                        device_and_channels = device_and_channelsL.join(",")
+                        device_and_channels = ",".join(device_and_channelsL)
                         print('device_and_channels =', device_and_channels)
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE}
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
