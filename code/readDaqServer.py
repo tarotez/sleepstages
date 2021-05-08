@@ -132,9 +132,9 @@ class ReadDAQServer:
                         return 0
 
                 if self.channelNum == 2:
-                    if not createChannel(1, [1,7]):
-                        if not createChannel(2, [1,7]):
-                            if not createChannel(0, [1,7]):
+                    if not createChannel(1, [1,0]):
+                        if not createChannel(2, [1,0]):
+                            if not createChannel(0, [1,0]):
                                 pass
                 else:
                     if not createChannel(1, [1]):
