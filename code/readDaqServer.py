@@ -74,13 +74,12 @@ class ReadDAQServer:
         """
         try:
             DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-                        # DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
-                        DAQmx_Val_GroupByScanNumber, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
+                        DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
 
         except:
             import sys
             traceback = sys.exc_info()[2]
-            pdb.post_morte(traceback)
+            pdb.post_mortem(traceback)
 
         current_time = datetime.datetime.now()
         return current_time, data
@@ -117,7 +116,7 @@ class ReadDAQServer:
                 def createChannel(devID, channelIDs):
                     try:
                         device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
-                        device_and_channels = ",".join(device_and_channelsL)
+                        device_and_channels = ", ".join(device_and_channelsL)
                         print('device_and_channels =', device_and_channels)
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE}
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
@@ -168,8 +167,8 @@ class ReadDAQServer:
                         sampleNum = data.shape[0]
                         eeg_data = data[:]
 
-                    print('eeg_data[:8] =', eeg_data[:8])
-                    print('ch2_data[:8] =', ch2_data[:8])
+                    print('eeg_data[:32] =', eeg_data[:8])
+                    print('ch2_data[:32] =', ch2_data[:8])
 
                     dataToClient = ''
                     for sampleID in range(sampleNum):
