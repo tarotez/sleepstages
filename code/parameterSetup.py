@@ -192,10 +192,19 @@ class ParameterSetup(object):
         # maximum number of samples to be params_used
         self.maxSampleNum = d['maxSampleNum']
 
+        if 'showCh2' in d:
+            self.showCh2 = d['showCh2']
+        else:
+            self.showCh2 = True
+
         # replace R to W if EMG or some other motion indicator is larger
         # by this factor, when compared to the segment having the smallest value
         # of the indicator among all past segments.
-        self.useCh2ForReplace = d['useCh2ForReplace']
+        if 'useCh2ForReplace' in d:
+            self.useCh2ForReplace = d['useCh2ForReplace']
+        else:
+            self.useCh2ForReplace = True
+
         self.ch2_thresh_default = d['ch2_thresh_default']
         if 'ch2IntensityFunc' in d:
             self.ch2IntensityFunc = d['ch2IntensityFunc']

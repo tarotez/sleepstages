@@ -13,7 +13,7 @@ import timeFormatting
 # from tensorflow.keras import backend as K
 
 class DummyReadDAQServer:
-    def __init__(self, client, fileID, recordWaves, offsetWindowID, sleepTime,
+    def __init__(self, client, fileID, recordWaves, channelNum, offsetWindowID, sleepTime,
                  sampRate=128, numEpoch=600000, eeg_std=None, ch2_std=None, channelOpt=2):
         """
         # Params
@@ -28,6 +28,8 @@ class DummyReadDAQServer:
 
         self.client = client
         self.recordWaves = recordWaves
+        self.channelNum = channelNum
+
         self.offsetWindowID = offsetWindowID
         self.sleepTime = sleepTime
 
@@ -119,6 +121,9 @@ class DummyReadDAQServer:
             for t in range(eegLength):
                 ftime = timeStamps_data[t]
                 dataToClient += ftime + '\t' + '{0:.6f}'.format(eeg_data[t])
-                dataToClient += '\t' + '{0:.6f}'.format(ch2_data[t]) + '\n'
+                if self.channelNum == 2:
+                    dataToClient += '\t' + '{0:.6f}'.format(ch2_data[t]) + '\n'
+                else:
+                    dataToClient += '\n'
             self.client.process(dataToClient)
             time.sleep(self.sleepTime)

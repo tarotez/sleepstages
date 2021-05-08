@@ -43,6 +43,9 @@ class ClassifierClient:
         # makes a classifier class
         label4EMG = self.params.label4withoutEMG
 
+        self.showCh2 = self.params.showCh2
+        self.useCh2ForReplace = self.params.useCh2ForReplace
+
         self.minimumCh2Intensity = 0
         self.maximumCh2Intensity = 0
 
@@ -149,7 +152,7 @@ class ClassifierClient:
             processed_ch2Fragment, _ = standardize(ch2Fragment, past_ch2Segment)
         else:
             processed_ch2Fragment = ch2Fragment
-        if self.params.useCh2ForReplace:
+        if self.showCh2 or self.useCh2ForReplace:
             one_record_partial[:,1] = processed_ch2Fragment
             raw_one_record_partial[:,1] = ch2Fragment
         return one_record_partial, raw_one_record_partial
@@ -216,7 +219,7 @@ class ClassifierClient:
             eegSegment = self.one_record[:,0]
             self.past_eegSegment = np.r_[self.past_eegSegment, eegSegment]
             # self.previous_eeg = eegSegment
-            if self.params.useCh2ForReplace:
+            if self.showCh2 or self.useCh2ForReplace:
                 ch2Segment = self.one_record[:,1]
                 self.past_ch2Segment = np.r_[self.past_ch2Segment, ch2Segment]
                 # self.previous_ch2 = ch2Segment
@@ -232,7 +235,7 @@ class ClassifierClient:
 
                 # print('stagePrediction =', stagePrediction)
                 stagePrediction_before_overwrite = stagePrediction
-                if self.params.useCh2ForReplace:
+                if self.useCh2ForReplace:
                     stagePrediction = self.replaceToWake(stagePrediction, ch2Segment)
 
             else:

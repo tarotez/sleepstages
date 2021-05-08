@@ -112,6 +112,7 @@
 "markovOrderForTraining" : 6,
 "markovOrderForPrediction" : 0,
 "maximumStageNum" : 3,
+"showCh2" : 1,
 "useCh2ForReplace" : 1,
 "ch2IntensityFunc" : "max_mean",
 "ch2_thresh_default" : 1.0,

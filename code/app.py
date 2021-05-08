@@ -33,8 +33,8 @@ class RemApplication(QMainWindow):
         self.params = ParameterSetup()
         self.label_recordWaves = 'Record original wave'
         self.label_notRecordWaves = 'No wave recording'
-        self.label_override = 'ON'
-        self.label_notOverride = 'OFF'
+        self.label_overwrite = 'ON'
+        self.label_notOverwrite = 'OFF'
         self.classifier_types = ['UTSN-L', 'UTSN']
         self.classifier_type = self.classifier_types[0]
 
@@ -47,19 +47,21 @@ class RemApplication(QMainWindow):
         self.terminal_str_nrse = "NRSE"
         self.terminal_config = self.params.terminal_config_default_value
 
-        self.channelNum = 1
+        self.channelNum = 2 if (self.params.showCh2 or self.useCh2ForReplace) else 1
 
         self.eeg_mode_str_normalize = "Normalize-ON"
         self.eeg_mode_str_none = "Normalize-OFF"
 
-        # self.ch2_mode_str_video = "Video"
         self.ch2_mode_str_normalize = "Normalize-ON"
         self.ch2_mode_str_none = "Normalize-OFF"
-        self.channelNumAlreadySelected = 0
+
+        self.ch2_usage_str_dontshowCh2 = "Don't show Ch2"
+        self.ch2_usage_str_showCh2 = "Ch2, show only"
+        self.ch2_usage_str_overwrite = "Overwrite with Ch2"
+
         self.graphNum = 4
         self.port2 = port + 1
         self.defaultSleepTime = 1
-        self.overrideByCh2 = False
         self.prediction_started = False
 
         if platform.system() == 'Windows':
@@ -109,7 +111,7 @@ class RemApplication(QMainWindow):
                     eegFilePath = self.params.postDir + '/' + inputFileName
                     self.server = EEGFileReaderServer(self.client, eegFilePath)
                 else:
-                    self.server = DummyReadDAQServer(self.client, self.inputFileID, self.recordWaves, self.offsetWindowID, self.sleepTime)
+                    self.server = DummyReadDAQServer(self.client, self.inputFileID, self.recordWaves, self.channelNum, self.offsetWindowID, self.sleepTime)
 
         except Exception as e:
             print(str(e))
@@ -121,17 +123,10 @@ class RemApplication(QMainWindow):
         message = 'successfully started with terminal_config = ' + self.server.terminal_config
         statusbar.showMessage(message)
 
-    def predictionStateOnEEGandCh2(self):
+    def startPrediction(self):
         self.t = threading.Thread(target=self.start_reader, daemon=True)
         self.t.start()
-        if self.channelNumAlreadySelected == 0:
-            self.clientButton2chan.setChecked(True)
-            self.channelNumAlreadySelected = 1
-        else:
-            if self.client.params.useCh2ForReplace == True:
-                self.clientButton2chan.setChecked(True)
-            else:
-                self.clientButton2chan.setChecked(False)
+        self.startPredictionButton.setChecked(True)
 
     def check_connection(self):
         statusbar = self.statusBar()
@@ -142,15 +137,20 @@ class RemApplication(QMainWindow):
             statusbar.showMessage(str(e))
             raise e
 
-    def toggleOverrideOrNot(self):
-        if self.overrideByCh2:
-            self.overrideOrNotButton.setChecked(False)
-            self.overrideOrNotButton.setText(self.label_notOverride)
-            self.overrideByCh2 = False
+    '''
+    def toggleOverwriteOrNot(self):
+        # if self.overwriteByCh2:
+        if self.client.showCh2Replace:
+            self.overwriteOrNotButton.setChecked(False)
+            self.overwriteOrNotButton.setText(self.label_notOverwrite)
+            self.client.showCh2Replace = False
+            # self.overwriteByCh2 = False
         else:
-            self.overrideOrNotButton.setChecked(True)
-            self.overrideOrNotButton.setText(self.label_override)
-            self.overrideByCh2 = True
+            self.overwriteOrNotButton.setChecked(True)
+            self.overwriteOrNotButton.setText(self.label_overwrite)
+            self.client.showCh2Replace = True
+            # self.overwriteByCh2 = True
+    '''
 
     def toggleWaveRecord(self):
         self.recordWaves = True
@@ -198,6 +198,29 @@ class RemApplication(QMainWindow):
         else:
             self.client.ch2_normalize = 0
 
+    def ch2_usage_combobox_setup(self):
+        if  self.params.useCh2ForReplace:
+            self.ch2_usage_combobox.setCurrentText(self.ch2_usage_str_overwrite)
+        elif self.params.showCh2:
+            self.ch2_usage_combobox.setCurrentText(self.ch2_usage_str_showCh2)
+        else:
+            self.ch2_usage_combobox.setCurrentText(self.ch2_usage_str_dontshowCh2)
+
+    def ch2_usage_choice(self, text):
+        self.ch2_usage = text
+        if self.ch2_usage == self.ch2_usage_str_dontshowCh2:
+            self.channelNum = 1
+            self.client.showCh2 = False
+            self.client.showCh2Replace = False
+        elif self.ch2_usage == self.ch2_usage_str_showCh2:
+            self.channelNum = 2
+            self.client.showCh2 = True
+            self.client.useCh2ForReplace = False
+        else:
+            self.channelNum = 2
+            self.client.showCh2 = True
+            self.client.useCh2ForReplace = True
+
     def classifier_choice(self, text):
         print('classifier_choice() activated.')
         if not self.prediction_started:
@@ -208,11 +231,11 @@ class RemApplication(QMainWindow):
 
     def initUI(self):
 
-        self.clientButton2chan = QtWidgets.QPushButton('Predict', self)
-        self.clientButton2chan.setCheckable(True)
-        self.clientButton2chan.clicked.connect(self.predictionStateOnEEGandCh2)
-        self.clientButton2chan.resize(self.clientButton2chan.sizeHint())
-        self.clientButton2chan.move(5 * self.scale, 10 * self.scale)
+        self.startPredictionButton = QtWidgets.QPushButton('Predict', self)
+        self.startPredictionButton.setCheckable(True)
+        self.startPredictionButton.clicked.connect(self.startPrediction)
+        self.startPredictionButton.resize(self.startPredictionButton.sizeHint())
+        self.startPredictionButton.move(5 * self.scale, 10 * self.scale)
 
         quitButton = QtWidgets.QPushButton('Quit', self)
         quitButton.clicked.connect(QtCore.QCoreApplication.instance().quit)
@@ -227,12 +250,12 @@ class RemApplication(QMainWindow):
         # change standardization of ch2
         self.nameLabel_terminal_label = QLabel(self)
         self.nameLabel_terminal_label.setText('Terminal:')
-        self.nameLabel_terminal_label.move(200 * self.scale, 35 * self.scale)
+        self.nameLabel_terminal_label.move(250 * self.scale, 35 * self.scale)
         self.terminal_combobox = QtWidgets.QComboBox(self)
         self.terminal_combobox.addItem(self.terminal_str_diff)
         self.terminal_combobox.addItem(self.terminal_str_rse)
         self.terminal_combobox.addItem(self.terminal_str_nrse)
-        self.terminal_combobox.move(260 * self.scale, 38 * self.scale)
+        self.terminal_combobox.move(310 * self.scale, 38 * self.scale)
         self.terminal_combobox.resize(self.terminal_combobox.sizeHint())
         self.terminal_combobox.activated[str].connect(self.terminal_choice)
         self.terminal_combobox.setCurrentText(self.terminal_config)
@@ -249,16 +272,18 @@ class RemApplication(QMainWindow):
         self.classifier_combobox.move(340 * self.scale, 10 * self.scale)
         self.classifier_combobox.activated[str].connect(self.classifier_choice)
 
-        self.nameLabel_ch2_override_label = QLabel(self)
-        self.nameLabel_ch2_override_label.setText('Ch2 override:')
-        self.nameLabel_ch2_override_label.move(450 * self.scale, 10 * self.scale)
+        '''
+        self.nameLabel_ch2_overwrite_label = QLabel(self)
+        self.nameLabel_ch2_overwrite_label.setText('Overwrite by Ch2:')
+        self.nameLabel_ch2_overwrite_label.move(450 * self.scale, 5 * self.scale)
 
-        self.overrideOrNotButton = QtWidgets.QPushButton(self.label_notOverride, self)
-        self.overrideOrNotButton.clicked.connect(self.toggleOverrideOrNot)
-        self.overrideOrNotButton.resize(self.overrideOrNotButton.sizeHint())
-        self.overrideOrNotButton.update()
-        self.overrideOrNotButton.move(530 * self.scale, 10 * self.scale)
-        self.overrideOrNotButton.setCheckable(True)
+        self.overwriteOrNotButton = QtWidgets.QPushButton(self.label_notOverwrite, self)
+        self.overwriteOrNotButton.clicked.connect(self.toggleOverwriteOrNot)
+        self.overwriteOrNotButton.resize(self.overwriteOrNotButton.sizeHint())
+        self.overwriteOrNotButton.update()
+        self.overwriteOrNotButton.move(530 * self.scale, 5 * self.scale)
+        self.overwriteOrNotButton.setCheckable(True)
+        '''
 
         # change standardization of eeg
         self.nameLabel_eeg_mode_label = QLabel(self)
@@ -282,8 +307,9 @@ class RemApplication(QMainWindow):
         self.ch2_mode_combobox.resize(self.ch2_mode_combobox.sizeHint())
         self.ch2_mode_combobox.activated[str].connect(self.ch2_mode_choice)
 
+        # set overwrite threshold to W
         self.nameLabel_ch2_thresh = QLabel(self)
-        self.nameLabel_ch2_thresh.setText('Override threshold to W:')
+        self.nameLabel_ch2_thresh.setText('Overwrite threshold to W:')
         self.nameLabel_ch2_thresh.resize(self.nameLabel_ch2_thresh.sizeHint())
         self.nameLabel_ch2_thresh.move(840 * self.scale, 15 * self.scale)
         self.ch2_thresh = QLineEdit(self)
@@ -291,12 +317,25 @@ class RemApplication(QMainWindow):
         self.ch2_thresh.move(1000 * self.scale, 15 * self.scale)
         self.ch2_thresh.resize(30, 20)
 
+        # change usage of ch2
+        self.nameLabel_ch2_usage_label = QLabel(self)
+        self.nameLabel_ch2_usage_label.setText('Ch2 usage:')
+        self.nameLabel_ch2_usage_label.move(840 * self.scale, 60 * self.scale)
+        self.ch2_usage_combobox = QtWidgets.QComboBox(self)
+        self.ch2_usage_combobox.addItem(self.ch2_usage_str_dontshowCh2)
+        self.ch2_usage_combobox.addItem(self.ch2_usage_str_showCh2)
+        self.ch2_usage_combobox.addItem(self.ch2_usage_str_overwrite)
+        self.ch2_usage_combobox.move(910 * self.scale, 60 * self.scale)
+        self.ch2_usage_combobox.resize(self.ch2_usage_combobox.sizeHint())
+        self.ch2_usage_combobox.activated[str].connect(self.ch2_usage_choice)
+        self.ch2_usage_combobox_setup()
+
         self.ylim_label_eeg = QLabel(self)
         self.ylim_label_eeg.setText('eeg y-max:')
-        self.ylim_label_eeg.move(40 * self.scale, 60 * self.scale)
+        self.ylim_label_eeg.move(40 * self.scale, 40 * self.scale)
         self.ylim_label_eeg.resize(self.ylim_label_eeg.sizeHint())
         self.ylim_value_eeg_box = QLineEdit(self)
-        self.ylim_value_eeg_box.move(45 * self.scale, 80 * self.scale)
+        self.ylim_value_eeg_box.move(45 * self.scale, 60 * self.scale)
         self.ylim_value_eeg_box.resize(40, 20)
 
         self.ylim_slider_eeg = QSlider(Qt.Vertical, self)
@@ -310,15 +349,15 @@ class RemApplication(QMainWindow):
 
         self.ylim_label_ch2 = QLabel(self)
         self.ylim_label_ch2.setText('ch2 y-max:')
-        self.ylim_label_ch2.move(140 * self.scale, 60 * self.scale)
+        self.ylim_label_ch2.move(160 * self.scale, 40 * self.scale)
         self.ylim_label_ch2.resize(self.ylim_label_ch2.sizeHint())
         self.ylim_value_ch2_box = QLineEdit(self)
-        self.ylim_value_ch2_box.move(145 * self.scale, 80 * self.scale)
+        self.ylim_value_ch2_box.move(165 * self.scale, 60 * self.scale)
         self.ylim_value_ch2_box.resize(40, 20)
 
         self.ylim_slider_ch2 = QSlider(Qt.Vertical, self)
-        self.ylim_slider_ch2.move(110 * self.scale, 40 * self.scale)
-        self.ylim_slider_ch2.resize(20, 80)
+        self.ylim_slider_ch2.move(130 * self.scale, 40 * self.scale)
+        self.ylim_slider_ch2.resize(20, 40)
         self.ylim_slider_ch2.setMinimum(0)
         self.ylim_slider_ch2.setMaximum(100)
         self.ylim_slider_ch2.setTickPosition(QSlider.TicksBelow)
