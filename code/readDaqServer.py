@@ -116,7 +116,9 @@ class ReadDAQServer:
 
                 def createChannel(devID, channelIDs):
                     try:
-                        device_and_channels = "Dev" + str(devID) + "/ai" + channelIDs
+                        device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
+                        device_and_channels = device_and_channelsL.join(",")
+                        print('device_and_channels =', device_and_channels)
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE}
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
                                          DAQmx_Val_dict[self.terminal_config], -10.0, 10.0,
@@ -130,14 +132,14 @@ class ReadDAQServer:
                         return 0
 
                 if self.channelNum == 2:
-                    if not createChannel("1", "1,7"):
-                        if not createChannel("2", "1,7"):
-                            if not createChannel("0", "1,7"):
+                    if not createChannel(1, [1,7]):
+                        if not createChannel(2, [1,7]):
+                            if not createChannel(0, [1,7]):
                                 pass
                 else:
-                    if not createChannel("1", "1"):
-                        if not createChannel("2", "1"):
-                            if not createChannel("0", "1"):
+                    if not createChannel(1, [1]):
+                        if not createChannel(2, [1]):
+                            if not createChannel(0, [1]):
                                 pass
 
                 # param: taskHandle
