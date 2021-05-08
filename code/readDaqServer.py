@@ -74,8 +74,8 @@ class ReadDAQServer:
         """
         try:
             DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-                           DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum,
-                           byref(int32()), None)
+                           　# DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
+                            DAQmx_Val_GroupByScanNumber, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
 
         except:
             import sys
@@ -158,7 +158,7 @@ class ReadDAQServer:
 
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
                     now, data = self.read_data(taskHandle, data)
-                    print('data.shape =', data.shape)
+                    # print('data.shape =', data.shape)
 
                     if self.channelNum == 2:
                         sampleNum = data.shape[0] // 2
