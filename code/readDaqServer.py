@@ -32,12 +32,11 @@ class ReadDAQServer:
                  timeout=500, maxNumEpoch=600000, eeg_std=None, ch2_std=None):
         """
         # Params
-        - samplingFreq (float): サンプリングレート (Hz)
+        - samplingFreq (float): sampling frequency (Hz)
         - timeout (float): how long the program waits in sec (set to -1 to wait indefinitely)
-        - maxNumEpoch (int): 予測を行うエポック数
-        - eeg_std (float?): EEGについて決め打ちstdがある場合はこれを指定する
-        - ch2_std (float?): ch2について決め打ちstdがある場合はこれを指定する
-        float? はオプショナル型的 (= float or None)．
+        - maxNumEpoch (int): the maximum number of epochs
+        - eeg_std (float?): standard deviation for EEG
+        - ch2_std (float?): standard deviation for ch2
         """
 
         self.client = client
@@ -48,7 +47,6 @@ class ReadDAQServer:
         self.maxNumEpoch = maxNumEpoch
         self.numSampsPerChan = self.client.updateGraph_samplePointNum
 
-        # あらかじめ定められた標準偏差がある場合、その値を保存する
         self.eeg_std = eeg_std
         self.ch2_std = ch2_std
 
@@ -151,7 +149,7 @@ class ReadDAQServer:
 
                 # param: taskHandle
                 # param: source (const char[])
-                # param: rate (float) : sapmling rate (Hz)
+                # param: samplingFreq : sapmling frequency (Hz)
                 # param: activeEdge
                 # param: sampleMode (int32) : DAQmx_Val_FiniteSamps
                 #        or DAQmx_Val_ContSamps or DAQmx_Val_HWTimedSinglePoint
