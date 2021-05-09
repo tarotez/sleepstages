@@ -66,19 +66,21 @@ class ReadDAQServer:
         - taskHandle (taskHandle型)
         - numSampsPerChan (int) : number of samples per channel
         - timeout (float) : time out in sec
-        - fillMode:
-        - readArray (np.ndarray): array for writing out output
+        - fillMode: DAQmx_Val_GroupByChannel or DAQmx_Val_GroupByScanNumber
+        - data (np.ndarray): array for writing out output
         - arraySizeInSamps : the size of the readArray array
-        - numSampsPerChanRead : the number of samples that were actually read out
+        - byref(int32()) : the number of samples that were actually read out
         - reserved
         """
         try:
+            DAQmxReadAnalogF64(taskHandle, -1, self.timeout,
+                    DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
             ### DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
             ###             DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
             # DAQmxReadAnalogF64(taskHandle, 1, self.timeout,
             #             DAQmx_Val_GroupByChannel, data, self.channelNum, byref(int32()), None)
-            DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-                         DAQmx_Val_GroupByScanNumber, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
+            # DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
+            #             DAQmx_Val_GroupByScanNumber, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
 
         except:
             import sys
@@ -153,7 +155,7 @@ class ReadDAQServer:
                 # param: numSampsPerChan (int) : number of samples per channel
                 DAQmxCfgSampClkTiming(taskHandle, "", self.sampRate, DAQmx_Val_Rising,
                                       DAQmx_Val_ContSamps,
-                                      ### DAQmx_Val_FiniteSamps,
+                                      # DAQmx_Val_FiniteSamps,
                                       self.numSampsPerChan)
 
                 # DAQmx Start Code
