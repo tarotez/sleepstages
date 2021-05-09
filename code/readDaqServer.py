@@ -157,7 +157,8 @@ class ReadDAQServer:
                 DAQmxCfgSampClkTiming(taskHandle, "", self.samplingFreq, DAQmx_Val_Rising,
                                       DAQmx_Val_ContSamps,
                                       # DAQmx_Val_FiniteSamps,
-                                      self.numSampsPerChan)
+                                      self.numSampsPerChan * self.channelNum)
+                                      # elf.numSampsPerChan)
 
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
