@@ -30,7 +30,7 @@
 "windowSizeInSec" : 10,
 "samplingFreq" : 128,
 
-"graphUpdateFreqInHz" : 1,
+"graphUpdateFreqInHz" : 0.5,
 
 "terminalConfigDefaultValue" : "RSE",
 
