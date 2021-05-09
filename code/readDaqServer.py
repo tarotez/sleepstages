@@ -26,12 +26,11 @@ from parameterSetup import ParameterSetup
 import timeFormatting
 
 class ReadDAQServer:
-    def __init__(self, client, recordWaves, channelNum, sampRate=128, dataAcquisitionFreq=0.1,
+    def __init__(self, client, recordWaves, channelNum, samplingFreq,
                  timeout=500, maxNumEpoch=600000, eeg_std=None, ch2_std=None):
         """
         # Params
-        - sampRate (float): サンプリングレート (Hz)
-        - dataAcquisitionFreq (float): data acuisition frequency (Hz)
+        - samplingFreq (float): サンプリングレート (Hz)
         - timeout (float): how long the program waits in sec (set to -1 to wait indefinitely)
         - maxNumEpoch (int): 予測を行うエポック数
         - eeg_std (float?): EEGについて決め打ちstdがある場合はこれを指定する
@@ -42,11 +41,9 @@ class ReadDAQServer:
         self.client = client
         self.recordWaves = recordWaves
         self.channelNum = channelNum
-        self.sampRate = sampRate
-        self.dataAcquisitionFreq = dataAcquisitionFreq
+        self.samplingFreq = samplingFreq
         self.timeout = timeout  # set to -1 to wait indefinitely
         self.maxNumEpoch = maxNumEpoch
-        # self.numSampsPerChan = round(self.sampRate / self.dataAcquisitionFreq)
         self.numSampsPerChan = self.client.updateGraph_samplePointNum
 
         # あらかじめ定められた標準偏差がある場合、その値を保存する
@@ -73,7 +70,7 @@ class ReadDAQServer:
         - reserved
         """
         try:
-            DAQmxReadAnalogF64(taskHandle, -1, self.timeout,
+            DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
                     DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
             ### DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
             ###             DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
@@ -105,12 +102,12 @@ class ReadDAQServer:
 
         while True:
             now = datetime.datetime.now()
-            print('sampling rate             : {}'.format(self.sampRate))
-            print('samples per channel : {}'.format(self.numSampsPerChan))
+            print('sampling frequency          : {}'.format(self.samplingFreq))
+            print('samples per channel         : {}'.format(self.numSampsPerChan))
             print('maximum number of epochs    : {}'.format(self.maxNumEpoch))
             print('number of channels          : {}'.format(self.channelNum))
 
-            dt = 1.0 / self.sampRate
+            dt = 1.0 / self.samplingFreq
 
             taskHandle = TaskHandle()
 
@@ -153,7 +150,7 @@ class ReadDAQServer:
                 # param: sampleMode (int32) : DAQmx_Val_FiniteSamps
                 #        or DAQmx_Val_ContSamps or DAQmx_Val_HWTimedSinglePoint
                 # param: numSampsPerChan (int) : number of samples per channel
-                DAQmxCfgSampClkTiming(taskHandle, "", self.sampRate, DAQmx_Val_Rising,
+                DAQmxCfgSampClkTiming(taskHandle, "", self.samplingFreq, DAQmx_Val_Rising,
                                       DAQmx_Val_ContSamps,
                                       # DAQmx_Val_FiniteSamps,
                                       self.numSampsPerChan)

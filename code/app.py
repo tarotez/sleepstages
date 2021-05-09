@@ -49,6 +49,7 @@ class RemApplication(QMainWindow):
         self.terminal_config = self.params.terminal_config_default_value
 
         self.channelNum = 2 if (self.params.showCh2 or self.useCh2ForReplace) else 1
+        self.samplingFreq = self.params.samplingFreq
 
         self.eeg_mode_str_normalize = "Normalize-ON"
         self.eeg_mode_str_none = "Normalize-OFF"
@@ -104,7 +105,7 @@ class RemApplication(QMainWindow):
             if self.readFromDaq:
                 module = importlib.import_module('readDaqServer')
                 ReadDAQServer = getattr(module, 'ReadDAQServer')
-                self.server = ReadDAQServer(self.client, self.recordWaves, self.channelNum)
+                self.server = ReadDAQServer(self.client, self.recordWaves, self.channelNum, self.samplingFreq)
             else:
                 if self.args[1] == 'o':
                     postFiles = listdir(self.params.postDir)
