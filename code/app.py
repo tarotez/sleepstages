@@ -48,6 +48,8 @@ class RemApplication(QMainWindow):
         # self.terminal_str_pseudo = "PseudoDIFF"  # not available for NI DAQ USB-6210
         self.terminal_config = self.params.terminal_config_default_value
 
+        self.channelIDs_all = self.params.channelIDs
+
         self.channelNum = 2 if (self.params.showCh2 or self.useCh2ForReplace) else 1
         self.samplingFreq = self.params.samplingFreq
 
@@ -105,7 +107,8 @@ class RemApplication(QMainWindow):
             if self.readFromDaq:
                 module = importlib.import_module('readDaqServer')
                 ReadDAQServer = getattr(module, 'ReadDAQServer')
-                self.server = ReadDAQServer(self.client, self.recordWaves, self.channelNum, self.samplingFreq)
+                self.channelIDs_selected = self.channelIDs_all[:self.channelNum]
+                self.server = ReadDAQServer(self.client, self.recordWaves, self.channelIDs_selected, self.samplingFreq)
             else:
                 if self.args[1] == 'o':
                     postFiles = listdir(self.params.postDir)
@@ -247,7 +250,7 @@ class RemApplication(QMainWindow):
         checkConnectionButton = QtWidgets.QPushButton('Test connection', self)
         checkConnectionButton.clicked.connect(self.check_connection)
         checkConnectionButton.resize(checkConnectionButton.sizeHint())
-        checkConnectionButton.move(160 * self.scale, 10 * self.scale)
+        checkConnectionButton.move(180 * self.scale, 10 * self.scale)
 
         # change standardization of ch2
         self.nameLabel_terminal_label = QLabel(self)
