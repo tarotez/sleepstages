@@ -157,10 +157,9 @@ class ReadDAQServer:
                                       # DAQmx_Val_FiniteSamps,
                                       self.numSampsPerChan)
 
-                DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps);
-
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
+                DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps)
 
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
                     data = np.zeros((self.numSampsPerChan * self.channelNum,), dtype=np.float64)
