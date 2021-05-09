@@ -72,14 +72,14 @@ class ReadDAQServer:
         - reserved
         """
         try:
-            DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
+            DAQmxReadAnalogF64(taskHandle, -1, self.timeout,
                     DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
             ### DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-            ###             DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
+            ###     DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
             # DAQmxReadAnalogF64(taskHandle, 1, self.timeout,
-            #             DAQmx_Val_GroupByChannel, data, self.channelNum, byref(int32()), None)
+            #       DAQmx_Val_GroupByChannel, data, self.channelNum, byref(int32()), None)
             # DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-            #             DAQmx_Val_GroupByScanNumber, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
+            #       DAQmx_Val_GroupByScanNumber, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
 
         except:
             import sys
@@ -157,8 +157,8 @@ class ReadDAQServer:
                 #        or DAQmx_Val_ContSamps or DAQmx_Val_HWTimedSinglePoint
                 # param: numSampsPerChan (int) : number of samples per channel
                 DAQmxCfgSampClkTiming(taskHandle, "", self.samplingFreq, DAQmx_Val_Rising,
-                                      DAQmx_Val_ContSamps,
-                                      # DAQmx_Val_FiniteSamps,
+                                      ### DAQmx_Val_ContSamps,
+                                      DAQmx_Val_FiniteSamps,
                                       self.numSampsPerChan)
 
                 # DAQmx Start Code
