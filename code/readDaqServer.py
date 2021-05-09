@@ -28,7 +28,7 @@ from parameterSetup import ParameterSetup
 import timeFormatting
 
 class ReadDAQServer:
-    def __init__(self, client, recordWaves, channelNum, samplingFreq,
+    def __init__(self, client, recordWaves, channelIDs, samplingFreq,
                  timeout=500, maxNumEpoch=600000):
         """
         # Params
@@ -39,7 +39,8 @@ class ReadDAQServer:
 
         self.client = client
         self.recordWaves = recordWaves
-        self.channelNum = channelNum
+        self.channelIDs = channelIDs
+        self.channelNum = len(self.channelIDs)
         self.samplingFreq = samplingFreq
         self.timeout = timeout  # set to -1 to wait indefinitely
         self.maxNumEpoch = maxNumEpoch
@@ -101,6 +102,7 @@ class ReadDAQServer:
             print('number of channels          : {}'.format(self.channelNum))
 
             dt = 1.0 / self.samplingFreq
+            channelIDs = self.channelIDs
 
             taskHandles = [TaskHandle() for _ in range(self.channelNum)]
 
@@ -218,4 +220,4 @@ class ReadDAQServer:
                 if taskHandles[0]:
                     for cID in range(self.channelNum):
                         DAQmxStopTask(taskHandles[cID])
-                        DAQmxClearTask(taskHandle[cID])
+                        DAQmxClearTask(taskHandles[cID])
