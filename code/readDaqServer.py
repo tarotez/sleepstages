@@ -193,7 +193,7 @@ class ReadDAQServer:
                     '''
 
                     dataToClient = ''
-                    for sampleID in range(sampleNum):
+                    for sampleID in range(len(eeg_data)):
                         current_time = self.updateTimeStamp(now, sampleID, dt)
                         ftime = current_time.strftime('%H:%M:%S.')
                         ftime += '%06d' % current_time.microsecond
