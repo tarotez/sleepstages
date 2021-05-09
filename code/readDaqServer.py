@@ -1,4 +1,4 @@
-[cID]from PyDAQmx import DAQmxCreateTask
+from PyDAQmx import DAQmxCreateTask
 from PyDAQmx import DAQmxCreateAIVoltageChan
 from PyDAQmx import DAQmxCfgSampClkTiming
 from PyDAQmx import DAQmxStartTask
