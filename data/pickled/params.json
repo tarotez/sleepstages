@@ -34,7 +34,7 @@
 
 "terminalConfigDefaultValue" : "RSE",
 
-"channelIDs" : "[1,0]",
+"channelIDs" : [1,0],
 
 "showCh2" : 0,
 "useCh2ForReplace" : 0,
