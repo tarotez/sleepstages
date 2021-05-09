@@ -73,10 +73,12 @@ class ReadDAQServer:
         - reserved
         """
         try:
-            DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-                         DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
+            # DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
+            #             DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
             # DAQmxReadAnalogF64(taskHandle, 1, self.timeout,
             #             DAQmx_Val_GroupByChannel, data, self.channelNum, byref(int32()), None)
+            DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
+                         DAQmx_Val_GroupByScanNumber, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
 
         except:
             import sys
