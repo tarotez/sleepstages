@@ -152,14 +152,20 @@ class ReadDAQServer:
                                           self.numSampsPerChan)
 
                     # DAQmx Start Code
-                    DAQmxStartTask(taskHandles[cID])
+                    ### DAQmxStartTask(taskHandles[cID])
                     # DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps)
 
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
                     for cID in range(self.channelNum):
                         # data = np.zeros((self.numSampsPerChan * self.channelNum,), dtype=np.float64)
+                        DAQmxStartTask(taskHandles[cID])
+
                         data = np.zeros((self.numSampsPerChan), dtype=np.float64)
                         now = self.read_data(taskHandle[cID], data)
+
+                        DAQmxStopTask(taskHandles[cID])
+                        ### DAQmxClearTask(taskHandles[cID])
+
                         # print('data.shape =', data.shape)
                         if cID == 0:
                             eeg_data = data
