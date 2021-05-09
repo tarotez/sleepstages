@@ -161,7 +161,7 @@ class ReadDAQServer:
                         DAQmxStartTask(taskHandles[cID])
 
                         data = np.zeros((self.numSampsPerChan), dtype=np.float64)
-                        now = self.read_data(taskHandle[cID], data)
+                        now = self.read_data(taskHandles[cID], data)
 
                         DAQmxStopTask(taskHandles[cID])
                         ### DAQmxClearTask(taskHandles[cID])
