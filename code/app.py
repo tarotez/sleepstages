@@ -256,7 +256,7 @@ class RemApplication(QMainWindow):
         self.terminal_combobox.addItem(self.terminal_str_diff)
         self.terminal_combobox.addItem(self.terminal_str_rse)
         self.terminal_combobox.addItem(self.terminal_str_nrse)
-        self.terminal_combobox.addItem(self.terminal_str_pseudo)
+        # self.terminal_combobox.addItem(self.terminal_str_pseudo) # not available for NI DAQ USB-6210
         self.terminal_combobox.move(310 * self.scale, 38 * self.scale)
         self.terminal_combobox.resize(self.terminal_combobox.sizeHint())
         self.terminal_combobox.activated[str].connect(self.terminal_choice)
