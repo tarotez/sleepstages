@@ -178,6 +178,9 @@ class ReadDAQServer:
                         sampleNum = data.shape[0]
                         eeg_data = data[:]
 
+                    print('sampleNum =', sampleNum)
+                    print('data.shape =', data.shape)
+                    print('data[:32] =', data[32:])
                     print('eeg_data[:16] =', eeg_data[:16])
                     if self.channelNum == 2:
                         print('ch2_data[:16] =', ch2_data[:16])
