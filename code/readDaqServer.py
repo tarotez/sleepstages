@@ -9,7 +9,7 @@ from PyDAQmx import TaskHandle
 from PyDAQmx import DAQmx_Val_Volts
 from PyDAQmx import DAQmx_Val_Cfg_Default, DAQmx_Val_Diff, DAQmx_Val_RSE, DAQmx_Val_NRSE, DAQmx_Val_PseudoDiff
 from PyDAQmx import DAQmx_Val_Rising, DAQmx_Val_Falling
-from PyDAQmx import DAQmx_Val_FiniteSamps, DAQmx_Val_ContSamps
+from PyDAQmx import DAQmx_Val_FiniteSamps, DAQmx_Val_ContSamps, DAQmx_Val_HWTimedSinglePoint
 from PyDAQmx import DAQmx_Val_GroupByChannel, DAQmx_Val_GroupByScanNumber
 from PyDAQmx import DAQError
 from PyDAQmx import int32
@@ -151,7 +151,8 @@ class ReadDAQServer:
                 #        or DAQmx_Val_ContSamps or DAQmx_Val_HWTimedSinglePoint
                 # param: numSampsPerChan (int) : number of samples per channel
                 DAQmxCfgSampClkTiming(taskHandle, "", self.samplingFreq, DAQmx_Val_Rising,
-                                      DAQmx_Val_ContSamps,
+                                      ### DAQmx_Val_ContSamps,
+                                      DAQmx_Val_HWTimedSinglePoint,
                                       # DAQmx_Val_FiniteSamps,
                                       self.numSampsPerChan)
 
