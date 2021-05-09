@@ -35,8 +35,8 @@ class ReadDAQServer:
         - samplingFreq (float): sampling frequency (Hz)
         - timeout (float): how long the program waits in sec (set to -1 to wait indefinitely)
         - maxNumEpoch (int): the maximum number of epochs
-        - eeg_std (float?): standard deviation for EEG
-        - ch2_std (float?): standard deviation for ch2
+        - eeg_std (float): standard deviation for EEG
+        - ch2_std (float): standard deviation for ch2
         """
 
         self.client = client
@@ -60,7 +60,7 @@ class ReadDAQServer:
     def read_data(self, taskHandle, data):
         """ read data points
         # Params
-        - taskHandle (taskHandle型)
+        - taskHandle (taskHandle type)
         - numSampsPerChan (int) : number of samples per channel
         - timeout (float) : time out in sec
         - fillMode: DAQmx_Val_GroupByChannel or DAQmx_Val_GroupByScanNumber
@@ -91,10 +91,10 @@ class ReadDAQServer:
     def updateTimeStamp(now, t, dt):
         """
         # Params
-        - t (float)
-        - dt (float)
+        - t (time steps, float)
+        - dt (time difference, float)
         """
-        delta = datetime.timedelta(microseconds=t * dt * 1000 * 1000)
+        delta = datetime.timedelta(microseconds = t * dt * 1000 * 1000)
         current_time = now + delta
         return current_time
 
