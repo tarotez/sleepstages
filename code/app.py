@@ -455,8 +455,8 @@ class RemApplication(QMainWindow):
             self.client.hasGUI = True
             self.ylim_value_eeg_box.setText(str(self.client.ylim_max_eeg))
             self.ylim_value_ch2_box.setText(str(self.client.ylim_max_ch2))
-            self.ylim_slider_eeg.setValue(self.client.ylim_max_eeg * 10)
-            self.ylim_slider_ch2.setValue(self.client.ylim_max_ch2 * 10)
+            self.ylim_slider_eeg.setValue(int(self.client.ylim_max_eeg * 10))
+            self.ylim_slider_ch2.setValue(int(self.client.ylim_max_ch2 * 10))
 
         except Exception as e:
             print('Exception in self.client = ...')
