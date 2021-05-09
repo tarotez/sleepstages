@@ -50,7 +50,7 @@ class RemApplication(QMainWindow):
 
         self.channelIDs_all = self.params.channelIDs
 
-        self.channelNum = 2 if (self.params.showCh2 or self.useCh2ForReplace) else 1
+        self.channelNum = 2 if (self.params.showCh2 or self.params.useCh2ForReplace) else 1
         self.samplingFreq = self.params.samplingFreq
 
         self.eeg_mode_str_normalize = "Normalize-ON"
