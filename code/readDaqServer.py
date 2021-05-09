@@ -168,7 +168,8 @@ class ReadDAQServer:
                         eeg_data = data[:]
 
                     print('eeg_data[:16] =', eeg_data[:16])
-                    print('ch2_data[:16] =', ch2_data[:16])
+                    if self.channelNum == 2:
+                        print('ch2_data[:16] =', ch2_data[:16])
 
                     dataToClient = ''
                     for sampleID in range(sampleNum):
