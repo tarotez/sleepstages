@@ -84,7 +84,7 @@ class ReadDAQServer:
             pdb.post_mortem(traceback)
 
         current_time = datetime.datetime.now()
-        return current_time, data
+        return current_time
 
     @staticmethod
     def updateTimeStamp(now, t, dt):
@@ -158,7 +158,7 @@ class ReadDAQServer:
 
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
                     data = np.zeros((self.numSampsPerChan * self.channelNum,), dtype=np.float64)
-                    now, data_acquired = self.read_data(taskHandle, data)
+                    now = self.read_data(taskHandle, data)
                     # print('data.shape =', data.shape)
 
                     if self.channelNum == 2:
