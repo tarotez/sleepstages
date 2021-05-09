@@ -157,8 +157,8 @@ class ReadDAQServer:
                 #        or DAQmx_Val_ContSamps or DAQmx_Val_HWTimedSinglePoint
                 # param: numSampsPerChan (int) : number of samples per channel
                 DAQmxCfgSampClkTiming(taskHandle, "", self.samplingFreq, DAQmx_Val_Rising,
-                                      ### DAQmx_Val_ContSamps,
-                                      DAQmx_Val_FiniteSamps,
+                                      DAQmx_Val_ContSamps,
+                                      # DAQmx_Val_FiniteSamps,
                                       self.numSampsPerChan)
 
                 # DAQmx Start Code
@@ -180,10 +180,10 @@ class ReadDAQServer:
 
                     print('sampleNum =', sampleNum)
                     print('data.shape =', data.shape)
-                    print('data[:32] =', data[32:])
-                    print('eeg_data[:16] =', eeg_data[:16])
+                    print('data[:64] =', data[:64])
+                    print('eeg_data[:64] =', eeg_data[:64])
                     if self.channelNum == 2:
-                        print('ch2_data[:16] =', ch2_data[:16])
+                        print('ch2_data[:64] =', ch2_data[:64])
 
                     dataToClient = ''
                     for sampleID in range(sampleNum):
