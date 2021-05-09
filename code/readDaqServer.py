@@ -121,7 +121,7 @@ class ReadDAQServer:
                     try:
                         ### device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
                         ### device_and_channels = ", ".join(device_and_channelsL)
-                        print('device_and_channels =', device_and_channels)
+                        ### print('device_and_channels =', device_and_channels)
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE, 'PseudoDIFF' : DAQmx_Val_PseudoDiff}
                         ### DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
                         ###        DAQmx_Val_dict[self.terminal_config], -10.0, 10.0, DAQmx_Val_Volts, None)
