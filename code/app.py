@@ -45,7 +45,7 @@ class RemApplication(QMainWindow):
         self.terminal_str_diff = "DIFF"
         self.terminal_str_rse = "RSE"
         self.terminal_str_nrse = "NRSE"
-        # self.terminal_str_pseudo = "PseudoDIFF"  # not available for NI DAQ USB-6210
+        self.terminal_str_pseudo = "PseudoDIFF"  # not available for NI DAQ USB-6210
         self.terminal_config = self.params.terminal_config_default_value
 
         self.channelNum = 2 if (self.params.showCh2 or self.useCh2ForReplace) else 1
