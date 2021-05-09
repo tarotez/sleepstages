@@ -117,8 +117,6 @@ class ReadDAQServer:
                 # DAQmx Configure Code
                 DAQmxCreateTask("", byref(taskHandle))
 
-                DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps);
-
                 def createChannel(devID, channelIDs):
                     try:
                         device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
@@ -158,6 +156,8 @@ class ReadDAQServer:
                                       DAQmx_Val_ContSamps,
                                       # DAQmx_Val_FiniteSamps,
                                       self.numSampsPerChan)
+
+                DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps);
 
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
