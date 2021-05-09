@@ -215,7 +215,7 @@ class ReadDAQServer:
                 self.logFile.flush()
 
             finally:
-                if taskHandle:
+                if taskHandles[0]:
                     for cID in range(self.channelNum):
                         DAQmxStopTask(taskHandles[cID])
                         DAQmxClearTask(taskHandle[cID])
