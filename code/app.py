@@ -45,6 +45,7 @@ class RemApplication(QMainWindow):
         self.terminal_str_diff = "DIFF"
         self.terminal_str_rse = "RSE"
         self.terminal_str_nrse = "NRSE"
+        self.terminal_str_pseudo = "PseudoDIFF"
         self.terminal_config = self.params.terminal_config_default_value
 
         self.channelNum = 2 if (self.params.showCh2 or self.useCh2ForReplace) else 1
@@ -255,6 +256,7 @@ class RemApplication(QMainWindow):
         self.terminal_combobox.addItem(self.terminal_str_diff)
         self.terminal_combobox.addItem(self.terminal_str_rse)
         self.terminal_combobox.addItem(self.terminal_str_nrse)
+        self.terminal_combobox.addItem(self.terminal_str_pseudo)
         self.terminal_combobox.move(310 * self.scale, 38 * self.scale)
         self.terminal_combobox.resize(self.terminal_combobox.sizeHint())
         self.terminal_combobox.activated[str].connect(self.terminal_choice)
