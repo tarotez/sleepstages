@@ -12,8 +12,8 @@ from PyDAQmx import DAQmx_Val_Rising, DAQmx_Val_Falling
 from PyDAQmx import DAQmx_Val_FiniteSamps, DAQmx_Val_ContSamps
 from PyDAQmx import DAQmx_Val_GroupByChannel, DAQmx_Val_GroupByScanNumber
 from PyDAQmx import DAQError
-from PyDAQmx import DAQmxSetReadOverWrite
-from PyDAQmx import DAQmx_Val_OverwriteUnreadSamps, DAQmx_Val_DoNotOverwriteUnreadSamps
+# from PyDAQmx import DAQmxSetReadOverWrite
+# from PyDAQmx import DAQmx_Val_OverwriteUnreadSamps, DAQmx_Val_DoNotOverwriteUnreadSamps
 from PyDAQmx import int32
 from ctypes import byref
 import numpy as np
@@ -159,7 +159,7 @@ class ReadDAQServer:
 
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
-                DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps)
+                # DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps)
 
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
                     data = np.zeros((self.numSampsPerChan * self.channelNum,), dtype=np.float64)
