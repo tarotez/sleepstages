@@ -65,6 +65,11 @@ class ParameterSetup(object):
         else:
             self.terminal_config_default_value = 'RSE'
 
+        if 'channelIDs' in d:
+            self.channelIDs = d['channelIDs']
+        else:
+            self.channelIDs = [1,0]
+
         self.writeWholeWaves = d['writeWholeWaves']   # sampling frequency of data
         self.computeKS = d['computeKS']
 
