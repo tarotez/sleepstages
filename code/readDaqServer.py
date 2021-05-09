@@ -151,9 +151,9 @@ class ReadDAQServer:
                 # param: sampleMode (int32) : DAQmx_Val_FiniteSamps
                 #        or DAQmx_Val_ContSamps or DAQmx_Val_HWTimedSinglePoint
                 # param: numSampsPerChan (int) : number of samples per channel
-                DAQmxCfgSampClkTiming(taskHandle, "", self.sampRate,
-                                      ### DAQmx_Val_Rising, DAQmx_Val_ContSamps,
-                                      DAQmx_Val_Rising, DAQmx_Val_FiniteSamps,
+                DAQmxCfgSampClkTiming(taskHandle, "", self.sampRate, DAQmx_Val_Rising,
+                                      DAQmx_Val_ContSamps,
+                                      ### DAQmx_Val_FiniteSamps,
                                       self.numSampsPerChan)
 
                 # DAQmx Start Code
