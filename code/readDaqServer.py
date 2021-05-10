@@ -65,9 +65,9 @@ class ReadDAQServer:
         """
         try:
             DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-                    DAQmx_Val_GroupByChannel, data, self.numSampsPerChan, byref(int32()), None)
+                    DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
             ### DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-            ####        DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
+            ###     DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
             # DAQmxReadAnalogF64(taskHandle, 1, self.timeout,
             #       DAQmx_Val_GroupByChannel, data, self.channelNum, byref(int32()), None)
             # DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
@@ -102,27 +102,27 @@ class ReadDAQServer:
             print('number of channels          : {}'.format(self.channelNum))
 
             dt = 1.0 / self.samplingFreq
-            channelIDs = self.channelIDs
 
-            taskHandles = [TaskHandle() for _ in range(self.channelNum)]
+            taskHandle = TaskHandle()
 
             try:
                 # DAQmx Configure Code
-                def createChannel(taskHandle, devID, channelID):
+                DAQmxCreateTask("", byref(taskHandle))
+
+                def createChannel(devID, channelIDs):
                     try:
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE, 'PseudoDIFF' : DAQmx_Val_PseudoDiff}
-                        # device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
-                        # device_and_channels = ", ".join(device_and_channelsL)
-                        # print('device_and_channels =', device_and_channels)
-                        device_and_channel = "Dev" + str(devID) + "/ai" + str(channelID)
-                        DAQmxCreateAIVoltageChan(taskHandle, device_and_channel, "",
+                        device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
+                        device_and_channels = ", ".join(device_and_channelsL)
+                        ### print('device_and_channels =', device_and_channels)
+                        DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
                                 DAQmx_Val_dict[self.terminal_config], -10.0, 10.0, DAQmx_Val_Volts, None)
                         # for channelID in channelIDs:
                         #    device_and_channel = "Dev" + str(devID) + "/ai" + str(channelID)
                         #    DAQmxCreateAIVoltageChan(taskHandle, device_and_channel, "",
                         #        DAQmx_Val_dict[self.terminal_config], -10.0, 10.0, DAQmx_Val_Volts, None)
 
-                        print("at DAQmxCreateAIVoltageChan, created succesfully for channelID ", channelID)
+                        print("at DAQmxCreateAIVoltageChan, created succesfully with channelNum = " + str(self.channelNum) + ".")
                         return 1
                     except DAQError as err:
                         print("at DAQmxCreateAIVoltageChan, DAQmx Error: %s" % err)
@@ -130,43 +130,33 @@ class ReadDAQServer:
                         self.logFile.flush()
                         return 0
 
-                for cID in range(self.channelNum):
+                if not createChannel(1, self.channelIDs):
+                    if not createChannel(2, self.channelIDs):
+                        if not createChannel(0, self.channelIDs):
+                            pass
 
-                    DAQmxCreateTask("", byref(taskHandles[cID]))
+                # param: taskHandle
+                # param: source (const char[])
+                # param: samplingFreq : sapmling frequency (Hz)
+                # param: activeEdge
+                # param: sampleMode (int32) : DAQmx_Val_FiniteSamps
+                #        or DAQmx_Val_ContSamps or DAQmx_Val_HWTimedSinglePoint
+                # param: numSampsPerChan (int) : number of samples per channel
+                DAQmxCfgSampClkTiming(taskHandle, "", self.samplingFreq, DAQmx_Val_Rising,
+                                      DAQmx_Val_ContSamps,
+                                      # DAQmx_Val_FiniteSamps,
+                                      self.numSampsPerChan * self.channelNum)
+                                      # elf.numSampsPerChan)
 
-                    if not createChannel(taskHandles[cID], 1, channelIDs[cID]):
-                        if not createChannel(taskHandles[cID], 2, channelIDs[cID]):
-                            if not createChannel(taskHandles[cID], 0, channelIDs[cID]):
-                                pass
-
-                    # param: taskHandle
-                    # param: source (const char[])
-                    # param: samplingFreq : sapmling frequency (Hz)
-                    # param: activeEdge
-                    # param: sampleMode (int32) : DAQmx_Val_FiniteSamps
-                    #        or DAQmx_Val_ContSamps or DAQmx_Val_HWTimedSinglePoint
-                    # param: numSampsPerChan (int) : number of samples per channel
-                    DAQmxCfgSampClkTiming(taskHandles[cID], "", self.samplingFreq, DAQmx_Val_Rising,
-                                          DAQmx_Val_ContSamps,
-                                          # DAQmx_Val_FiniteSamps,
-                                          self.numSampsPerChan)
-
-                    DAQmxStartTask(taskHandles[cID])
+                # DAQmx Start Code
+                DAQmxStartTask(taskHandle)
+                # DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps)
 
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
-                    for cID in range(self.channelNum):
-                        data = np.zeros((self.numSampsPerChan), dtype=np.float64)
-                        now = self.read_data(taskHandles[cID], data)                    
-                        # print('data.shape =', data.shape)
-                        if cID == 0:
-                            eeg_data = data
-                        else:
-                            ch2_data = data
-                        # print('data.shape =', data.shape)
-                        # print('data[:64] =', data[:64])
-                        # print('data =', data)
+                    data = np.zeros((self.numSampsPerChan * self.channelNum,), dtype=np.float64)
+                    now = self.read_data(taskHandle, data)
+                    # print('data.shape =', data.shape)
 
-                    '''
                     if self.channelNum == 2:
                         sampleNum = data.shape[0] // 2
                         eeg_data = data[:sampleNum]
@@ -174,6 +164,7 @@ class ReadDAQServer:
                     else:
                         sampleNum = data.shape[0]
                         eeg_data = data[:]
+
                     print('sampleNum =', sampleNum)
                     print('data.shape =', data.shape)
                     # print('data[:64] =', data[:64])
@@ -181,10 +172,9 @@ class ReadDAQServer:
                     print('eeg_data[:64] =', eeg_data[:64])
                     if self.channelNum == 2:
                         print('ch2_data[:64] =', ch2_data[:64])
-                    '''
 
                     dataToClient = ''
-                    for sampleID in range(len(eeg_data)):
+                    for sampleID in range(sampleNum):
                         current_time = self.updateTimeStamp(now, sampleID, dt)
                         ftime = current_time.strftime('%H:%M:%S.')
                         ftime += '%06d' % current_time.microsecond
@@ -214,7 +204,6 @@ class ReadDAQServer:
                 self.logFile.flush()
 
             finally:
-                if taskHandles[0]:
-                    for cID in range(self.channelNum):
-                        DAQmxStopTask(taskHandles[cID])
-                        DAQmxClearTask(taskHandles[cID])
+                if taskHandle:
+                    DAQmxStopTask(taskHandle)
+                    DAQmxClearTask(taskHandle)
