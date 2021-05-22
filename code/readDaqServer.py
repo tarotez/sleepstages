@@ -42,7 +42,7 @@ class ReadDAQServer:
         self.client = client
         self.recordWaves = recordWaves
         self.channelIDs = channelIDs
-        self.unusedChannelID = max(self.channelIDs)
+        self.unusedChannelID = max(self.channelIDs) + 1
         self.channelIDsWithDummy = self.channelIDs + [self.unusedChannelID]
         self.channelNum = len(self.channelIDs)
         self.channelNumWithDummy = len(self.channelIDsWithDummy)
