@@ -152,9 +152,11 @@ class ReadDAQServer:
 
                 ####
                 # temp = np.array((1,), dtype=np.double)
-                temp = byref(float64())
-                convRate = DAQmxGetAIConvRate(taskHandle, temp)
-                print('convRate =', convRate)
+                convRateArg = float64()
+                convRateVal = DAQmxGetAIConvRate(taskHandle, byte(convRateArg))
+                print('convRateArg =', convRateArg)
+                print('convRateArg =', convRateArg)
+                print('convRateVal =', convRateVal)
 
 
                 # DAQmx Start Code
