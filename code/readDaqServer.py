@@ -149,6 +149,9 @@ class ReadDAQServer:
                                       self.numSampsPerChan * self.channelNum)
                                       # elf.numSampsPerChan)
 
+                convRate = DAQmxGetAIConvRate(taskHandle, byref(int32()))
+                print('convRate =', convRate)
+
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
                 # DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps)
