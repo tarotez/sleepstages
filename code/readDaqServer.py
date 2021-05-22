@@ -16,6 +16,7 @@ from PyDAQmx import DAQError
 # from PyDAQmx import DAQmxSetReadOverWrite
 # from PyDAQmx import DAQmx_Val_OverwriteUnreadSamps, DAQmx_Val_DoNotOverwriteUnreadSamps
 from PyDAQmx import int32
+from PyDAQmx import float64
 from ctypes import byref
 import numpy as np
 import datetime
@@ -61,7 +62,7 @@ class ReadDAQServer:
         - fillMode: DAQmx_Val_GroupByChannel or DAQmx_Val_GroupByScanNumber
         - data (np.ndarray): array for writing out output
         - arraySizeInSamps : the size of the readArray array
-        - byref(int32()) : the number of samples that were actually read out
+        - byref(int32()) : the number of samples that were succesfully read out
         - reserved
         """
         try:
@@ -149,8 +150,12 @@ class ReadDAQServer:
                                       self.numSampsPerChan * self.channelNum)
                                       # elf.numSampsPerChan)
 
-                convRate = DAQmxGetAIConvRate(taskHandle, byref(int32()))
+                ####
+                # temp = np.array((1,), dtype=np.double)
+                temp = byref(float64())
+                convRate = DAQmxGetAIConvRate(taskHandle, temp)
                 print('convRate =', convRate)
+
 
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
