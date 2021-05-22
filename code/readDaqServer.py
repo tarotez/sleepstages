@@ -42,9 +42,10 @@ class ReadDAQServer:
         self.client = client
         self.recordWaves = recordWaves
         self.channelIDs = channelIDs
+        self.channelNum = len(self.channelIDs)
         self.unusedChannelID = max(self.channelIDs) + 1
         self.channelIDsWithDummy = self.channelIDs + [self.unusedChannelID]
-        self.channelNum = len(self.channelIDs)
+        print('self.channelIDsWithDummy =', self.channelIDsWithDummy)
         self.channelNumWithDummy = len(self.channelIDsWithDummy)
         self.samplingFreq = samplingFreq
         self.timeout = timeout  # set to -1 to wait indefinitely
@@ -70,7 +71,7 @@ class ReadDAQServer:
         """
         try:
             DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-                    DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
+                    DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNumWithDummy, byref(int32()), None)
             ### DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
             ###     DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
             # DAQmxReadAnalogF64(taskHandle, 1, self.timeout,
@@ -150,11 +151,11 @@ class ReadDAQServer:
                 DAQmxCfgSampClkTiming(taskHandle, "", self.samplingFreq, DAQmx_Val_Rising,
                                       DAQmx_Val_ContSamps,
                                       # DAQmx_Val_FiniteSamps,
-                                      self.numSampsPerChan * self.channelNum)
+                                      self.numSampsPerChan * self.channelNumWithDummy)
                                       # elf.numSampsPerChan)
 
                 convRateFactor = 5
-                new_convRate = float64(self.samplingFreq * self.channelNum * convRateFactor)
+                new_convRate = float64(self.samplingFreq * self.channelNumWithDummy * convRateFactor)
                 DAQmxSetAIConvRate(taskHandle, new_convRate)
                 convRate = float64()
                 DAQmxGetAIConvRate(taskHandle, byref(convRate))
