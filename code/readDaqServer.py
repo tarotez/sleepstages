@@ -153,7 +153,7 @@ class ReadDAQServer:
                 ####
                 # temp = np.array((1,), dtype=np.double)
                 convRateArg = float64()
-                convRateVal = DAQmxGetAIConvRate(taskHandle, byte(convRateArg))
+                convRateVal = DAQmxGetAIConvRate(taskHandle, byref(convRateArg))
                 print('convRateArg =', convRateArg)
                 print('convRateArg =', convRateArg)
                 print('convRateVal =', convRateVal)
