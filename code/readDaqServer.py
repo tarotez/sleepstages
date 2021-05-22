@@ -42,8 +42,10 @@ class ReadDAQServer:
         self.client = client
         self.recordWaves = recordWaves
         self.channelIDs = channelIDs
+        self.unusedChannelID = max(self.channelIDs)
+        self.channelIDsWithDummy = self.channelIDs + [self.unusedChannelID]
         self.channelNum = len(self.channelIDs)
-        self.channelNumWithDummy = self.channelNum + 1
+        self.channelNumWithDummy = len(self.channelIDsWithDummy)
         self.samplingFreq = samplingFreq
         self.timeout = timeout  # set to -1 to wait indefinitely
         self.maxNumEpoch = maxNumEpoch
@@ -115,13 +117,7 @@ class ReadDAQServer:
                 def createChannel(devID, channelIDs):
                     try:
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE, 'PseudoDIFF' : DAQmx_Val_PseudoDiff}
-
-                        self.unusedChannelID = max(channelIDs) + 1
-                        print('self.unusedChannelID = ', self.unusedChannelID)
-                        channelIDswithDummy = channelIDs + [self.unusedChannelID]
-                        print('channelIDswithDummy =', channelIDswithDummy)
-                        device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDswithDummy]
-
+                        device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
                         device_and_channels = ", ".join(device_and_channelsL)
                         ### print('device_and_channels =', device_and_channels)
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
@@ -139,9 +135,9 @@ class ReadDAQServer:
                         self.logFile.flush()
                         return 0
 
-                if not createChannel(1, self.channelIDs):
-                    if not createChannel(2, self.channelIDs):
-                        if not createChannel(0, self.channelIDs):
+                if not createChannel(1, self.channelIDsWithDummy):
+                    if not createChannel(2, self.channelIDsWithDummy):
+                        if not createChannel(0, self.channelIDsWithDummy):
                             pass
 
                 # param: taskHandle
