@@ -114,7 +114,11 @@ class ReadDAQServer:
                 def createChannel(devID, channelIDs):
                     try:
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE, 'PseudoDIFF' : DAQmx_Val_PseudoDiff}
-                        device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
+
+                        self.unusedChannelID = max(channelIDs) + 1
+                        channelIDswithDummy = channelIDs + [self.unusedChannelID]
+                        device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDswithDummy]
+
                         device_and_channels = ", ".join(device_and_channelsL)
                         ### print('device_and_channels =', device_and_channels)
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
@@ -168,12 +172,12 @@ class ReadDAQServer:
                     # print('data.shape =', data.shape)
 
                     if self.channelNum == 2:
-                        sampleNum = data.shape[0] // 2
+                        sampleNum = data.shape[0] // (self.channelNum + 1)
                         eeg_data = data[:sampleNum]
-                        ch2_data = data[sampleNum:]
+                        ch2_data = data[sampleNum:(sampleNum*2)]
                     else:
-                        sampleNum = data.shape[0]
-                        eeg_data = data[:]
+                        sampleNum = data.shape[0] // 2  # remove dummy channel
+                        eeg_data = data[:sampleNum]
 
                     print('sampleNum =', sampleNum)
                     print('data.shape =', data.shape)
