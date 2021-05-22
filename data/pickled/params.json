@@ -36,8 +36,8 @@
 
 "channelIDs" : [1,0],
 
-"showCh2" : 0,
-"useCh2ForReplace" : 0,
+"showCh2" : 1,
+"useCh2ForReplace" : 1,
 
 "writeWholeWaves" : 1,
 "computeKS" : 0,
