@@ -43,6 +43,7 @@ class ReadDAQServer:
         self.recordWaves = recordWaves
         self.channelIDs = channelIDs
         self.channelNum = len(self.channelIDs)
+        self.channelNumWithDummy = self.channelNum + 1
         self.samplingFreq = samplingFreq
         self.timeout = timeout  # set to -1 to wait indefinitely
         self.maxNumEpoch = maxNumEpoch
@@ -156,7 +157,6 @@ class ReadDAQServer:
                                       self.numSampsPerChan * self.channelNum)
                                       # elf.numSampsPerChan)
 
-                ####
                 convRateFactor = 5
                 new_convRate = float64(self.samplingFreq * self.channelNum * convRateFactor)
                 DAQmxSetAIConvRate(taskHandle, new_convRate)
@@ -169,16 +169,15 @@ class ReadDAQServer:
                 # DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps)
 
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
-                    data = np.zeros((self.numSampsPerChan * self.channelNum,), dtype=np.float64)
+                    data = np.zeros((self.numSampsPerChan * self.channelNumWithDummy,), dtype=np.float64)
                     now = self.read_data(taskHandle, data)
                     # print('data.shape =', data.shape)
 
+                    sampleNum = data.shape[0] // self.channelNumWithDummy
                     if self.channelNum == 2:
-                        sampleNum = data.shape[0] // (self.channelNum + 1)
                         eeg_data = data[:sampleNum]
                         ch2_data = data[sampleNum:(sampleNum*2)]
                     else:
-                        sampleNum = data.shape[0] // 2  # remove dummy channel
                         eeg_data = data[:sampleNum]
 
                     print('sampleNum =', sampleNum)
