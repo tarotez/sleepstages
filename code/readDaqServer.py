@@ -132,20 +132,18 @@ class ReadDAQServer:
                         self.logFile.flush()
                         return 0
 
+                if not createChannel(1, self.channelIDs):
+                    if not createChannel(2, self.channelIDs):
+                        if not createChannel(0, self.channelIDs):
+                            pass
 
                 ####
-                # temp = np.array((1,), dtype=np.double)
                 convRateFactor = 5
                 new_convRate = float64(self.samplingFreq * self.channelNum * convRateFactor)
                 DAQmxSetAIConvRate(taskHandle, new_convRate)
                 convRate = float64()
                 DAQmxGetAIConvRate(taskHandle, byref(convRate))
                 print('convRate =', convRate)
-
-                if not createChannel(1, self.channelIDs):
-                    if not createChannel(2, self.channelIDs):
-                        if not createChannel(0, self.channelIDs):
-                            pass
 
                 # param: taskHandle
                 # param: source (const char[])
