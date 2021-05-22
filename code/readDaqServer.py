@@ -116,7 +116,9 @@ class ReadDAQServer:
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE, 'PseudoDIFF' : DAQmx_Val_PseudoDiff}
 
                         self.unusedChannelID = max(channelIDs) + 1
+                        print('self.unusedChannelID = ', self.unusedChannelID)
                         channelIDswithDummy = channelIDs + [self.unusedChannelID]
+                        print('channelIDswithDummy =', channelIDswithDummy)
                         device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDswithDummy]
 
                         device_and_channels = ", ".join(device_and_channelsL)
