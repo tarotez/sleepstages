@@ -152,7 +152,7 @@ class ReadDAQServer:
 
                 ####
                 # temp = np.array((1,), dtype=np.double)
-                convRateFactor = 5
+                convRateFactor = 2
                 new_convRate = float64(self.samplingFreq * self.channelNum * convRateFactor)
                 DAQmxSetAIConvRate(taskHandle, new_convRate)
                 convRate = float64()
