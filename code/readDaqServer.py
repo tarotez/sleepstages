@@ -43,10 +43,6 @@ class ReadDAQServer:
         self.recordWaves = recordWaves
         self.channelIDs = channelIDs
         self.channelNum = len(self.channelIDs)
-        self.unusedChannelID = max(self.channelIDs) + 1
-        self.channelIDsWithDummy = self.channelIDs + [self.unusedChannelID]
-        print('self.channelIDsWithDummy =', self.channelIDsWithDummy)
-        self.channelNumWithDummy = len(self.channelIDsWithDummy)
         self.samplingFreq = samplingFreq
         self.timeout = timeout  # set to -1 to wait indefinitely
         self.maxNumEpoch = maxNumEpoch
@@ -71,13 +67,7 @@ class ReadDAQServer:
         """
         try:
             DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-                    DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNumWithDummy, byref(int32()), None)
-            ### DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-            ###     DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
-            # DAQmxReadAnalogF64(taskHandle, 1, self.timeout,
-            #       DAQmx_Val_GroupByChannel, data, self.channelNum, byref(int32()), None)
-            # DAQmxReadAnalogF64(taskHandle, self.numSampsPerChan, self.timeout,
-            #       DAQmx_Val_GroupByScanNumber, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
+                    DAQmx_Val_GroupByChannel, data, self.numSampsPerChan * self.channelNum, byref(int32()), None)
 
         except:
             import sys
@@ -120,13 +110,8 @@ class ReadDAQServer:
                         DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE, 'PseudoDIFF' : DAQmx_Val_PseudoDiff}
                         device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
                         device_and_channels = ", ".join(device_and_channelsL)
-                        ### print('device_and_channels =', device_and_channels)
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
                                 DAQmx_Val_dict[self.terminal_config], -10.0, 10.0, DAQmx_Val_Volts, None)
-                        # for channelID in channelIDs:
-                        #    device_and_channel = "Dev" + str(devID) + "/ai" + str(channelID)
-                        #    DAQmxCreateAIVoltageChan(taskHandle, device_and_channel, "",
-                        #        DAQmx_Val_dict[self.terminal_config], -10.0, 10.0, DAQmx_Val_Volts, None)
 
                         print("at DAQmxCreateAIVoltageChan, created succesfully with channelNum = " + str(self.channelNum) + ".")
                         return 1
@@ -151,11 +136,11 @@ class ReadDAQServer:
                 DAQmxCfgSampClkTiming(taskHandle, "", self.samplingFreq, DAQmx_Val_Rising,
                                       DAQmx_Val_ContSamps,
                                       # DAQmx_Val_FiniteSamps,
-                                      self.numSampsPerChan * self.channelNumWithDummy)
+                                      self.numSampsPerChan * self.channelNum)
                                       # elf.numSampsPerChan)
 
                 convRateFactor = 5
-                new_convRate = float64(self.samplingFreq * self.channelNumWithDummy * convRateFactor)
+                new_convRate = float64(self.samplingFreq * self.channelNum * convRateFactor)
                 DAQmxSetAIConvRate(taskHandle, new_convRate)
                 convRate = float64()
                 DAQmxGetAIConvRate(taskHandle, byref(convRate))
@@ -166,14 +151,14 @@ class ReadDAQServer:
                 # DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps)
 
                 for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
-                    data = np.zeros((self.numSampsPerChan * self.channelNumWithDummy,), dtype=np.float64)
+                    data = np.zeros((self.numSampsPerChan * self.channelNum,), dtype=np.float64)
                     now = self.read_data(taskHandle, data)
                     # print('data.shape =', data.shape)
 
-                    sampleNum = data.shape[0] // self.channelNumWithDummy
+                    sampleNum = data.shape[0] // self.channelNum
                     if self.channelNum == 2:
                         eeg_data = data[:sampleNum]
-                        ch2_data = data[sampleNum:(sampleNum*2)]
+                        ch2_data = data[sampleNum:]
                     else:
                         eeg_data = data[:sampleNum]
 
