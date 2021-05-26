@@ -145,7 +145,8 @@ class ClassifierClient:
         if self.eeg_normalize:
             processed_eegFragment, _ = standardize(eegFragment, past_eegSegment)
         else:
-            processed_eegFragment, _ = centralize(eegFragment, past_eegSegment)
+            # processed_eegFragment, _ = centralize(eegFragment, past_eegSegment)
+            processed_eegFragment = eegFragment
         one_record_partial[:,0] = processed_eegFragment
         raw_one_record_partial[:,0] = eegFragment
         if self.ch2_normalize:
