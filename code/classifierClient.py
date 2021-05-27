@@ -108,6 +108,7 @@ class ClassifierClient:
         self.predictionState = 0
         self.one_record = np.zeros((self.samplePointNum, 2))
         self.raw_one_record = np.zeros((self.samplePointNum, 2))
+        self.one_record_for_graph = np.zeros((self.samplePointNum, 2))
         self.windowStartTime = ''
         self.y_pred_L = []
 
@@ -151,7 +152,7 @@ class ClassifierClient:
             processed_eegFragment = eegFragment
         one_record_partial[:,0] = processed_eegFragment
         raw_one_record_partial[:,0] = eegFragment
-        if self.ch2_normalize:
+        if self.ch2_normalize_for_prediction:
             processed_ch2Fragment, _ = standardize(ch2Fragment, past_ch2Segment)
         else:
             processed_ch2Fragment = ch2Fragment
@@ -204,6 +205,8 @@ class ClassifierClient:
         one_record_partial, raw_one_record_partial = self.normalize_eeg(eegFragment, ch2Fragment, self.past_eegSegment, self.past_ch2Segment)
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_partial
         self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial
+        one_record_for_graph_partial = self.normalize_one_record_partial_for_graph(raw_one_record_partial, self.past_eegSegment, self.past_ch2Segment)
+        self.one_record_for_graph[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_for_graph_partial
         # print('one_record_partial =', one_record_partial)
         # print('self.sampleID =', self.sampleID)
         # print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
@@ -214,7 +217,7 @@ class ClassifierClient:
         # if self.sampleID > 32:
         #    exit()
         if self.hasGUI:
-            self.updateGraphPartially(self.raw_one_record)
+            self.updateGraphPartially(self.one_record_for_graph)
         self.sampleID += self.updateGraph_samplePointNum
 
         if self.sampleID == self.samplePointNum:
@@ -299,6 +302,8 @@ class ClassifierClient:
                     serialClient.write(stagePrediction_replaced.encode('utf-8'))
 
             self.one_record = np.zeros((self.samplePointNum, 2))
+            self.raw_one_record = np.zeros((self.samplePointNum, 2))            
+            self.one_record_for_graph = np.zeros((self.samplePointNum, 2))
             self.segmentID += 1
 
     def writeToPredFile(self, prediction, prediction_before_overwrite, timeStampSegment):
@@ -391,22 +396,21 @@ class ClassifierClient:
                 for targetChan in range(2):
                     self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
 
-    def normalize_one_record_for_graph(self, raw_one_record):
-        graph_one_record = np.zeros((self.samplePointNum, 2))
-        if :
-            ###
+    def normalize_one_record_partial_for_graph(self, raw_one_record_partial, past_eegSegment, past_ch2Segment):
+        graph_one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
+        if self.eeg_graph_normalize:
+            graph_one_record_partial[:,0], _ = standardize(raw_one_record_partial[:,0], past_eegSegment)
         else:
-            graph_one_record[:,0] = raw_one_record[:,0]
-        if :
-            ###
+            graph_one_record_partial[:,0] = raw_one_record_partial[:,0]
+        if self.ch2_graph_normalize:
+            graph_one_record_partial[:,1], _ = standardize(raw_one_record_partial[:,1], past_ch2Segment)
         else:
-            graph_one_record[:,1] = raw_one_record[:,1]
-        return graph_one_record
+            graph_one_record_partial[:,1] = raw_one_record_partial[:,1]
+        return graph_one_record_partial
 
-    def updateGraphPartially(self, raw_one_record):
-        graph_one_record = normalize_one_record_for_graph(raw_one_record)
+    def updateGraphPartially(self, one_record_for_graph):
         for targetChan in range(2):
-            self.listOfGraphs[targetChan][-1].setData(graph_one_record[:,targetChan], color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
+            self.listOfGraphs[targetChan][-1].setData(one_record_for_graph[:,targetChan], color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
 
     def updateGraph(self, segmentID, stagePrediction, stagePrediction_before_overwrite):
         choice = self.params.capitalize_for_display[stagePrediction]

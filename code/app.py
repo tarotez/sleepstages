@@ -259,7 +259,7 @@ class RemApplication(QMainWindow):
         checkConnectionButton = QtWidgets.QPushButton('Test connection', self)
         checkConnectionButton.clicked.connect(self.check_connection)
         checkConnectionButton.resize(checkConnectionButton.sizeHint())
-        checkConnectionButton.move(int(180 * self.scale), int(10 * self.scale))
+        checkConnectionButton.move(int(160 * self.scale), int(10 * self.scale))
 
         # change standardization of ch2
         self.nameLabel_terminal_label = QLabel(self)
