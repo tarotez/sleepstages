@@ -232,6 +232,7 @@ class ClassifierClient:
                 # self.previous_ch2 = ch2Segment
 
             # print('self.predictionState =', self.predictionState)
+            replaced = False
             if self.predictionState:
                 # stageEstimate is one of ['w', 'n', 'r']
                 if self.connected2serialClient:
@@ -243,14 +244,14 @@ class ClassifierClient:
                 # print('stagePrediction =', stagePrediction)
                 stagePrediction_before_overwrite = stagePrediction
                 if self.useCh2ForReplace:
-                    stagePrediction = self.replaceToWake(stagePrediction, ch2Segment)
+                    stagePrediction, replaced = self.replaceToWake(stagePrediction, ch2Segment)
 
             else:
                 stagePrediction = '?'
 
             # update prediction results in graphs by moving all graphs one window
             if self.hasGUI:
-                self.updateGraph(self.segmentID, stagePrediction, stagePrediction_before_overwrite)
+                self.updateGraph(self.segmentID, stagePrediction, stagePrediction_before_overwrite, replaced)
 
             # write out to file
             if self.predictionState:
@@ -326,10 +327,12 @@ class ClassifierClient:
         self.updateMinimumAndMaximumCh2Intensity(self.currentCh2Intensity)
         print('self.currentCh2Intensity =', self.currentCh2Intensity)
         print('self.ch2_thresh_value =', self.ch2_thresh_value)
+        replaced = False
         if self.currentCh2Intensity > self.ch2_thresh_value:
             print('prediction', prediction, 'replaced to w because ch2intensity =', '{:1.3f}'.format(self.currentCh2Intensity), '>', self.ch2_thresh_value, '= ch2thresh')
             prediction = 'w'
-        return prediction
+            replaced = True
+        return prediction, replaced
 
     def updateMinimumAndMaximumCh2Intensity(self, currentCh2Intensity):
         if self.minimumCh2Intensity > currentCh2Intensity:
@@ -414,10 +417,11 @@ class ClassifierClient:
         for targetChan in range(2):
             self.listOfGraphs[targetChan][-1].setData(one_record_for_graph[:,targetChan], color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
 
-    def updateGraph(self, segmentID, stagePrediction, stagePrediction_before_overwrite):
+    def updateGraph(self, segmentID, stagePrediction, stagePrediction_before_overwrite, replaced):
         choice = self.params.capitalize_for_display[stagePrediction]
         choice_before_overwrite = self.params.capitalize_for_display[stagePrediction_before_overwrite]
-        if choice != choice_before_overwrite:
+        # if choice != choice_before_overwrite:
+        if replaced:
             choiceLabel = choice_before_overwrite + '->' + choice
         else:
             choiceLabel = choice
