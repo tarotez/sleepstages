@@ -180,9 +180,21 @@ class RemApplication(QMainWindow):
         self.ylim_value_ch2_box.setText(str(self.client.ylim_max_ch2))
         self.client.update_ylim(targetChan=1)
 
+    def ch2_thresh_text_change(self):
+        try:
+            new_ch2_thresh_value = float(self.ch2_thresh.text())
+            if new_ch2_thresh_value < self.ch2_thresh_minimum:
+                new_ch2_thresh_value = self.ch2_thresh_minimum
+            if new_ch2_thresh_value > self.ch2_thresh_maximum:
+                new_ch2_thresh_value = self.ch2_thresh_maximum
+            self.ch2_thresh_slider.setValue(new_ch2_thresh_value * self.ch2_thresh_slider_tick_factor)
+            self.client.ch2_thresh_value = new_ch2_thresh_value
+        except Exception as e:
+            pass
+
     def ch2_thresh_change(self):
         ch2_thresh_slider_value = self.ch2_thresh_slider.value()
-        self.client.ch2_thresh_value = ch2_thresh_slider_value / 4
+        self.client.ch2_thresh_value = ch2_thresh_slider_value / self.ch2_thresh_slider_tick_factor
         self.ch2_thresh.setText(str(self.client.ch2_thresh_value))
 
     def terminal_choice(self, text):
@@ -331,6 +343,7 @@ class RemApplication(QMainWindow):
         self.ch2_thresh.setText(str(self.params.ch2_thresh_default))
         self.ch2_thresh.move(int(1000 * self.scale), int(15 * self.scale))
         self.ch2_thresh.resize(50, 20)
+        self.ch2_thresh.textChanged.connect(self.ch2_thresh_text_change)
 
         # change usage of ch2
         self.nameLabel_ch2_usage_label = QLabel(self)
@@ -379,12 +392,15 @@ class RemApplication(QMainWindow):
         self.ylim_slider_ch2.setTickInterval(1)
         self.ylim_slider_ch2.valueChanged.connect(self.ylim_change_ch2)
 
+        self.ch2_thresh_slider_tick_factor = 4
         self.ch2_thresh_slider = QSlider(Qt.Horizontal, self)
         self.ch2_thresh_slider.move(int(1035 * self.scale), int(20 * self.scale))
         self.ch2_thresh_slider.resize(190, 20)
-        self.ch2_thresh_slider.setMinimum(-8)
-        self.ch2_thresh_slider.setMaximum(16)
-        self.ch2_thresh_slider.setValue(4)
+        self.ch2_thresh_minimum = -2
+        self.ch2_thresh_maximum = 10
+        self.ch2_thresh_slider.setMinimum(self.ch2_thresh_minimum * self.ch2_thresh_slider_tick_factor)
+        self.ch2_thresh_slider.setMaximum(self.ch2_thresh_maximum * self.ch2_thresh_slider_tick_factor)
+        self.ch2_thresh_slider.setValue(self.ch2_thresh_slider_tick_factor)
         self.ch2_thresh_slider.setTickPosition(QSlider.TicksBelow)
         self.ch2_thresh_slider.setTickInterval(1)
         self.ch2_thresh_slider.valueChanged.connect(self.ch2_thresh_change)
