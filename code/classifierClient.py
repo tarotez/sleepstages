@@ -95,8 +95,10 @@ class ClassifierClient:
 
         self.ch2_mode = "Video"
         self.ch2_thresh_value = self.params.ch2_thresh_default
-        self.eeg_normalize = 0
-        self.ch2_normalize = 0
+        self.eeg_normalize_for_prediction = 1
+        self.ch2_normalize_for_prediction = 1
+        self.eeg_graph_normalize = 0
+        self.ch2_graph_normalize = 0
         self.currentCh2Intensity = 0
 
         if self.recordWaves:
@@ -142,7 +144,7 @@ class ClassifierClient:
     def normalize_eeg(self, eegFragment, ch2Fragment, past_eegSegment, past_ch2Segment):
         one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
         raw_one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
-        if self.eeg_normalize:
+        if self.eeg_normalize_for_prediction:
             processed_eegFragment, _ = standardize(eegFragment, past_eegSegment)
         else:
             # processed_eegFragment, _ = centralize(eegFragment, past_eegSegment)
@@ -198,6 +200,7 @@ class ClassifierClient:
             self.windowStartTime = timeStampSegment[0]
 
         # print('eegFragment =', eegFragment)
+
         one_record_partial, raw_one_record_partial = self.normalize_eeg(eegFragment, ch2Fragment, self.past_eegSegment, self.past_ch2Segment)
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_partial
         self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial
@@ -211,7 +214,7 @@ class ClassifierClient:
         # if self.sampleID > 32:
         #    exit()
         if self.hasGUI:
-            self.updateGraphPartially(self.one_record)
+            self.updateGraphPartially(self.raw_one_record)
         self.sampleID += self.updateGraph_samplePointNum
 
         if self.sampleID == self.samplePointNum:
@@ -242,9 +245,9 @@ class ClassifierClient:
             else:
                 stagePrediction = '?'
 
-            # update prediction results in graphs
+            # update prediction results in graphs by moving all graphs one window
             if self.hasGUI:
-                self.updateGraph(self.one_record, self.segmentID, stagePrediction, stagePrediction_before_overwrite)
+                self.updateGraph(self.segmentID, stagePrediction, stagePrediction_before_overwrite)
 
             # write out to file
             if self.predictionState:
@@ -388,11 +391,24 @@ class ClassifierClient:
                 for targetChan in range(2):
                     self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
 
-    def updateGraphPartially(self, one_record):
-        for targetChan in range(2):
-            self.listOfGraphs[targetChan][-1].setData(one_record[:,targetChan], color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
+    def normalize_one_record_for_graph(self, raw_one_record):
+        graph_one_record = np.zeros((self.samplePointNum, 2))
+        if :
+            ###
+        else:
+            graph_one_record[:,0] = raw_one_record[:,0]
+        if :
+            ###
+        else:
+            graph_one_record[:,1] = raw_one_record[:,1]
+        return graph_one_record
 
-    def updateGraph(self, one_record, segmentID, stagePrediction, stagePrediction_before_overwrite):
+    def updateGraphPartially(self, raw_one_record):
+        graph_one_record = normalize_one_record_for_graph(raw_one_record)
+        for targetChan in range(2):
+            self.listOfGraphs[targetChan][-1].setData(graph_one_record[:,targetChan], color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
+
+    def updateGraph(self, segmentID, stagePrediction, stagePrediction_before_overwrite):
         choice = self.params.capitalize_for_display[stagePrediction]
         choice_before_overwrite = self.params.capitalize_for_display[stagePrediction_before_overwrite]
         if choice != choice_before_overwrite:

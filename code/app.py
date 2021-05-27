@@ -54,11 +54,11 @@ class RemApplication(QMainWindow):
         self.channelNum = 2 if (self.params.showCh2 or self.params.useCh2ForReplace) else 1
         self.samplingFreq = self.params.samplingFreq
 
-        self.eeg_mode_str_normalize = "Normalize-ON"
-        self.eeg_mode_str_none = "Normalize-OFF"
+        self.eeg_visualize_mode_str_normalize = "Normalize-ON"
+        self.eeg_visualize_mode_str_none = "Normalize-OFF"
 
-        self.ch2_mode_str_normalize = "Normalize-ON"
-        self.ch2_mode_str_none = "Normalize-OFF"
+        self.ch2_visualize_mode_str_normalize = "Normalize-ON"
+        self.ch2_visualize_mode_str_none = "Normalize-OFF"
 
         self.ch2_usage_str_dontshowCh2 = "Don't show Ch2"
         self.ch2_usage_str_showCh2 = "Ch2, show only"
@@ -188,21 +188,29 @@ class RemApplication(QMainWindow):
     def terminal_choice(self, text):
         self.terminal_config = text
 
-    def eeg_mode_choice(self, text):
-        self.eeg_mode = text
-        self.client.eeg_mode = self.eeg_mode
-        if self.eeg_mode == self.eeg_mode_str_normalize:
-            self.client.eeg_normalize = 1
+    def eeg_visualize_mode_choice(self, text):
+        self.eeg_visualize_mode = text
+        if self.eeg_visualize_mode == self.eeg_visualize_mode_str_normalize:
+            self.client.eeg_graph_normalize = 1
         else:
-            self.client.eeg_normalize = 0
+            self.client.eeg_graph_normalize = 0
+        # self.client.eeg_mode = self.eeg_mode
+        # if self.eeg_mode == self.eeg_mode_str_normalize:
+        #    self.client.eeg_normalize = 1
+        # else:
+        #    self.client.eeg_normalize = 0
 
-    def ch2_mode_choice(self, text):
-        self.ch2_mode = text
-        self.client.ch2_mode = self.ch2_mode
-        if self.ch2_mode == self.ch2_mode_str_normalize:
-            self.client.ch2_normalize = 1
+    def ch2_visualize_mode_choice(self, text):
+        self.ch2_visualize_mode = text
+        if self.ch2_visualize_mode == self.ch2_visualize_mode_str_normalize:
+            self.client.ch2_graph_normalize = 1
         else:
-            self.client.ch2_normalize = 0
+            self.client.ch2_graph_normalize = 0
+        # self.client.ch2_mode = self.ch2_mode
+        # if self.ch2_mode == self.ch2_mode_str_normalize:
+        #    self.client.ch2_normalize = 1
+        # else:
+        #     self.client.ch2_normalize = 0
 
     def ch2_usage_combobox_setup(self):
         if  self.params.useCh2ForReplace:
@@ -293,26 +301,26 @@ class RemApplication(QMainWindow):
         '''
 
         # change standardization of eeg
-        self.nameLabel_eeg_mode_label = QLabel(self)
-        self.nameLabel_eeg_mode_label.setText('EEG mode:')
-        self.nameLabel_eeg_mode_label.move(int(610 * self.scale), int(2 * self.scale))
-        self.eeg_mode_combobox = QtWidgets.QComboBox(self)
-        self.eeg_mode_combobox.addItem(self.eeg_mode_str_none)
-        self.eeg_mode_combobox.addItem(self.eeg_mode_str_normalize)
-        self.eeg_mode_combobox.move(int(680 * self.scale), int(5 * self.scale))
-        self.eeg_mode_combobox.resize(self.eeg_mode_combobox.sizeHint())
-        self.eeg_mode_combobox.activated[str].connect(self.eeg_mode_choice)
+        self.nameLabel_eeg_visualize_mode_label = QLabel(self)
+        self.nameLabel_eeg_visualize_mode_label.setText('EEG mode:')
+        self.nameLabel_eeg_visualize_mode_label.move(int(610 * self.scale), int(2 * self.scale))
+        self.eeg_visualize_mode_combobox = QtWidgets.QComboBox(self)
+        self.eeg_visualize_mode_combobox.addItem(self.eeg_visualize_mode_str_none)
+        self.eeg_visualize_mode_combobox.addItem(self.eeg_visualize_mode_str_normalize)
+        self.eeg_visualize_mode_combobox.move(int(680 * self.scale), int(5 * self.scale))
+        self.eeg_visualize_mode_combobox.resize(self.eeg_visualize_mode_combobox.sizeHint())
+        self.eeg_visualize_mode_combobox.activated[str].connect(self.eeg_visualize_mode_choice)
 
         # change standardization of ch2
-        self.nameLabel_ch2_mode_label = QLabel(self)
-        self.nameLabel_ch2_mode_label.setText('Ch2 mode:')
-        self.nameLabel_ch2_mode_label.move(int(610 * self.scale), int(30 * self.scale))
-        self.ch2_mode_combobox = QtWidgets.QComboBox(self)
-        self.ch2_mode_combobox.addItem(self.ch2_mode_str_none)
-        self.ch2_mode_combobox.addItem(self.ch2_mode_str_normalize)
-        self.ch2_mode_combobox.move(int(680 * self.scale), int(33 * self.scale))
-        self.ch2_mode_combobox.resize(self.ch2_mode_combobox.sizeHint())
-        self.ch2_mode_combobox.activated[str].connect(self.ch2_mode_choice)
+        self.nameLabel_ch2_visualize_mode_label = QLabel(self)
+        self.nameLabel_ch2_visualize_mode_label.setText('Ch2 mode:')
+        self.nameLabel_ch2_visualize_mode_label.move(int(610 * self.scale), int(30 * self.scale))
+        self.ch2_visualize_mode_combobox = QtWidgets.QComboBox(self)
+        self.ch2_visualize_mode_combobox.addItem(self.ch2_visualize_mode_str_none)
+        self.ch2_visualize_mode_combobox.addItem(self.ch2_visualize_mode_str_normalize)
+        self.ch2_visualize_mode_combobox.move(int(680 * self.scale), int(33 * self.scale))
+        self.ch2_visualize_mode_combobox.resize(self.ch2_visualize_mode_combobox.sizeHint())
+        self.ch2_visualize_mode_combobox.activated[str].connect(self.ch2_visualize_mode_choice)
 
         # set overwrite threshold to W
         self.nameLabel_ch2_thresh = QLabel(self)
