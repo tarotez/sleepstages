@@ -223,11 +223,11 @@ class ClassifierClient:
         if self.sampleID == self.samplePointNum:
             self.sampleID = 0
             # copy to previous
-            eegSegment = self.one_record[:,0]
+            eegSegment = self.raw_one_record[:,0]
             self.past_eegSegment = np.r_[self.past_eegSegment, eegSegment]
             # self.previous_eeg = eegSegment
             if self.showCh2 or self.useCh2ForReplace:
-                ch2Segment = self.one_record[:,1]
+                ch2Segment = self.raw_one_record[:,1]
                 self.past_ch2Segment = np.r_[self.past_ch2Segment, ch2Segment]
                 # self.previous_ch2 = ch2Segment
 
@@ -302,7 +302,7 @@ class ClassifierClient:
                     serialClient.write(stagePrediction_replaced.encode('utf-8'))
 
             self.one_record = np.zeros((self.samplePointNum, 2))
-            self.raw_one_record = np.zeros((self.samplePointNum, 2))            
+            self.raw_one_record = np.zeros((self.samplePointNum, 2))
             self.one_record_for_graph = np.zeros((self.samplePointNum, 2))
             self.segmentID += 1
 
