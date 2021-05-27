@@ -330,7 +330,7 @@ class RemApplication(QMainWindow):
         self.ch2_thresh = QLineEdit(self)
         self.ch2_thresh.setText(str(self.params.ch2_thresh_default))
         self.ch2_thresh.move(int(1000 * self.scale), int(15 * self.scale))
-        self.ch2_thresh.resize(30, 20)
+        self.ch2_thresh.resize(50, 20)
 
         # change usage of ch2
         self.nameLabel_ch2_usage_label = QLabel(self)
