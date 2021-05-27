@@ -324,8 +324,8 @@ class ClassifierClient:
         elif self.maximumCh2Intensity == 0:
             self.maximumCh2Intensity = self.currentCh2Intensity
         self.updateMinimumAndMaximumCh2Intensity(self.currentCh2Intensity)
-        print('self.currentCh2Intensity =', self.currentCh2Intensity)
-        print('self.ch2_thresh_value =', self.ch2_thresh_value)
+        # print('self.currentCh2Intensity =', self.currentCh2Intensity)
+        # print('self.ch2_thresh_value =', self.ch2_thresh_value)
         if self.currentCh2Intensity > self.ch2_thresh_value:
             print('prediction', prediction, 'replaced to w because ch2intensity =', '{:1.3f}'.format(self.currentCh2Intensity), '>', self.ch2_thresh_value, '= ch2thresh')
             prediction = 'w'
