@@ -96,7 +96,7 @@ class ClassifierClient:
         self.ch2_mode = "Video"
         self.ch2_thresh_value = self.params.ch2_thresh_default
         self.eeg_normalize_for_prediction = 1
-        self.ch2_normalize_for_prediction = 1
+        self.ch2_normalize_for_prediction = 0
         self.eeg_graph_normalize = 0
         self.ch2_graph_normalize = 0
         self.currentCh2Intensity = 0
