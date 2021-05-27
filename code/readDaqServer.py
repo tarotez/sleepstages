@@ -30,7 +30,7 @@ from parameterSetup import ParameterSetup
 import timeFormatting
 
 class ReadDAQServer:
-    def __init__(self, client, recordWaves channelIDs, samplingFreq,
+    def __init__(self, client, recordWaves, channelIDs, samplingFreq,
                  timeout=500, maxNumEpoch=600000):
         """
         # Params
