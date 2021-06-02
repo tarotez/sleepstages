@@ -3,7 +3,7 @@
 Required packages can be installed using pip (Python package installer).
 
 ```
-pip install torch pyserial torch pytorch-ignite torchsummary PyDAQmx PyQt5 tqdm scipy matplotlib sklearn
+pip install torch pytorch-ignite torchsummary pyserial PyDAQmx PyQt5 tqdm scipy matplotlib sklearn
 ```
 
 If Anaconda3 is already installed, some additional Python packages should be installed. These can be installed using conda,
