@@ -140,7 +140,7 @@ The "weights" file contains weight parameters obtained from training. The "param
 
 ## Reference
 
-Some more details are provided in our paper:
+Some results of experiments using this software are provided in our paper:
 
 Taro Tezuka, Deependra Kumar, Sima Singh, Iyo Koyanagi, Toshie Naoi, Masanori Sakaguchi, Real-time, automatic, open-source﻿﻿ sleep stage classification system using single EEG for mice, Scientific Reports, 11:11151, May 2021. [DOI:10.1038/s41598-021-90332-1]
 
