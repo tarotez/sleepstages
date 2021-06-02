@@ -76,7 +76,7 @@ The GUI for online prediction can be started from a command-line terminal by
 python app.py
 ```
 
-The default setup only accepts input signals sampled at 128 Hz. In order to predict stages using signals sampled at a different frequency, the user should modify the neural network model defined in "code/deepClassifier.py" and train a classifier using that model and signals sampled at that sampling frequency. It requires some knowledge on PyTorch to design and implement an appropriate new neural network model.
+The default setup only accepts input signals sampled at 128 Hz. In order to predict stages using signals sampled at a different frequency, the user should modify the neural network model defined in "code/deepClassifier.py" and train a classifier using that model and signals sampled at that sampling frequency. It requires some knowledge on PyTorch to design and implement an appropriate new neural network model, but basically it is changing a few parameters that represents the size of input.
 
 The predicted sleep stage can be sent to an Arduino-based external device connected by USB. The system can be run offline without acquiring signals from DAQ by
 
