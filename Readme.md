@@ -31,7 +31,7 @@ http://www.ni.com/download/ni-daqmx-base-15.0/5648/en/
 
 ## Installing the program
 
-Source code and data files can be downloaded from GitHub at:
+The source code and data files can be downloaded from GitHub at:
 
 ```
 git clone git@github.com/tarotez/sleepstages
@@ -39,14 +39,14 @@ git clone git@github.com/tarotez/sleepstages
 
 ## Running a demo
 
-Program can be run in a demo mode (mockup mode) using the following commands.
+The program can be run in a demo mode (mockup mode) using the following commands.
 
 ```
 cd sleepstages/code
 python app.py m
 ```
 
-"m" is for mock-up. It reads a short pickled wave file stored as "data/pickled/eegAndStage.sample.pkl".
+"m" is for mock-up. It reads a short pickled wave file stored as "data/pickled/eegAndStage.sample.pkl". The demo file is very short and all predictions will be "wake".
 
 ## Reading waves from a text file
 
