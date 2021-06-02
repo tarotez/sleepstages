@@ -66,7 +66,7 @@ sleepstages/
 For training by end-users, "WAVEDIR" is a directory with an arbitrary name in which text files containing EEG raw data signals and ground truth stage labels are stored. These are not necessary if the user is using an already trained classifier (provided here) and not training a new classifier. For example, a user might want to train a new classifier to make the system predict sleep stages for epochs with different lengths.
 The training program reads this directory to train classifiers. The user can place more than one WAVEDIR directory under the "data" directory. In other words, the user can prepare a directory for each dataset.
 
-The code in the "code" directory uses the file named "path.json" to find the "data" directory.
+The code in the "code" directory uses the file named "path.json" to find the "data" directory. It can be changed to another directory name by rewriting "path.json".
 
 The "data/pickled" directory should contain "params.json" for setting up parameters for feature extraction, training, and prediction.
 
@@ -75,6 +75,8 @@ The GUI for online prediction can be started from a command-line terminal by
 ```
 python app.py
 ```
+
+The default setup only accepts input signals sampled at 128 Hz. In order to predict stages using signals sampled at a different frequency, the user should modify the neural network model defined in "code/deepClassifier.py" and train a classifier using that model and signals sampled at that sampling frequency.
 
 The predicted sleep stage can be sent to an Arduino-based external device connected by USB. The system can be run offline without acquiring signals from DAQ by
 
@@ -96,7 +98,7 @@ The predicted result is written out as files in the "data/prediction" directory.
 
 ## Predicting without using GUI
 
-Sleep stages for wave files in the "data/aipost" directory can be predicted without activating the GUI. Instead of running applpy, run
+Sleep stages for wave files in the "data/aipost" directory can be predicted without activating the GUI. Instead of running app.py, run
 
 ```
 python offline.py
