@@ -137,3 +137,10 @@ extractFeatures.py reads "eegAndStage" files and write files starting with "feat
 trainClassifier.py reads "features" and writes files starting with "weights", "params", and "files_used_for_training". These files contain randomly generated six-character IDs (i.e., classifier IDs) in their file names.
 
 The "weights" file contains weight parameters obtained from training. The "params" file is a copy of "params.json" in "data/pickled" that is intended to save the parameters used for training the classifier. "files_used_for_training" indicates which recordings were used for training that classifier. These files are excluded when testing the classifier.
+
+## Reference
+
+Some more details are provided in our paper:
+
+Taro Tezuka, Deependra Kumar, Sima Singh, Iyo Koyanagi, Toshie Naoi, Masanori Sakaguchi, Real-time, automatic, open-source﻿﻿ sleep stage classification system using single EEG for mice, Scientific Reports, 11:11151, May 2021. [DOI:10.1038/s41598-021-90332-1]
+https://www.nature.com/articles/s41598-021-90332-1
