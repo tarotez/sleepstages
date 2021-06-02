@@ -1,15 +1,15 @@
 ## Required packages
 
-In addition to installing Anaconda3, some Python packages should be installed. These can be installed using conda,
+Required packages can be installed using pip (Python package installer).
+
+```
+pip install torch pyserial torch pytorch-ignite torchsummary PyDAQmx PyQt5 tqdm scipy matplotlib sklearn
+```
+
+If Anaconda3 is already installed, some additional Python packages should be installed. These can be installed using conda,
 
 ```
 conda install pyserial torch pytorch-ignite torchsummary PyDAQmx
-```
-
-or using pip (Python package installer).
-
-```
-pip install pyserial torch pytorch-ignite torchsummary PyDAQmx
 ```
 
 Version information:
