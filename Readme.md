@@ -86,7 +86,7 @@ There is a sample wave file in the "data/aipost" directory. In this text file, e
 
 If EMG nor mouse movement is not recorded, Channel 2 can be left blank.
 
-## Overwriting of predicted stage using Channel 2
+## Overwriting of predicted stages using Channel 2
 
 Channel 2 is used to overwrite the predicted sleep stage to "Wake" when an excessive mouse movement is detected. The algorithm for judging a mouse movement is as follows. Each 10-seconds epoch is divided into 80 segments (that is, each segment is 0.125 second-long). Within each segment, the amplitude of Channel 2 is averaged. When the maximum of these 80 averaged amplitudes exceeds the threshold set by the scrollbar on the GUI, the predicted sleep stage is changed to "Wake". In "data/prediction", files ending with "_pred_before_overwrite.txt" list predicted stages before overwriting, and files ending with "_pred.txt" list predicted stages after overwriting.
 
