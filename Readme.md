@@ -6,13 +6,13 @@ Required packages can be installed using pip (Python package installer).
 pip install torch pytorch-ignite torchsummary pyserial PyDAQmx PyQt5 tqdm scipy matplotlib sklearn
 ```
 
-If Anaconda3 is already installed, some additional Python packages should be installed. These can be installed using conda,
+If Anaconda3 is already installed, some additional Python packages are required. These can be installed using conda,
 
 ```
-conda install pyserial torch pytorch-ignite torchsummary PyDAQmx
+conda install torch pytorch-ignite torchsummary pyserial PyDAQmx
 ```
 
-Version information:
+Tested versions (more recent versions should work too):
 
 ```
 Anaconda3 version 5.3.1 or higher
@@ -24,7 +24,7 @@ torchsummary 1.5.1
 PyDAQmx 1.4.2
 ```
 
-To obtain signals from DAQ, NI-DAQmx should be downloaded from the National Instruments website and installed. This is not necessary when classifying signals offline.
+To obtain signals from DAQ, NI-DAQmx should be downloaded from the National Instruments website and installed. It is not necessary when classifying signals offline only and not online.
 
 http://www.ni.com/download/ni-daqmx-base-15.0/5648/en/
 
