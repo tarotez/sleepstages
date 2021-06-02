@@ -31,7 +31,7 @@ http://www.ni.com/download/ni-daqmx-base-15.0/5648/en/
 
 ## Installing the program
 
-The source code and data files can be downloaded from GitHub at:
+The source code and data files can be downloaded from GitHub by:
 
 ```
 git clone git@github.com/tarotez/sleepstages
@@ -48,27 +48,7 @@ python app.py m
 
 "m" is for mock-up. It reads a short pickled wave file stored as "data/pickled/eegAndStage.sample.pkl". The demo file is very short and all predictions will be "wake".
 
-## Reading waves from a text file
-
-The "sleep stages" repository contains the source code and text files setting up default hyperparameters. The directory structure is as follows:
-
-```
-sleepstages/
-  code/
-  data/
-    pickled
-    waves
-    WAVEDIR/
-      Raw/
-      Judge/
-```
-
-For training by end-users, "WAVEDIR" is a directory with an arbitrary name in which text files containing EEG raw data signals and ground truth stage labels are stored. These are not necessary if the user is using an already trained classifier (provided here) and not training a new classifier. For example, a user might want to train a new classifier to make the system predict sleep stages for epochs with different lengths.
-The training program reads this directory to train classifiers. The user can place more than one WAVEDIR directory under the "data" directory. In other words, the user can prepare a directory for each dataset.
-
-The code in the "code" directory uses the file named "path.json" to find the "data" directory. It can be changed to another directory name by rewriting "path.json".
-
-The "data/pickled" directory should contain "params.json" for setting up parameters for feature extraction, training, and prediction.
+## Running the application when connected to DAQ
 
 The GUI for online prediction can be started from a command-line terminal by
 
@@ -78,7 +58,11 @@ python app.py
 
 The default setup only accepts input signals sampled at 128 Hz. In order to predict stages using signals sampled at a different frequency, the user should modify the neural network model defined in "code/deepClassifier.py" and train a classifier using that model and signals sampled at that sampling frequency. It requires some knowledge on PyTorch to design and implement an appropriate new neural network model, but basically it amounts to changing a few parameters designating the size of input.
 
-The predicted sleep stage can be sent to an Arduino-based external device connected by USB. The system can be run offline without acquiring signals from DAQ by
+The predicted sleep stage can be sent to an Arduino-based external device connected by USB.
+
+## Offline mode
+
+The system can be run offline without acquiring signals from DAQ by
 
 ```
 python app.py o
@@ -94,9 +78,19 @@ The latter is an alias to the former.
 
 In the offline mode, the program obtains EEG wave data from the "data/aipost" directory. The wave data should be provided as a text file. There is a sample file in the "data/aipost" directory.
 
-The predicted result is written out as files in the "data/prediction" directory.
+The predicted stages are written out as a text files in the "data/prediction" directory.
 
-## Predicting without using GUI
+## The format of the sample wave file
+
+There is a sample wave file in the "data/aipost" directory. In this text file, each row (line) corresponds to a time point sampled at 128 Hz. The columns are (from left to right) the time stamp, EEG amplitude, Channel 2 amplitude, in this order, separated by commas.
+
+If EMG nor mouse movement is not recorded, Channel 2 can be left blank.
+
+## Overwriting of predicted stage using Channel 2
+
+Channel 2 is used to overwrite the predicted sleep stage to "Wake" when an excessive mouse movement is detected. The algorithm for judging a mouse movement is as follows. Each 10-seconds epoch is divided into 80 segments (that is, each segment is 0.125 second-long). Within each segment, the amplitude of Channel 2 is averaged. When the maximum of these 80 averaged amplitudes exceeds the threshold set by the scrollbar on the GUI, the predicted sleep stage is changed to "Wake". In "data/prediction", files ending with "_pred_before_overwrite.txt" list predicted stages before overwriting, and files ending with "_pred.txt" list predicted stages after overwriting.
+
+## Predicting from CUI and not using GUI
 
 Sleep stages for wave files in the "data/aipost" directory can be predicted without activating the GUI. Instead of running app.py, run
 
@@ -116,9 +110,34 @@ python eval_offline.py PREDICTION_FILE JUDGE_PATH
 
 where PREDICTION_FILE is the name of the prediction file in "data/prediction", and JUDGE_PATH is the path to the Judge file that contain ground-truth labels for each epoch.
 
-## Sample wave file
+## Directory structure
 
-There is a sample wave file in the "data/aipost" directory. In this text file, each row (line) corresponds to a time point sampled at 128 Hz. The columns are the time stamp, EEG amplitude, Channel 2 input, in this order, separated by commas.
+The "sleep stages" repository contains the source code and text files that set up default hyperparameters. The directory structure is as follows:
+
+```
+sleepstages/
+  code/
+  data/
+    pickled
+    waves
+    WAVEDIR/
+      Raw/
+      Judge/
+```
+
+"WAVEDIR" is a directory with an arbitrary name in which text files containing EEG raw data signals and ground truth stage labels are stored. These directories are not needed if the user chooses to use an already trained classifier (provided as a part of this software) and not training a new classifier. For example, a user might want to train a new classifier to make the system predict sleep stages for epochs with different lengths.
+
+The training program reads this directory to train classifiers. The user can place more than one WAVEDIR directory under the "data" directory. In other words, the user can prepare a directory for each dataset.
+
+We included a sample "WAVEDIR" named "data/sampledata". Its "Raw" and "Judge" directories contain sample wave and judge files.
+
+The code in the "code" directory uses the file named "path.json" to find the "data" directory. It can be changed to another directory name by rewriting "path.json".
+
+## Parameter setup
+
+The "data/pickled" directory should contain "params.json" for setting up parameters for feature extraction, training, and prediction.
+
+Be editing "params.json", the behavior of the GUI and also of training can be altered.
 
 ## Training and testing a classifier
 
