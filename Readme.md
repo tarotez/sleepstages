@@ -1,4 +1,4 @@
-# *SleepStages* installation and usages
+# *SleepStages* installation and usage guide
 
 ## Required packages
 
