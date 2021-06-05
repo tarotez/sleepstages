@@ -1,3 +1,5 @@
+# *SleepStages* installation and usages
+
 ## Required packages
 
 Required packages can be installed using pip (Python package installer).
@@ -6,25 +8,7 @@ Required packages can be installed using pip (Python package installer).
 pip install torch pytorch-ignite torchsummary pyserial PyDAQmx PyQt5 tqdm scipy matplotlib sklearn
 ```
 
-If Anaconda3 is already installed, some additional Python packages are required. These can be installed using conda,
-
-```
-conda install torch pytorch-ignite torchsummary pyserial PyDAQmx
-```
-
-Tested versions (more recent versions should work too):
-
-```
-Anaconda3 version 5.3.1 or higher
-Python packages:
-pyserial 3.4
-torch 1.2.0
-pytorch-ignite 0.3.0
-torchsummary 1.5.1
-PyDAQmx 1.4.2
-```
-
-To obtain signals from DAQ, NI-DAQmx should be downloaded from the National Instruments website and installed. It is not necessary when classifying signals offline only and not online.
+To obtain signals from DAQ, a library, NI-DAQmx, should be downloaded and installed. It is freely available at the National Instruments website. NI-DAQmx is not necessary when predicting stages for already-recorded EEG signals offline only and not using the application online (real-time).
 
 http://www.ni.com/download/ni-daqmx-base-15.0/5648/en/
 
@@ -62,7 +46,7 @@ The predicted sleep stage can be sent to an Arduino-based external device connec
 
 ## Offline mode
 
-The system can be run offline without acquiring signals from DAQ by
+The system can predict EEG stages for already-recorded EEG signals stored in a text file. It runs offline without acquiring signals from DAQ by
 
 ```
 python app.py o
@@ -76,7 +60,7 @@ python app_offline.py
 
 The latter is an alias to the former.
 
-In the offline mode, the program obtains EEG wave data from the "data/aipost" directory. The wave data should be provided as a text file. There is a sample file in the "data/aipost" directory.
+In the offline mode, the program obtains EEG wave data from the "data/aipost" directory. The wave data should be provided as a text file. There is a short sample file in the "data/aipost" directory.
 
 The predicted stages are written out as a text files in the "data/prediction" directory.
 
@@ -84,13 +68,13 @@ The predicted stages are written out as a text files in the "data/prediction" di
 
 There is a sample wave file in the "data/aipost" directory. In this text file, each row (line) corresponds to a time point sampled at 128 Hz. The columns are (from left to right) the time stamp, EEG amplitude, Channel 2 amplitude, in this order, separated by commas.
 
-If EMG nor mouse movement is not recorded, Channel 2 can be left blank.
+If EMG nor mouse movement is not recorded, the column for Channel 2 can be left blank.
 
 ## Overwriting of predicted stages using Channel 2
 
 Channel 2 is used to overwrite the predicted sleep stage to "Wake" when an excessive mouse movement is detected. The algorithm for judging a mouse movement is as follows. Each 10-seconds epoch is divided into 80 segments (that is, each segment is 0.125 second-long). Within each segment, the amplitude of Channel 2 is averaged. When the maximum of these 80 averaged amplitudes exceeds the threshold set by the scrollbar on the GUI, the predicted sleep stage is changed to "Wake". In "data/prediction", files ending with "_pred_before_overwrite.txt" list predicted stages before overwriting, and files ending with "_pred.txt" list predicted stages after overwriting.
 
-## Predicting from CUI and not GUI
+## Predicting from CUI and without activating GUI
 
 Sleep stages for wave files in the "data/aipost" directory can be predicted without activating the GUI. Instead of running app.py, run
 
