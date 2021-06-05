@@ -2,16 +2,17 @@
 
 ## Required packages
 
-Required packages can be installed using pip (Python package installer).
+SleepStages runs on Windows and Mac machines with Python 3 installed. Required packages can be installed using pip (Python package installer).
 
 ```
 pip install torch pytorch-ignite torchsummary pyserial PyDAQmx PyQt5 tqdm scipy matplotlib sklearn
 ```
 
-To obtain signals from DAQ, a library, NI-DAQmx, should be downloaded and installed. It is freely available at the National Instruments website. NI-DAQmx is not necessary when predicting stages for already-recorded EEG signals offline only and not using the application online (real-time).
+To obtain signals from DAQ, NI-DAQmx-Base software library should be downloaded and installed. It is freely available at the National Instruments website. NI-DAQmx-Base is not necessary when predicting stages for already-recorded EEG signals offline only and not using the application online (real-time).
 
 http://www.ni.com/download/ni-daqmx-base-15.0/5648/en/
 
+SleepStages was tested using National Instruments USB-6210 (Multifunction I/O Device), but other NI devices will probably work too.
 
 ## Installing the program
 
@@ -21,20 +22,25 @@ The source code and data files can be downloaded from GitHub by:
 git clone git@github.com/tarotez/sleepstages
 ```
 
-## Running a demo
-
-The program can be run in a demo mode (mockup mode) using the following commands.
+Move to the code directory before running the program.
 
 ```
 cd sleepstages/code
+```
+
+## Running a demo
+
+The program can be run in a demo mode (mockup mode) by
+
+```
 python app.py m
 ```
 
-"m" is for mock-up. It reads a short pickled wave file stored as "data/pickled/eegAndStage.sample.pkl". The demo file is very short and all predictions will be "wake".
+"m" is for mock-up. In this mode, the application reads a short pickled wave file stored as "data/pickled/eegAndStage.sample.pkl". The demo file is very short and all predictions will be "wake".
 
 ## Running the application when connected to DAQ
 
-The GUI for online prediction can be started from a command-line terminal by
+The application can be started in online (real-time) mode by
 
 ```
 python app.py
