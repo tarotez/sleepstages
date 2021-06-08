@@ -21,6 +21,7 @@ from matplotlib.figure import Figure
 class GraphCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=4, height=2, dpi=100):
+        self.graphDotStride = 4
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.set_facecolor('#ececec')
         self.axes = fig.add_subplot(111)
@@ -65,7 +66,8 @@ class DynamicGraphCanvas(GraphCanvas):
         self.wave = wave
         self.color = color
         waveLen = wave.shape[0]
-        self.axes.plot(np.linspace(0, waveLen-1, waveLen), self.wave, self.color, linewidth=0.5)
+        # self.axes.plot(np.linspace(0, waveLen-1, waveLen), self.wave, self.color, linewidth=0.5)
+        self.axes.plot(np.linspace(0, waveLen-1, np.int(np.floor(waveLen / self.graphDotStride))), self.wave[::self.graphDotStride], self.color, linewidth=0.5)
         self.axes.set_ylim(graph_ylim)
         self.axes.set_xticks([640, 1280])
         self.axes.set_xticklabels(['5s', '10s'])
