@@ -24,8 +24,8 @@ class EEGFileReaderServer:
         classifierParams = self.params.classifierParams
         samplingFreq = self.params.samplingFreq
         windowSizeInSec = self.params.windowSizeInSec
-        self.wsizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
-
+        # self.wsizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
+        self.wsizeInTimePoints = self.client.updateGraph_samplePointNum
         # eegFilePath = fileID + '.txt'
         # stageFilePath = fileID + '.csv'
 
