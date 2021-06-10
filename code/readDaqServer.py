@@ -7,7 +7,7 @@ from PyDAQmx import DAQmxStopTask
 from PyDAQmx import DAQmxClearTask
 from PyDAQmx import TaskHandle
 from PyDAQmx import DAQmx_Val_Volts
-from PyDAQmx import DAQmx_Val_Cfg_Default, DAQmx_Val_Diff, DAQmx_Val_RSE, DAQmx_Val_NRSE, DAQmx_Val_PseudoDiff
+from PyDAQmx import DAQmx_Val_Cfg_Default, DAQmx_Val_Diff, DAQmx_Val_RSE, DAQmx_Val_NRSE
 from PyDAQmx import DAQmx_Val_Rising, DAQmx_Val_Falling
 from PyDAQmx import DAQmx_Val_FiniteSamps, DAQmx_Val_ContSamps
 from PyDAQmx import DAQmx_Val_GroupByChannel, DAQmx_Val_GroupByScanNumber
@@ -107,7 +107,7 @@ class ReadDAQServer:
 
                 def createChannel(devID, channelIDs):
                     try:
-                        DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE, 'PseudoDIFF' : DAQmx_Val_PseudoDiff}
+                        DAQmx_Val_dict = {'DIFF' : DAQmx_Val_Diff, 'RSE' : DAQmx_Val_RSE, 'NRSE' : DAQmx_Val_NRSE}
                         device_and_channelsL = ["Dev" + str(devID) + "/ai" + str(channelID) for channelID in channelIDs]
                         device_and_channels = ", ".join(device_and_channelsL)
                         DAQmxCreateAIVoltageChan(taskHandle, device_and_channels, "",
