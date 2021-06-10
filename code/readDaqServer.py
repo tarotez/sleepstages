@@ -121,10 +121,9 @@ class ReadDAQServer:
                         self.logFile.flush()
                         return 0
 
-                if not createChannel(1, self.channelIDs):
-                    if not createChannel(2, self.channelIDs):
-                        if not createChannel(0, self.channelIDs):
-                            pass
+                for devID in [1,2,3,4,0]:
+                    if createChannel(devID, self.channelIDs):
+                        break
 
                 # param: taskHandle
                 # param: source (const char[])
