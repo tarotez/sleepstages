@@ -138,12 +138,14 @@ class ReadDAQServer:
                                       self.numSampsPerChan * self.channelNum)
                                       # elf.numSampsPerChan)
 
+                '''
                 convRateFactor = 5
                 new_convRate = float64(self.samplingFreq * self.channelNum * convRateFactor)
                 DAQmxSetAIConvRate(taskHandle, new_convRate)
                 convRate = float64()
                 DAQmxGetAIConvRate(taskHandle, byref(convRate))
                 # print('convRate =', convRate)
+                '''
 
                 # DAQmx Start Code
                 DAQmxStartTask(taskHandle)
