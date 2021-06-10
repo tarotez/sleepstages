@@ -11,7 +11,7 @@ from PyDAQmx import DAQmx_Val_Cfg_Default, DAQmx_Val_Diff, DAQmx_Val_RSE, DAQmx_
 from PyDAQmx import DAQmx_Val_Rising, DAQmx_Val_Falling
 from PyDAQmx import DAQmx_Val_FiniteSamps, DAQmx_Val_ContSamps
 from PyDAQmx import DAQmx_Val_GroupByChannel, DAQmx_Val_GroupByScanNumber
-from PyDAQmx import DAQmxGetAIConvRate, DAQmxSetAIConvRate
+# from PyDAQmx import DAQmxGetAIConvRate, DAQmxSetAIConvRate
 from PyDAQmx import DAQError
 # from PyDAQmx import DAQmxSetReadOverWrite
 # from PyDAQmx import DAQmx_Val_OverwriteUnreadSamps, DAQmx_Val_DoNotOverwriteUnreadSamps
