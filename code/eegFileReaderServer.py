@@ -35,6 +35,7 @@ class EEGFileReaderServer:
         # print('for stageSeq, reading file ' + stageFilePath)
         # stageSeq = dataReader.readStageSeq(stageFilePath)
 
+        self.timeStamps = timeStamps
         self.eeg = eeg
         self.emg = emg
         # self.stageSeq = stageSeq
@@ -78,36 +79,34 @@ class EEGFileReaderServer:
 
             endSamplePoint = startSamplePoint + self.wsizeInTimePoints
 
-            eeg_data = self.eeg[startSamplePoint:endSamplePoint]
+            timeStamps_fragment = self.timeStamps[startSamplePoint:endSamplePoint]
+            eeg_fragment = self.eeg[startSamplePoint:endSamplePoint]
             if self.useEMG:
-                emg_data = self.emg[startSamplePoint:endSamplePoint]
+                emg_fragment = self.emg[startSamplePoint:endSamplePoint]
 
             # startSamplePoint = endSamplePoint
             dataToClient = ''
-            eegLength = eeg_data.shape[0]
-            # print('%%%% eeg_data.shape[0] = ' + str(eegLength))
+            eeg_fragmentLength = eeg_fragment.shape[0]
+            # print('%%%% eeg_fragment.shape[0] = ' + str(eeg_fragmentLength))
 
-            presentTime = timeFormatting.presentTimeEscaped()
-            self.logFile.write(presentTime + ', ' + str(eegLength) + '\n')
+            # presentTime = timeFormatting.presentTimeEscaped()
+            self.logFile.write(timeStamps_fragment[0] + ', ' + str(eeg_fragmentLength) + '\n')
             self.logFile.flush()
 
-            for t in range(eegLength):
-                current_time = self.updateTimeStamp(now, t, dt)
-                ftime = current_time.strftime('%H:%M:%S.')
-                ftime += '%06d' % current_time.microsecond
-
-                dataToClient += ftime + '\t' + '{0:.6f}'.format(eeg_data[t])
+            for t in range(eeg_fragmentLength):
+                dataToClient += timeStamps_fragment[t] + '\t' + '{0:.6f}'.format(eeg_fragment[t])
                 if self.useEMG:
-                    dataToClient += '\t' + '{0:.6f}'.format(emg_data[t]) + '\n'
+                    dataToClient += '\t' + '{0:.6f}'.format(emg_fragment[t]) + '\n'
                 else:
                     dataToClient += '\n'
             # print('sending dataToClient to client')
+            # print(dataToClient)
             self.client.process(dataToClient)
             ###### connectedLine = connectedLine + dataFromDaq.decode('utf-8')
             # if len(connectedLine.split('\n')) > self.connectedLineThresh:
             #    break
 
-            # if len(dataToClient.encode('utf-8')) > self.dataToClientSizeLimit or t == (eegLength - 1):
+            # if len(dataToClient.encode('utf-8')) > self.dataToClientSizeLimit or t == (eeg_fragmentLength - 1):
                 # print("len(dataToClient.encode('utf-8')) = " + str(len(dataToClient.encode('utf-8'))))
                 # readDaqServerにデータを送信する
                 # dataToClient = dataToClient.rstrip()
