@@ -146,6 +146,7 @@ class ClassifierClient:
         one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
         raw_one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
         if self.eeg_normalize_for_prediction:
+            # print('past_eegSegment.mean() =', past_eegSegment.mean(), '; past_eegSegment.std() =', past_eegSegment.std())
             processed_eegFragment, _ = standardize(eegFragment, past_eegSegment)
         else:
             # processed_eegFragment, _ = centralize(eegFragment, past_eegSegment)
@@ -222,14 +223,13 @@ class ClassifierClient:
 
         if self.sampleID == self.samplePointNum:
             self.sampleID = 0
-            # copy to previous
-            eegSegment = self.raw_one_record[:,0]
-            self.past_eegSegment = np.r_[self.past_eegSegment, eegSegment]
-            # self.previous_eeg = eegSegment
+            eegSegment =  self.one_record[:,0]
+            raw_eegSegment = self.raw_one_record[:,0]
+            self.past_eegSegment = np.r_[self.past_eegSegment, raw_eegSegment]
             if self.showCh2 or self.useCh2ForReplace:
-                ch2Segment = self.raw_one_record[:,1]
-                self.past_ch2Segment = np.r_[self.past_ch2Segment, ch2Segment]
-                # self.previous_ch2 = ch2Segment
+                ch2Segment = self.one_record[:,1]
+                raw_ch2Segment = self.raw_one_record[:,1]
+                self.past_ch2Segment = np.r_[self.past_ch2Segment, raw_ch2Segment]
 
             # print('self.predictionState =', self.predictionState)
             replaced = False
