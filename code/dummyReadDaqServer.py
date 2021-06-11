@@ -79,22 +79,6 @@ class DummyReadDAQServer:
         fileName = 'daq.' + presentTime + '.csv'
         self.logFile = open(self.params.logDir + '/' + fileName, 'a')
 
-    def read_data(self, taskHandle, data):
-        current_time = datetime.datetime.now()
-        return current_time, data
-
-    @staticmethod
-    def updateTimeStamp(now, t, dt):
-        """
-        # Params
-
-        - t (float)
-        - dt (float)
-        """
-        delta = datetime.timedelta(microseconds=t * dt * 1000 * 1000)
-        current_time = now + delta
-        return current_time
-
     def serve(self):
         global_t = 0
         dt = 1.0 / self.sampRate
