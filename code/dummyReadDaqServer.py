@@ -1,7 +1,5 @@
-from ctypes import byref
 import numpy as np
 import datetime
-import tqdm
 import time
 import math
 import pickle
@@ -73,7 +71,7 @@ class DummyReadDAQServer:
             self.timeStamps = self.timeStamps[offsetSampleNum:]
             self.stageSeq = self.stageSeq[self.offsetWindowID:]
         self.sLen = len(stageSeq)
-        self.wNum = min(eeg.shape[0], self.sLen * self.wsizeInTimePoints)
+        self.wNum = min(eeg.shape[0], self.sLen * samplingFreq * windowSizeInSec)
 
         presentTime = timeFormatting.presentTimeEscaped()
         fileName = 'daq.' + presentTime + '.csv'
