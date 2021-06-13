@@ -31,12 +31,12 @@ import timeFormatting
 
 class ReadDAQServer:
     def __init__(self, client, recordWaves, channelIDs, samplingFreq,
-                 timeout=500, maxNumEpoch=600000):
+                 timeout=500, maxSegmentNum=600000):
         """
         # Params
         - samplingFreq (float): sampling frequency (Hz)
         - timeout (float): how long the program waits in sec (set to -1 to wait indefinitely)
-        - maxNumEpoch (int): the maximum number of epochs
+        - maxSegmentNum (int): the maximum number of segments (one segment = one second)
         """
 
         self.client = client
@@ -45,7 +45,7 @@ class ReadDAQServer:
         self.channelNum = len(self.channelIDs)
         self.samplingFreq = samplingFreq
         self.timeout = timeout  # set to -1 to wait indefinitely
-        self.maxNumEpoch = maxNumEpoch
+        self.maxSegmentNum = maxSegmentNum
         self.numSampsPerChan = self.client.updateGraph_samplePointNum
 
         self.params = ParameterSetup()
@@ -94,7 +94,7 @@ class ReadDAQServer:
             now = datetime.datetime.now()
             print('sampling frequency          : {}'.format(self.samplingFreq))
             print('samples per channel         : {}'.format(self.numSampsPerChan))
-            print('maximum number of epochs    : {}'.format(self.maxNumEpoch))
+            print('maximum number of segment   : {}'.format(self.maxSegmentNum))
             print('number of channels          : {}'.format(self.channelNum))
 
             dt = 1.0 / self.samplingFreq
@@ -151,7 +151,7 @@ class ReadDAQServer:
                 DAQmxStartTask(taskHandle)
                 # DAQmxSetReadOverWrite(taskHandle, DAQmx_Val_OverwriteUnreadSamps)
 
-                for timestep in tqdm.tqdm(range(1, self.maxNumEpoch + 1)):
+                for timestep in tqdm.tqdm(range(1, self.maxSegmentNum + 1)):
                     data = np.zeros((self.numSampsPerChan * self.channelNum,), dtype=np.float64)
                     now = self.read_data(taskHandle, data)
                     # print('data.shape =', data.shape)
