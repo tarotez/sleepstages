@@ -1,5 +1,7 @@
+from ctypes import byref
 import numpy as np
 import datetime
+import tqdm
 import time
 import math
 import pickle
@@ -44,8 +46,8 @@ class DummyReadDAQServer:
         classifierParams = self.params.classifierParams
         samplingFreq = self.params.samplingFreq
         windowSizeInSec = self.params.windowSizeInSec
-        # self.wsizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
-        self.wsizeInTimePoints = self.client.updateGraph_samplePointNum
+        # self.wSizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
+        self.segmentSizeInTimePoints = self.client.updateGraph_samplePointNum
         eegFilePrefix = 'eegAndStage'
 
         if fileID.startswith('m'):
@@ -65,13 +67,13 @@ class DummyReadDAQServer:
         self.timeStamps = timeStamps
         self.stageSeq = stageSeq
         if self.offsetWindowID > 0:
-            offsetSampleNum = self.offsetWindowID * self.wsizeInTimePoints
+            offsetSampleNum = self.offsetWindowID * self.segmentSizeInTimePoints
             self.eeg = self.eeg[offsetSampleNum:]
             self.ch2 = self.ch2[offsetSampleNum:]
             self.timeStamps = self.timeStamps[offsetSampleNum:]
             self.stageSeq = self.stageSeq[self.offsetWindowID:]
         self.sLen = len(stageSeq)
-        self.wNum = min(eeg.shape[0], self.sLen * samplingFreq * windowSizeInSec)
+        self.eLen = min(eeg.shape[0], self.sLen * samplingFreq * windowSizeInSec)
 
         presentTime = timeFormatting.presentTimeEscaped()
         fileName = 'daq.' + presentTime + '.csv'
@@ -82,9 +84,9 @@ class DummyReadDAQServer:
         dt = 1.0 / self.sampRate
 
         # for testing (stopping early), 2019.3.25
-        # self.wNum = 5000
-        for startSamplePoint in range(0, self.wNum, self.wsizeInTimePoints):
-            endSamplePoint = startSamplePoint + self.wsizeInTimePoints
+        # self.eLen = 5000
+        for startSamplePoint in range(0, self.eLen, self.segmentSizeInTimePoints):
+            endSamplePoint = startSamplePoint + self.segmentSizeInTimePoints
             eeg_data = self.eeg[startSamplePoint:endSamplePoint]
             # if self.useEMG:
             #    emg_data = self.emg[startSamplePoint:endSamplePoint]
