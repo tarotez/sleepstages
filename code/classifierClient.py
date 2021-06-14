@@ -438,8 +438,7 @@ class ClassifierClient:
                 '''
                 pass
         for graphID in range(len(self.listOfPredictionResults)-1):
-            for targetChan in range(2):
-                self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
+            self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
         self.listOfPredictionResults[-1].setLabel(str(segmentID + 2) + ' : ', 0)
 
     def setGraph(self, listOfGraphs):
