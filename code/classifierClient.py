@@ -427,9 +427,9 @@ class ClassifierClient:
             choiceLabel = choice
         self.listOfPredictionResults[-1].setChoice(segmentID, choice, choiceLabel)
         for graphID in range(len(self.listOfGraphs[0])-1):
+            self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
             for targetChan in range(2):
                 self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
-                self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
         self.listOfPredictionResults[-1].setLabel(str(segmentID + 2) + ' : ', 0)
 
     def setGraph(self, listOfGraphs):
