@@ -30,7 +30,7 @@ class ClassifierClient:
         self.graphUpdateFreqInHz = self.params.graphUpdateFreqInHz   # frequency of updating the graph (if set to 1, redraws graph every second)
         assert self.samplingFreq / self.graphUpdateFreqInHz == np.floor(self.samplingFreq / self.graphUpdateFreqInHz)   # should be an integer
         self.updateGraph_samplePointNum = np.int(self.samplingFreq / self.graphUpdateFreqInHz)
-        print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
+        # print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
         self.hasGUI = True
         self.graphColors = ['b','g']
         self.ylim_max_eeg, self.ylim_max_ch2 = 2.0, 2.0
@@ -192,7 +192,11 @@ class ClassifierClient:
                 self.logFile.flush()
                 continue
 
+            # print('inputLine =', inputLine)
             input_elems = inputLine.split()
+            # print('input_elems =', input_elems)
+            # print('len(timeStampSegment) =', len(timeStampSegment))
+            # print('sampleCnt =', sampleCnt)
             timeStampSegment[sampleCnt] = input_elems[0]
             eegFragment[sampleCnt] = float(input_elems[1])
             if len(input_elems) > 2:
@@ -208,19 +212,12 @@ class ClassifierClient:
         self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial
         one_record_for_graph_partial = self.normalize_one_record_partial_for_graph(raw_one_record_partial, self.past_eegSegment, self.past_ch2Segment)
         self.one_record_for_graph[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_for_graph_partial
-        # print('one_record_partial =', one_record_partial)
-        # print('self.sampleID =', self.sampleID)
-        # print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
-        # print('eegFragment.shape =', eegFragment.shape)
-        # print('one_record_partial.shape =', one_record_partial.shape)
-        # print('self.one_record.shape =', self.one_record.shape)
-        # print('self.one_record[:32,0] =', self.one_record[:32,0])
-        # if self.sampleID > 32:
-        #    exit()
+        
         if self.hasGUI:
             self.updateGraphPartially(self.one_record_for_graph)
         self.sampleID += self.updateGraph_samplePointNum
 
+        stagePrediction = '-'
         if self.sampleID == self.samplePointNum:
             self.sampleID = 0
             eegSegment =  self.one_record[:,0]
@@ -245,7 +242,6 @@ class ClassifierClient:
                 stagePrediction_before_overwrite = stagePrediction
                 if self.useCh2ForReplace:
                     stagePrediction, replaced = self.replaceToWake(stagePrediction, ch2Segment)
-
             else:
                 stagePrediction = '?'
 
@@ -306,6 +302,7 @@ class ClassifierClient:
             self.raw_one_record = np.zeros((self.samplePointNum, 2))
             self.one_record_for_graph = np.zeros((self.samplePointNum, 2))
             self.segmentID += 1
+            return stagePrediction
 
     def writeToPredFile(self, prediction, prediction_before_overwrite, timeStampSegment):
         prediction_in_capital = self.params.capitalize_for_writing_prediction_to_file[prediction]
@@ -449,7 +446,7 @@ class ClassifierClient:
 
     def predictionStateOn(self):
         self.predictionState = 1
-        print('predictionState is set to 1 at classifierClient')
+        # print('predictionState is set to 1 at classifierClient')
 
     def setPredictionResult(self, listOfPredictionResults):
         self.listOfPredictionResults = listOfPredictionResults
