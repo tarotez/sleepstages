@@ -10,3 +10,5 @@ __pycache__/*
 *.pyc
 data/waves/*
 data/prediction/*
+data/aipost/D*
+data/aipost/H*
