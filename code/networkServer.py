@@ -96,7 +96,7 @@ class NetworkServer:
         self.ai_client = ai_client
         self.samplingFreq = samplingFreq
         self.updateGraph_samplePointNum = np.int(samplingFreq / graphUpdateFreqInHz)
-        assert self.updateGraph_samplePointNum > 0 
+        assert self.updateGraph_samplePointNum > 0
         self.th = ServerThread()
         self.th.setDaemon(True)
         self.th.start()
@@ -118,6 +118,9 @@ class NetworkServer:
                 # print( rawarray )
                 # print(' rawarray.shape =', rawarray.shape)
                 # print('--------------------')
+
+                # Loops because classifierClients accepts segments, not full epochs, in order to visualize waves in GUI.
+                # Before the final segment, judgeStr is '-'.
                 startID = 0
                 while startID < rawarray.shape[0]:
                     # print('startID =', startID)
