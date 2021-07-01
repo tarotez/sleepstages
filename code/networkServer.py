@@ -151,6 +151,6 @@ class NetworkServer:
                 # return
                 self.th.tcp_client.send(retByte)
 
-                elapsed_time = time.time() - startTime
+                # elapsed_time = time.time() - startTime
 
                 self.th.data = ' '
