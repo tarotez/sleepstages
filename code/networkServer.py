@@ -1,10 +1,8 @@
 import threading
 import time
-from socket import *
+from socket import socket, AF_INET, SOCK_STREAM
 import struct
 import numpy as np
-import os
-import time
 import datetime
 from datetime import timedelta
 from collections import defaultdict
@@ -14,8 +12,8 @@ class ServerThread(threading.Thread):
     def __init__(self, PORT=45123):
         threading.Thread.__init__(self)
         self.data = ' '
-        self.kill_flag = False
-        self.HOST = gethostname()
+        # self.kill_flag = False
+        # self.HOST = gethostname()
         self.BUFSIZE = 10240
 
         self.PORT = PORT
@@ -107,7 +105,7 @@ class NetworkServer:
 
             if self.th.data != ' ':
 
-                startTime = time.time()
+                # startTime = time.time()
                 rawarray = np.array(self.th.data, dtype='float64')
 
                 # print( 'senderIP, port =', self.th.sendAddr )
