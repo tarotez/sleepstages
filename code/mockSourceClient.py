@@ -1,3 +1,4 @@
+import sys
 import threading
 import time
 import socket
@@ -9,7 +10,13 @@ import random
 
 # sends mock signal to online.py by connectin to networkServer
 
-HOST = '192.168.0.2'  # The server's hostname or IP address
+args = sys.argv
+if len(args) > 1:
+    HOST = args[1]
+else:
+    HOST = '192.168.0.2'  # The server's hostname or IP address
+
+# print('HOST:', HOST)
 PORT = 45123       # The port used by the server
 
 sampleNum = 100

@@ -116,7 +116,7 @@ class ClassifierClient:
         ksFileID = outputFileID
         if self.chamberID != -1:
             outputFileID += '_chamber' + str(self.chamberID)
-        ksFileName = ksFileID + '_ks.csv'        
+        ksFileName = ksFileID + '_ks.csv'
         try:
             self.ksOutputFile = open(self.params.ksDir + '/' + ksFileName, 'a')
             outLine = 'segmentID, d, chi^2\n'
@@ -301,7 +301,7 @@ class ClassifierClient:
                 # print('stagePrediction =', stagePrediction)
                 if self.connected2serialClient:
                     serialClient = self.serialClient
-                    print('in classifierClient.process(), serialClient = self.serialClient')
+                    # print('in classifierClient.process(), serialClient = self.serialClient')
                     stagePrediction_replaced = 'w' if stagePrediction == '?' else stagePrediction
                     # print(' -> sending', stagePrediction_replaced, 'to serialClient')
                     serialClient.write(stagePrediction_replaced.encode('utf-8'))
