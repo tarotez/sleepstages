@@ -46,6 +46,8 @@ The application can be started in online (real-time) mode by
 python app.py
 ```
 
+Since the default prediction model requires past EEG epochs, the classifier starts to predict after a 10-epochs "burn-in" period. Before that, the classifier outputs '?' because it has not accumulated enough information to make predictions.
+
 The default setup only accepts input signals sampled at 128 Hz. In order to predict stages using signals sampled at a different frequency, the user should modify the neural network model defined in "code/deepClassifier.py" and train a classifier using that model and signals sampled at that sampling frequency. It requires some knowledge on PyTorch to design and implement an appropriate new neural network model, but basically it amounts to changing a few parameters designating the size of input.
 
 The predicted sleep stage can be sent to an Arduino-based external device connected by USB.
