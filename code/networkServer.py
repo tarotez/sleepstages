@@ -4,6 +4,8 @@ import numpy as np
 from datetime import datetime, timedelta
 from collections import defaultdict
 from functools import reduce
+from fileManagement import selectClassifierID
+from classifierClient import ClassifierClient
 
 # format the raw array to a style accepted by classifierClient
 def formatRawArray(timeStamp, samplingFreq, signal):
@@ -14,15 +16,26 @@ def formatRawArray(timeStamp, samplingFreq, signal):
         timeStamp += timeIncrement
     return formatted
 
+def generateClassifier(params, chamberID):
+    # self.recordWaves = params.writeWholeWaves
+    # self.extractorType = params.extractorType
+    # self.finalClassifierDir = params.finalClassifierDir
+    networkName = 'UTSN-L'
+    classifierID = selectClassifierID(params.finalClassifierDir, networkName)
+    client = ClassifierClient(params.writeWholeWaves, params.extractorType, params.classifierType, classifierID, chamberID=chamberID)
+    client.predictionStateOn()
+    client.hasGUI = False
+    return client
+
 # a server that accepts tcp network connection from this or a different machine
 class NetworkServer:
 
-    def __init__(self, ai_client, samplingFreq, graphUpdateFreqInHz):
+    def __init__(self, samplingFreq, graphUpdateFreqInHz, params_for_classifier):
 
-        self.ai_client = ai_client
         self.samplingFreq = samplingFreq
         self.updateGraph_samplePointNum = np.int(samplingFreq / graphUpdateFreqInHz)
         assert self.updateGraph_samplePointNum > 0
+        self.params_for_classifier = params_for_classifier
 
     def serve(self):
 
@@ -30,6 +43,7 @@ class NetworkServer:
         BUFSIZE = 10240
         fmt = reduce(lambda a, _: a + 'f', range(1280), '')  # range used for unpacking EEG from received data
         encode_judge = defaultdict(lambda: 3, w=0, n=1, r=2)  # for encoding judge result to a number
+        ai_clients = {}
 
         # bind, listen, and accept a client
         tcpServSock = socket(AF_INET, SOCK_STREAM)
@@ -40,16 +54,16 @@ class NetworkServer:
         # print('accepted a client from', sendAddr)
 
         while True:
-            try:
+            # try:
                 received_data = tcp_client.recv(BUFSIZE)
 
-                if len(received_data) == 5142:
+                if len(received_data) == 5142:  # the received data is signal + metadata
 
                     # obtain the chamber number
-                    chamberNo = struct.unpack_from('H', received_data, 0)[0]    #WORD
+                    chamberID = struct.unpack_from('H', received_data, 0)[0]    #WORD
 
                     # obtain the epoch number
-                    epochNo = struct.unpack_from('I', received_data, 2)[0]    #DWORD
+                    epochID = struct.unpack_from('I', received_data, 2)[0]    #DWORD
 
                     # obtain the time that the record started
                     dt = struct.unpack_from('HHHHHHI', received_data, 6)
@@ -59,6 +73,10 @@ class NetworkServer:
                     signalW = struct.unpack_from(fmt, received_data, 22)    #float
                     signal_rawarray = np.array(signalW, dtype='float64')
 
+                    # generate a new classifierClient when new chamberID comes.
+                    if chamberID not in ai_clients.keys():
+                        ai_clients[chamberID] = generateClassifier(self.params_for_classifier, chamberID)
+
                     # Loops because classifierClients accepts segments, not full epochs, in order to visualize waves in GUI.
                     # Before the final segment, judgeStr is '-'.
                     startID = 0
@@ -66,22 +84,22 @@ class NetworkServer:
                         # print('startID =', startID)
                         dataToAIClient = formatRawArray(startDT, self.samplingFreq, signal_rawarray[startID:startID+self.updateGraph_samplePointNum])
                         # print('in server, dataToAIClient =', dataToAIClient)
-                        judgeStr = self.ai_client.process(dataToAIClient)
+                        judgeStr = ai_clients[chamberID].process(dataToAIClient)
                         startID += self.updateGraph_samplePointNum
 
-                    cByte = chamberNo.to_bytes(2, 'little')
-                    eByte = epochNo.to_bytes(4, 'little')
+                    cByte = chamberID.to_bytes(2, 'little')
+                    eByte = epochID.to_bytes(4, 'little')
                     jByte = encode_judge[judgeStr].to_bytes(2, 'little')
 
                     # return to the client
                     retByte = cByte + eByte + jByte
                     tcp_client.send(retByte)
 
-                elif len(received_data) == 1:
-                    # connection test (receive 1 byte)
+                elif len(received_data) == 1:   # the received data is for connection check
+                    # connection test (received 1 byte)
                     resp = 'Connection OK'.encode('utf-8')
                     tcp_client.send(resp)
 
-            except Exception as tcpException:
-                print('Exception in network connection:', tcpException)
-                break
+            # except Exception as tcpException:
+            #     print('Exception in the tcp connection:', tcpException)
+            #     break
