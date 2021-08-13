@@ -404,7 +404,10 @@ class ClassifierClient:
         if hasattr(self, 'listOfGraphs'):
             for graphID in range(len(self.listOfGraphs[0])):
                 for targetChan in range(2):
+                    '''
                     self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
+                    '''
+                    pass
 
     def normalize_one_record_partial_for_graph(self, raw_one_record_partial, past_eegSegment, past_ch2Segment):
         graph_one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
@@ -419,8 +422,10 @@ class ClassifierClient:
         return graph_one_record_partial
 
     def updateGraphPartially(self, one_record_for_graph):
+        '''
         for targetChan in range(2):
             self.listOfGraphs[targetChan][-1].setData(one_record_for_graph[:,targetChan], color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
+        '''
 
     def updateGraph(self, segmentID, stagePrediction, stagePrediction_before_overwrite, replaced):
         choice = self.params.capitalize_for_display[stagePrediction]
@@ -434,6 +439,7 @@ class ClassifierClient:
         for graphID in range(len(self.listOfGraphs[0])-1):
             self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
             for targetChan in range(2):
+                '''
                 self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
         self.listOfPredictionResults[-1].setLabel(str(segmentID + 2) + ' : ', 0)
 

@@ -21,7 +21,7 @@ from matplotlib.figure import Figure
 class GraphCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=4, height=2, dpi=100):
-        self.graphDotStride = 4
+        self.graphDotStride = 64        
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.set_facecolor('#ececec')
         self.axes = fig.add_subplot(111)

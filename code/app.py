@@ -99,7 +99,9 @@ class RemApplication(QMainWindow):
             statusbar.showMessage(str(e))
             raise e
 
+
         self.client.setGraph(self.listOfGraphs)
+
         for targetChan in range(2):
             self.client.update_ylim(targetChan)
         self.client.setPredictionResult(self.listOfPredictionResults)
@@ -441,8 +443,10 @@ class RemApplication(QMainWindow):
             xLoc = (graphID * 300) + 50
             for chanID in range(2):
                 yLoc = (chanID * 200) + 120
+                '''
                 self.listOfGraphs[chanID].append(DynamicGraphCanvas(self, width=int(3 * self.scale), height=int(2 * self.scale), dpi=100))
                 self.listOfGraphs[chanID][graphID].move(int(xLoc * self.scale), int(yLoc * self.scale))
+                '''
 
         self.setWindowTitle('Sleep stage classifier')
         xSize = self.graphNum * 310
