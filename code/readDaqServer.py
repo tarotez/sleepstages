@@ -163,14 +163,6 @@ class ReadDAQServer:
                     else:
                         eeg_data = data[:sampleNum]
 
-                    # print('sampleNum =', sampleNum)
-                    # print('data.shape =', data.shape)
-                    # print('data[:64] =', data[:64])
-                    # print('data =', data)
-                    # print('eeg_data[:64] =', eeg_data[:64])
-                    # if self.channelNum == 2:
-                    #    print('ch2_data[:64] =', ch2_data[:64])
-
                     dataToClient = ''
                     for sampleID in range(sampleNum):
                         current_time = self.updateTimeStamp(now, sampleID, dt)

@@ -26,8 +26,6 @@ class EEGFileReaderServer:
         windowSizeInSec = self.params.windowSizeInSec
         # self.wsizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
         self.wsizeInTimePoints = self.client.updateGraph_samplePointNum
-        # eegFilePath = fileID + '.txt'
-        # stageFilePath = fileID + '.csv'
 
         dataReader = DataReader()
         print('for EEG, reading file ' + eegFilePath)
@@ -38,11 +36,7 @@ class EEGFileReaderServer:
         self.timeStamps = timeStamps
         self.eeg = eeg
         self.emg = emg
-        # self.stageSeq = stageSeq
-        # self.sLen = len(stageSeq)
-        # self.wNum = min(eeg.shape[0], self.sLen * self.wsizeInTimePoints)
         self.wNum = eeg.shape[0]
-        # self.dataToClientSizeLimit = 4096
 
         presentTime = timeFormatting.presentTimeEscaped()
         fileName = 'daq.' + presentTime + '.csv'
@@ -69,10 +63,6 @@ class EEGFileReaderServer:
 
         global_t = 0
         dt = 1.0 / self.sampRate
-        # while True:
-        # print('%%%% self.wsizeInTimePoints = ' + str(self.wsizeInTimePoints))
-        # startSamplePoint = 0
-        # while startSamplePoint + self.wsizeInTimePoints <= self.wNum:
         for startSamplePoint in range(0, self.wNum, self.wsizeInTimePoints):
             now = datetime.datetime.now()
             # print('sampling rate             : {}'.format(self.sampRate))
@@ -87,7 +77,6 @@ class EEGFileReaderServer:
             # startSamplePoint = endSamplePoint
             dataToClient = ''
             eeg_fragmentLength = eeg_fragment.shape[0]
-            # print('%%%% eeg_fragment.shape[0] = ' + str(eeg_fragmentLength))
 
             # presentTime = timeFormatting.presentTimeEscaped()
             self.logFile.write(timeStamps_fragment[0] + ', ' + str(eeg_fragmentLength) + '\n')
@@ -100,18 +89,5 @@ class EEGFileReaderServer:
                 else:
                     dataToClient += '\n'
             # print('sending dataToClient to client')
-            # print(dataToClient)
+            # print('in server, dataToClient =', dataToClient)
             self.client.process(dataToClient)
-            ###### connectedLine = connectedLine + dataFromDaq.decode('utf-8')
-            # if len(connectedLine.split('\n')) > self.connectedLineThresh:
-            #    break
-
-            # if len(dataToClient.encode('utf-8')) > self.dataToClientSizeLimit or t == (eeg_fragmentLength - 1):
-                # print("len(dataToClient.encode('utf-8')) = " + str(len(dataToClient.encode('utf-8'))))
-                # readDaqServerにデータを送信する
-                # dataToClient = dataToClient.rstrip()
-                ###### must send a whole data (connected)
-                # client.process(dataToClient.encode('utf-8'))
-                # dataToClient = ''
-                ### time.sleep(0.01)
-            # time.sleep(0.01)

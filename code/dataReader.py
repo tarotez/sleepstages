@@ -32,37 +32,35 @@ class DataReader:
         params = ParameterSetup()
         oFilter = OutlierMouseFilter()
         sdFilter = SDFilter()
-
-        # for signal processing
-        windowSizeInSec = params.windowSizeInSec   # size of window in time for estimating the state
-        samplingFreq = params.samplingFreq   # sampling frequency of data
-
-        # parameters for using history
-        preContextSize = params.preContextSize
-
-        # parameters for making a histogram
-        wholeBand = params.wholeBand
-        binWidth4freqHisto = params.binWidth4freqHisto    # bin width in the frequency domain for visualizing spectrum as a histogram
-
-        # dictionary for label correction
-        labelCorrectionDict = params.labelCorrectionDict
-
-        # for reading data
-        classifierDir = params.classifierDir
-        classifierName = params.classifierName
-        samplePointNum = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
-        time_step = 1 / samplingFreq
-        binNum4spectrum = round(wholeBand.getBandWidth() / binWidth4freqHisto)
-        # print('samplePointNum = ' + str(samplePointNum))
-        past_eeg = np.empty((samplePointNum, 0), dtype = np.float)
-        past_freqHisto = np.empty((binNum4spectrum, 0), dtype = np.float)
-        # print('in __init__, past_eeg.shape = ' + str(past_eeg.shape))
-
         pickledDir = params.pickledDir
 
+        # for signal processing
+        # windowSizeInSec = params.windowSizeInSec   # size of window in time for estimating the state
+        # samplingFreq = params.samplingFreq   # sampling frequency of data
+
+        # parameters for using history
+        # preContextSize = params.preContextSize
+
+        # parameters for making a histogram
+        # wholeBand = params.wholeBand
+        # binWidth4freqHisto = params.binWidth4freqHisto    # bin width in the frequency domain for visualizing spectrum as a histogram
+
+        # dictionary for label correction
+        # labelCorrectionDict = params.labelCorrectionDict
+
+        # for reading data
+        # classifierDir = params.classifierDir
+        # classifierName = params.classifierName
+        # samplePointNum = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
+        # time_step = 1 / samplingFreq
+        # binNum4spectrum = round(wholeBand.getBandWidth() / binWidth4freqHisto)
+        # # print('samplePointNum = ' + str(samplePointNum))
+        # past_eeg = np.empty((samplePointNum, 0), dtype = np.float)
+        # past_freqHisto = np.empty((binNum4spectrum, 0), dtype = np.float)
+        # print('in __init__, past_eeg.shape = ' + str(past_eeg.shape))
         #----------------
         # compute parameters
-        wsizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
+        # wsizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
 
         #---------------
         # read files
@@ -228,7 +226,7 @@ class DataReader:
 
         eeg = np.array(eegL)
         emg = np.array(emgL)
-        # print('  eeg.shape = ' + str(eeg.shape) + ', emg.shape = ' + str(emg.shape))
+        print('  eeg.shape = ' + str(eeg.shape) + ', emg.shape = ' + str(emg.shape))
         timeStamps = np.array(timeStampsL)
         ### samplePointNum = eeg.shape[0]
         return eeg, emg, timeStamps

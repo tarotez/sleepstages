@@ -53,7 +53,7 @@ class StagePredictor(object):
         #    # print('self.featureVecAll.shape = ' + str(self.featureVecAll.shape))
 
         # get transition probability matrix from transition matrix (counts)
-        print('in stagePredictor, self.markovOrder =', self.markovOrder)
+        # print('in stagePredictor, self.markovOrder =', self.markovOrder)
         if self.markovOrder > 0:
 
             if len(classifierID) > 0:
@@ -180,8 +180,8 @@ class StagePredictor(object):
 
     def batch_predict(self, records, timeStampSegments, stageLabels4evaluation, stageLabel2stageID):
 
-        print('records.shape = ' + str(records.shape))
-        print('timeStampSegments.shape = ' + str(timeStampSegments.shape))
+        # print('records.shape = ' + str(records.shape))
+        # print('timeStampSegments.shape = ' + str(timeStampSegments.shape))
 
         # if self.excludedFileID != '':
         #    featureMat = self.featureVecAll
@@ -226,7 +226,7 @@ class StagePredictor(object):
         ### y_pred_origs = self.classifier.predict(featureTensorTransposed)
         y_pred_origs = self.classifier.predict(featureTensor)
         # print('after classifier.predict in StagePredictor')
-        print('np.array(y_pred_origs).shape = ' + str(np.array(y_pred_origs).shape))
+        # print('np.array(y_pred_origs).shape = ' + str(np.array(y_pred_origs).shape))
 
         # y_pred_L = [self.labelCorrectionDict[y_pred_orig[0]] for y_pred_orig in y_pred_origs]
         # [print('y_pred_orig = ' + str(y_pred_orig)) for y_pred_orig in y_pred_origs]

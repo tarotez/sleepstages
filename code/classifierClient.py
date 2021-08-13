@@ -1,28 +1,23 @@
 import os
-import math
 import numpy as np
-import string
 import datetime
-from functools import reduce
-from os.path import dirname, abspath
 from statistics import standardize, centralize, subtractLinearFit
 from connect_laser_device import connect_laser_device
 from parameterSetup import ParameterSetup
 from stagePredictor import StagePredictor
 import timeFormatting
-import time
-import pickle
-from filters import butter_lowpass_filter
+# from filters import butter_lowpass_filter
 from algorithmFactory import AlgorithmFactory
 from deepClassifier import DeepClassifier
 # from ksstatistics import StatisticalTester
 # from fileManagement import readStandardMice, readdMat, readdTensor
 
-os.environ['KMP_DUPLICATE_LIB_OK']='TRUE'
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 class ClassifierClient:
-    def __init__(self, recordWaves, extractorType, classifierType, classifierID, inputFileID='', offsetWindowID=0):
+    def __init__(self, recordWaves, extractorType, classifierType, classifierID, inputFileID='', offsetWindowID=0, chamberID=-1):
         self.recordWaves = recordWaves
         self.inputFileID = inputFileID
+        self.chamberID = chamberID
 
         self.params = ParameterSetup()
         self.samplingFreq = self.params.samplingFreq
@@ -30,7 +25,7 @@ class ClassifierClient:
         self.graphUpdateFreqInHz = self.params.graphUpdateFreqInHz   # frequency of updating the graph (if set to 1, redraws graph every second)
         assert self.samplingFreq / self.graphUpdateFreqInHz == np.floor(self.samplingFreq / self.graphUpdateFreqInHz)   # should be an integer
         self.updateGraph_samplePointNum = np.int(self.samplingFreq / self.graphUpdateFreqInHz)
-        print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
+        # print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
         self.hasGUI = True
         self.graphColors = ['b','g']
         self.ylim_max_eeg, self.ylim_max_ch2 = 2.0, 2.0
@@ -63,7 +58,10 @@ class ClassifierClient:
         self.setStagePredictor(classifierID)
 
         presentTime = timeFormatting.presentTimeEscaped()
-        logFileName = 'classifier.' + presentTime + '.csv'
+        logFileID = 'classifier.' + presentTime
+        if self.chamberID != -1:
+            logFileID += '_chamber' + str(self.chamberID)
+        logFileName = logFileID + '.csv'
         self.logFile = open(self.params.logDir + '/' + logFileName, 'a')
 
         # connect to an output device
@@ -90,8 +88,10 @@ class ClassifierClient:
             outputFileID = timeFormatting.presentTimeEscaped()
         else:
             outputFileID = self.inputFileID
+        if self.chamberID != -1:
+            outputFileID += '_chamber' + str(self.chamberID)
+
         waveFileName = outputFileID + '_wave.csv'
-        # ksFileName = outputFileID + '_ks.csv'
 
         self.ch2_mode = "Video"
         self.ch2_thresh_value = self.params.ch2_thresh_default
@@ -113,6 +113,10 @@ class ClassifierClient:
         self.y_pred_L = []
 
         '''
+        ksFileID = outputFileID
+        if self.chamberID != -1:
+            outputFileID += '_chamber' + str(self.chamberID)
+        ksFileName = ksFileID + '_ks.csv'
         try:
             self.ksOutputFile = open(self.params.ksDir + '/' + ksFileName, 'a')
             outLine = 'segmentID, d, chi^2\n'
@@ -127,6 +131,10 @@ class ClassifierClient:
             self.predFileID = timeFormatting.presentTimeEscaped()
         else:
             self.predFileID = self.inputFileID
+
+        if self.chamberID != -1:
+            self.predFileID += '_chamber' + str(self.chamberID)
+
         print('writes prediction results to ' + self.params.predDir + '/' + self.predFileID + '_pred.txt')
         self.predFile = open(self.params.predDir + '/' + self.predFileID + '_pred.txt', 'w')
         self.predFileBeforeOverwrite = open(self.params.predDir + '/' + self.predFileID + '_pred_before_overwrite.txt', 'w')
@@ -192,7 +200,11 @@ class ClassifierClient:
                 self.logFile.flush()
                 continue
 
+            # print('inputLine =', inputLine)
             input_elems = inputLine.split()
+            # print('input_elems =', input_elems)
+            # print('len(timeStampSegment) =', len(timeStampSegment))
+            # print('sampleCnt =', sampleCnt)
             timeStampSegment[sampleCnt] = input_elems[0]
             eegFragment[sampleCnt] = float(input_elems[1])
             if len(input_elems) > 2:
@@ -208,19 +220,12 @@ class ClassifierClient:
         self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial
         one_record_for_graph_partial = self.normalize_one_record_partial_for_graph(raw_one_record_partial, self.past_eegSegment, self.past_ch2Segment)
         self.one_record_for_graph[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_for_graph_partial
-        # print('one_record_partial =', one_record_partial)
-        # print('self.sampleID =', self.sampleID)
-        # print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
-        # print('eegFragment.shape =', eegFragment.shape)
-        # print('one_record_partial.shape =', one_record_partial.shape)
-        # print('self.one_record.shape =', self.one_record.shape)
-        # print('self.one_record[:32,0] =', self.one_record[:32,0])
-        # if self.sampleID > 32:
-        #    exit()
+
         if self.hasGUI:
             self.updateGraphPartially(self.one_record_for_graph)
         self.sampleID += self.updateGraph_samplePointNum
 
+        stagePrediction = '-'
         if self.sampleID == self.samplePointNum:
             self.sampleID = 0
             eegSegment =  self.one_record[:,0]
@@ -245,7 +250,6 @@ class ClassifierClient:
                 stagePrediction_before_overwrite = stagePrediction
                 if self.useCh2ForReplace:
                     stagePrediction, replaced = self.replaceToWake(stagePrediction, ch2Segment)
-
             else:
                 stagePrediction = '?'
 
@@ -297,7 +301,7 @@ class ClassifierClient:
                 # print('stagePrediction =', stagePrediction)
                 if self.connected2serialClient:
                     serialClient = self.serialClient
-                    print('in classifierClient.process(), serialClient = self.serialClient')
+                    # print('in classifierClient.process(), serialClient = self.serialClient')
                     stagePrediction_replaced = 'w' if stagePrediction == '?' else stagePrediction
                     # print(' -> sending', stagePrediction_replaced, 'to serialClient')
                     serialClient.write(stagePrediction_replaced.encode('utf-8'))
@@ -306,6 +310,7 @@ class ClassifierClient:
             self.raw_one_record = np.zeros((self.samplePointNum, 2))
             self.one_record_for_graph = np.zeros((self.samplePointNum, 2))
             self.segmentID += 1
+            return stagePrediction
 
     def writeToPredFile(self, prediction, prediction_before_overwrite, timeStampSegment):
         prediction_in_capital = self.params.capitalize_for_writing_prediction_to_file[prediction]
@@ -449,11 +454,11 @@ class ClassifierClient:
 
     def predictionStateOn(self):
         self.predictionState = 1
-        print('predictionState is set to 1 at classifierClient')
+        # print('predictionState is set to 1 at classifierClient')
 
     def setPredictionResult(self, listOfPredictionResults):
         self.listOfPredictionResults = listOfPredictionResults
 
-    def filter(self, data, cutoff=8, fs=128, order=6):
-        filtered = butter_lowpass_filter(data, cutoff, fs, order)
-        return filtered
+    # def filter(self, data, cutoff=8, fs=128, order=6):
+    #     filtered = butter_lowpass_filter(data, cutoff, fs, order)
+    #     return filtered
