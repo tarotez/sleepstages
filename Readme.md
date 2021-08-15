@@ -8,11 +8,11 @@ SleepStages runs on Windows and Mac machines with Python 3 installed. Required p
 pip install torch pytorch-ignite torchsummary pyserial PyQt5 tqdm scipy matplotlib sklearn
 ```
 
-To obtain EEG signals using National Instruments DAQ, NI-DAQmx-Base software library should be downloaded and installed. It is freely available at the National Instruments website. NI-DAQmx-Base is not necessary when predicting stages for already-recorded EEG signals offline only and not using the application online (real-time).
+If the user chooses to obtain EEG signals using National Instruments DAQ, NI-DAQmx-Base software library should be downloaded and installed. It is freely available at the National Instruments website. NI-DAQmx-Base is not necessary when predicting stages for already-recorded EEG signals offline only and not using the application online (real-time).
 
 http://www.ni.com/download/ni-daqmx-base-15.0/5648/en/
 
-SleepStages was tested using National Instruments USB-6210 (Multifunction I/O Device), but other NI devices will probably work too. A Python package for running DAQmx is necessary also, if NI-DAQ is used for data acquisition.
+SleepStages was tested using National Instruments USB-6210 (Multifunction I/O Device), but other NI devices will probably work too. A Python package for running DAQmx is also necessary if NI-DAQ is used for data acquisition.
 
 ```
 pip install PyDAQmx
