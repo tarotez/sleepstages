@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from collections import defaultdict
 from functools import reduce
-from fileManagement import selectClassifierID, classifierMetadata
+from fileManagement import selectClassifierID
 from classifierClient import ClassifierClient
 
 # format the raw array to a style accepted by classifierClient
