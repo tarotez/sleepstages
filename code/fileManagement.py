@@ -9,21 +9,37 @@ import random
 from classicalClassifier import ClassicalClassifier
 from deepClassifier import DeepClassifier
 
-def selectClassifierID(finalClassifierDir, classifier_type):
-    # all_files = listdir(self.params.finalClassifierDir)
-    classifierDict = {}
-    with open(finalClassifierDir + '/classifierTypes.csv') as f:
+'''
+def classifierMetadata(finalClassifierDir, classifierID):
+    metadatarDict = {}
+    with open(finalClassifierDir + '/' + classifierTypeFileName) as f:
         for line in f:
             elems = [elem.strip() for elem in line.split(',')]
             print('adding', elems[1], ':', elems[0], 'to dict.')
-            classifierDict.update({elems[1] : elems[0]})
-    classifierID = classifierDict[classifier_type]
-    print('in selectClassifierID(), classifierType =', classifier_type, 'and classifierID =', classifierID)
+            metadataDict.update({elems[0] : (elems[2], elems[3])})
+    sampFreq, epochTime = metadataDict[classifierID]
+    return sampFreq, epochTime
+'''
+
+def selectClassifierID(finalClassifierDir, requested_classifierType, requested_samplingFreq=0, requested_epochTime=0):
+    classifierTypeFileName = 'classifierTypes.csv'
+    classifierDict = {}
+    with open(finalClassifierDir + '/' + classifierTypeFileName) as f:
+        for line in f:
+            classifierID, classifierType, samplingFreq, epochTime = [elem.strip() for elem in line.split(',')]
+            if (requested_samplingFreq == 0 and requested_epochTime == 0) or (requested_samplingFreq == sampliongFreq and requested_epochTime == epochTime):
+                print('adding', classifierType, ':', classifierID, 'to dict.')
+                classifierDict.update({classifierType : classifierID})
+
+    # find a classifier that matches with requested samplingFreq and epochTime
+    if requested_classifierType in classifierDict:
+        classifierID = classifierDict[requested_classifierType]
+        print('Using classifierID =', classifierID, 'whose classifierType is', requested_classifierType)
+    else:
+        classifierID = 0
+        print('No classifier for samplingFreq =', requested_samplingFreq, ' and epochTime =', requested_epochTime)
+
     return classifierID
-    # prefix = 'params.'
-    # paramFiles = filterByPrefix(all_files, prefix)
-    # paramFile = paramFiles[np.random.randint(len(paramFiles))]
-    # return paramFile.split('.')[1]
 
 #--------------------------------------------
 # write names of files used for training the classifier
