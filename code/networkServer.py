@@ -111,7 +111,7 @@ class NetworkServer:
 
                             # return to the client
                             retByte = cByte + eByte + jByte
-                        tcp_client.send(retByte)
+                            tcp_client.send(retByte)
 
                     elif len(received_data) == 1:   # the received data is for connection check
                         # connection test (received 1 byte)
