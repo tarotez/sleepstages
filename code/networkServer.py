@@ -113,10 +113,10 @@ class NetworkServer:
                             retByte = cByte + eByte + jByte
                             tcp_client.send(retByte)
 
-                    elif len(received_data) == 1:   # the received data is for connection check
-                        # connection test (received 1 byte)
-                        resp = 'Connection OK'.encode('utf-8')
-                        tcp_client.send(resp)
+                        elif len(received_data) == 1:   # the received data is for connection check
+                            # connection test (received 1 byte)
+                            resp = 'Connection OK'.encode('utf-8')
+                            tcp_client.send(resp)
 
                 # except Exception as tcpException:
                 #     print('Exception in the tcp connection:', tcpException)
