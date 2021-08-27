@@ -16,13 +16,13 @@ def formatRawArray(timeStamp, samplingFreq, signal):
         timeStamp += timeIncrement
     return formatted
 
-def generateClassifier(params, chamberID):
+def generateClassifier(params, chamberID, samplingFreq, epochTime):
     # self.recordWaves = params.writeWholeWaves
     # self.extractorType = params.extractorType
     # self.finalClassifierDir = params.finalClassifierDir
     networkName = 'UTSN-L'
     classifierID = selectClassifierID(params.finalClassifierDir, networkName)
-    client = ClassifierClient(params.writeWholeWaves, params.extractorType, params.classifierType, classifierID, chamberID=chamberID)
+    client = ClassifierClient(params.writeWholeWaves, params.extractorType, params.classifierType, classifierID, chamberID=chamberID, samplingFreq=samplingFreq, epochTime=epochTime)
     client.predictionStateOn()
     client.hasGUI = False
     return client
@@ -53,6 +53,14 @@ class NetworkServer:
         tcp_client, sendAddr = tcpServSock.accept()
         # print('accepted a client from', sendAddr)
 
+        # for setting up sampling frequency and epoch width
+        received_data = tcp_client.recv(BUFSIZE)
+        samplingFreq = struct.unpack_from('H', received_data, 0)[0]    #WORD
+        epochTime = struct.unpack_from('H', received_data, 2)[0]    #WORD
+        res = 1
+        retByte = res.to_bytes(2, 'little')
+        tcp_client.send(retByte)
+
         while True:
             # try:
                 received_data = tcp_client.recv(BUFSIZE)
@@ -75,7 +83,7 @@ class NetworkServer:
 
                     # generate a new classifierClient when new chamberID comes.
                     if chamberID not in ai_clients.keys():
-                        ai_clients[chamberID] = generateClassifier(self.params_for_classifier, chamberID)
+                        ai_clients[chamberID] = generateClassifier(self.params_for_classifier, chamberID, samplingFreq, epochTime)
 
                     # Loops because classifierClients accepts segments, not full epochs, in order to visualize waves in GUI.
                     # Before the final segment, judgeStr is '-'.

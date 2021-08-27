@@ -14,14 +14,20 @@ from deepClassifier import DeepClassifier
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 class ClassifierClient:
-    def __init__(self, recordWaves, extractorType, classifierType, classifierID, inputFileID='', offsetWindowID=0, chamberID=-1):
+    def __init__(self, recordWaves, extractorType, classifierType, classifierID, inputFileID='', offsetWindowID=0, chamberID=-1, samplingFreq=0, epochTime=0):
         self.recordWaves = recordWaves
         self.inputFileID = inputFileID
         self.chamberID = chamberID
 
         self.params = ParameterSetup()
-        self.samplingFreq = self.params.samplingFreq
-        self.samplePointNum = self.params.windowSizeInSec * self.samplingFreq  # the number of sample points received at once
+        if samplingFreq == 0:
+            self.samplingFreq = self.params.samplingFreq
+        else:
+            self.samplingFreq = samplingFreq
+        if epochTime == 0:
+            self.samplePointNum = self.params.windowSizeInSec * self.samplingFreq  # the number of sample points received at once
+        else:
+            self.samplePointNum = epochTime * self.samplingFreq  # the number of sample points received at once
         self.graphUpdateFreqInHz = self.params.graphUpdateFreqInHz   # frequency of updating the graph (if set to 1, redraws graph every second)
         assert self.samplingFreq / self.graphUpdateFreqInHz == np.floor(self.samplingFreq / self.graphUpdateFreqInHz)   # should be an integer
         self.updateGraph_samplePointNum = np.int(self.samplingFreq / self.graphUpdateFreqInHz)
@@ -404,10 +410,7 @@ class ClassifierClient:
         if hasattr(self, 'listOfGraphs'):
             for graphID in range(len(self.listOfGraphs[0])):
                 for targetChan in range(2):
-                    '''
                     self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
-                    '''
-                    pass
 
     def normalize_one_record_partial_for_graph(self, raw_one_record_partial, past_eegSegment, past_ch2Segment):
         graph_one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))
@@ -422,10 +425,8 @@ class ClassifierClient:
         return graph_one_record_partial
 
     def updateGraphPartially(self, one_record_for_graph):
-        '''
         for targetChan in range(2):
             self.listOfGraphs[targetChan][-1].setData(one_record_for_graph[:,targetChan], color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
-        '''
 
     def updateGraph(self, segmentID, stagePrediction, stagePrediction_before_overwrite, replaced):
         choice = self.params.capitalize_for_display[stagePrediction]
@@ -439,7 +440,6 @@ class ClassifierClient:
         for graphID in range(len(self.listOfGraphs[0])-1):
             self.listOfPredictionResults[graphID].setLabel(self.listOfPredictionResults[graphID+1].getLabel(), self.listOfPredictionResults[graphID+1].getStageCode())
             for targetChan in range(2):
-                '''
                 self.listOfGraphs[targetChan][graphID].setData(self.listOfGraphs[targetChan][graphID+1].getData(), color=self.graphColors[targetChan], graph_ylim=self.graph_ylim[targetChan])
         self.listOfPredictionResults[-1].setLabel(str(segmentID + 2) + ' : ', 0)
 
