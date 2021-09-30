@@ -113,6 +113,18 @@ class NetworkServer:
                             retByte = cByte + eByte + jByte
                             tcp_client.send(retByte)
 
+                        elif len(received_data) == 6:   # the received data is for resetting
+                            commandID = struct.unpack_from('I', received_data, 0)[0]    #DWORD
+                            chamberID = struct.unpack_from('H', received_data, 4)[0]    #WORD
+                            resetCommand = 901
+                            if commandID == resetCommand:
+                                ai_clients[chamberID] = generateClassifier(self.params_for_classifier, chamberID, requested_samplingFreq, requested_epochTime)
+                                reset_status = 1
+                            else:
+                                reset_status = 0
+                            respByte = reset_status.to_bytes(2, 'little')
+                            tcp_client.send(respByte)
+
                         elif len(received_data) == 1:   # the received data is for connection check
                             # connection test (received 1 byte)
                             resp = 'Connection OK'.encode('utf-8')
