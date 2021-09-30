@@ -24,9 +24,11 @@ def classifierMetadata(finalClassifierDir, classifierID):
 def selectClassifierID(finalClassifierDir, requested_classifierType, requested_samplingFreq=0, requested_epochTime=0):
     classifierTypeFileName = 'classifierTypes.csv'
     classifierDict = {}
+    print('requested_samplingFreq =', requested_samplingFreq, 'requested_epochTime =', requested_epochTime)
     with open(finalClassifierDir + '/' + classifierTypeFileName) as f:
         for line in f:
             classifierID, classifierType, samplingFreq, epochTime = [elem.strip() for elem in line.split(',')]
+            print(classifierID, classifierType, samplingFreq, epochTime)
             if (requested_samplingFreq == 0 and requested_epochTime == 0) or (requested_samplingFreq == samplingFreq and requested_epochTime == epochTime):
                 print('adding', classifierType, ':', classifierID, 'to dict.')
                 classifierDict.update({classifierType : classifierID})
