@@ -118,6 +118,7 @@ class NetworkServer:
                             chamberID = struct.unpack_from('H', received_data, 4)[0]    #WORD
                             resetCommand = 901
                             if commandID == resetCommand:
+                                print('resetting chamber', chamberID)
                                 ai_clients[chamberID] = generateClassifier(self.params_for_classifier, chamberID, requested_samplingFreq, requested_epochTime)
                                 reset_status = 1
                             else:
