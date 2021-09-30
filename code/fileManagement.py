@@ -27,7 +27,7 @@ def selectClassifierID(finalClassifierDir, requested_classifierType, requested_s
     with open(finalClassifierDir + '/' + classifierTypeFileName) as f:
         for line in f:
             classifierID, classifierType, samplingFreq, epochTime = [elem.strip() for elem in line.split(',')]
-            if (requested_samplingFreq == 0 and requested_epochTime == 0) or (requested_samplingFreq == sampliongFreq and requested_epochTime == epochTime):
+            if (requested_samplingFreq == 0 and requested_epochTime == 0) or (requested_samplingFreq == samplingFreq and requested_epochTime == epochTime):
                 print('adding', classifierType, ':', classifierID, 'to dict.')
                 classifierDict.update({classifierType : classifierID})
 
