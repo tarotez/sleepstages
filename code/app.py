@@ -1,4 +1,3 @@
-#!/Users/ssg/.pyenv/shims/python
 # -*- coding: utf-8 -*-
 import sys
 from functools import wraps
@@ -99,9 +98,7 @@ class RemApplication(QMainWindow):
             statusbar.showMessage(str(e))
             raise e
 
-
         self.client.setGraph(self.listOfGraphs)
-
         for targetChan in range(2):
             self.client.update_ylim(targetChan)
         self.client.setPredictionResult(self.listOfPredictionResults)
@@ -208,11 +205,6 @@ class RemApplication(QMainWindow):
             self.client.eeg_graph_normalize = 1
         else:
             self.client.eeg_graph_normalize = 0
-        # self.client.eeg_mode = self.eeg_mode
-        # if self.eeg_mode == self.eeg_mode_str_normalize:
-        #    self.client.eeg_normalize = 1
-        # else:
-        #    self.client.eeg_normalize = 0
 
     def ch2_visualize_mode_choice(self, text):
         self.ch2_visualize_mode = text
@@ -220,11 +212,6 @@ class RemApplication(QMainWindow):
             self.client.ch2_graph_normalize = 1
         else:
             self.client.ch2_graph_normalize = 0
-        # self.client.ch2_mode = self.ch2_mode
-        # if self.ch2_mode == self.ch2_mode_str_normalize:
-        #    self.client.ch2_normalize = 1
-        # else:
-        #     self.client.ch2_normalize = 0
 
     def ch2_usage_combobox_setup(self):
         if  self.params.useCh2ForReplace:
@@ -408,18 +395,18 @@ class RemApplication(QMainWindow):
         self.ch2_thresh_slider.valueChanged.connect(self.ch2_thresh_change)
 
         self.label_graph_ch2 = QLabel(self)
-        self.label_graph_ch2.setFont(QtGui.QFont('SansSerif', 24))
+        self.label_graph_ch2.setFont(QtGui.QFont('Courier New', 24))
         self.label_graph_ch2.setText('Epoch# : Prediction')
         self.label_graph_ch2.resize(self.label_graph_ch2.sizeHint())
         self.label_graph_ch2.move(int(500 * self.scale), int(50 * self.scale))
 
         self.label_graph_eeg = QLabel(self)
-        self.label_graph_eeg.setFont(QtGui.QFont('SansSerif', 20))
+        self.label_graph_eeg.setFont(QtGui.QFont('Courier New', 20))
         self.label_graph_eeg.setText('EEG')
         self.label_graph_eeg.move(int(5 * self.scale), int(205 * self.scale))
 
         self.label_graph_ch2 = QLabel(self)
-        self.label_graph_ch2.setFont(QtGui.QFont('SansSerif', 20))
+        self.label_graph_ch2.setFont(QtGui.QFont('Courier New', 20))
         self.label_graph_ch2.setText('Ch2')
         self.label_graph_ch2.move(int(5 * self.scale), int(405 * self.scale))
 
@@ -443,10 +430,8 @@ class RemApplication(QMainWindow):
             xLoc = (graphID * 300) + 50
             for chanID in range(2):
                 yLoc = (chanID * 200) + 120
-                '''
                 self.listOfGraphs[chanID].append(DynamicGraphCanvas(self, width=int(3 * self.scale), height=int(2 * self.scale), dpi=100))
                 self.listOfGraphs[chanID][graphID].move(int(xLoc * self.scale), int(yLoc * self.scale))
-                '''
 
         self.setWindowTitle('Sleep stage classifier')
         xSize = self.graphNum * 310
