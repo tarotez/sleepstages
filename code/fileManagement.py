@@ -25,23 +25,86 @@ def selectClassifierID(finalClassifierDir, requested_classifierType, requested_s
     classifierTypeFileName = 'classifierTypes.csv'
     classifierDict = {}
     # print('requested_samplingFreq =', requested_samplingFreq, 'requested_epochTime =', requested_epochTime)
+
+    def filter_by_classifierType(classifierMetadataList, classifierType):
+        return filter(lambda x: x[1] == classifierType, classifierMetadataList)
+
+    def filter_by_samplingFreq(classifierMetadataList, samplingFreq):
+        return filter(lambda x: x[2] == samplingFreq, classifierMetadataList)
+
+    def filter_by_epochTime(classifierMetadataList, epochType):
+        return filter(lambda x: x[3] == epochType, classifierMetadataList)
+
+    def find_highest_samplingFreq(classifierMetadataList):
+        filteredMetadataList = []
+        if len(classifierMetadataList) > 0:
+            highestSamplingFreq = classifierMetadataList[0][2]
+            for classifierMetadata in classifierMetadataList:
+                if classifierMetadata[2] >= highestSamplingFreq:
+                    highestSamplingFreq = classifierMetadata[2]
+                    filteredMetadataList.append(classifierMetadata)
+        return filteredMetadataList
+
+    classifierMetadataList = []
     with open(finalClassifierDir + '/' + classifierTypeFileName) as f:
         for line in f:
             classifierID, classifierType, samplingFreq, epochTime = [elem.strip() for elem in line.split(',')]
-            # print(classifierID, classifierType, samplingFreq, epochTime)
-            if (requested_samplingFreq == 0 and requested_epochTime == 0) or (requested_samplingFreq == int(samplingFreq) and requested_epochTime == int(epochTime)):
-                print('adding', classifierType, ':', classifierID, 'to dict.')
-                classifierDict.update({classifierType : classifierID})
+            print(classifierID, ',', classifierType, ',', samplingFreq, ',', epochTime)
+            classifierMetadataList.append((classifierID, classifierType, int(samplingFreq), int(epochTime)))
+            #### needs to prioritize a model with the correct samplingFrequency.
+            #### use a model with a samplingFreq different from requested_samplingFreq by downsampling,
+            #### only if there's no model with the corresponding samplingFreq.
 
-    # find a classifier that matches with requested samplingFreq and epochTime
-    if requested_classifierType in classifierDict:
-        classifierID = classifierDict[requested_classifierType]
-        print('Using classifierID =', classifierID, 'whose classifierType is', requested_classifierType)
+    if requested_samplingFreq == 0 and requested_epochTime == 0:
+        filtered_metadataList = list(filter_by_classifierType(classifierMetadataList, requested_classifierType))
+        filtered_metadata = filtered_metadataList[0]
+        classifierID = filtered_metadata[0]
+        return classifierID
     else:
-        classifierID = 0
-        print('No classifier for samplingFreq =', requested_samplingFreq, ' and epochTime =', requested_epochTime)
+        # classifierMetadataList = filter_by_classifierType(classifierMetadataList, requested_classifierType)
+        # classifierMetadataList = filter_by_samplingFreq(classifierMetadataList, requested_samplingFreq)
+        # classifierMetadataList = filter_by_epochTime(classifierMetadataList, requested_epochTime)
+        # print('requested_classifierType =', requested_classifierType)
+        # print('requested_samplingFreq =', requested_samplingFreq)
+        # print('requested_epochTime =', requested_epochTime)
+        func_and_requests = [(filter_by_classifierType, requested_classifierType), (filter_by_samplingFreq, requested_samplingFreq), (filter_by_epochTime, requested_epochTime)]
+        filtered_metadataList = classifierMetadataList
+        for filterfunc, request in func_and_requests:
+            filtered_metadataList = list(filterfunc(filtered_metadataList, request))
+        # print('after perfect match: filtered_metadataList =', filtered_metadataList)
+        if len(filtered_metadataList) == 0:
+            func_and_requests_short = [(filter_by_classifierType, requested_classifierType), (filter_by_epochTime, requested_epochTime)]
+            filtered_metadataList = classifierMetadataList
+            for filterfunc, request in func_and_requests_short:
+                filtered_metadataList = list(filterfunc(filtered_metadataList, request))
+            # print('filtered_by_classifierType_and_epochTime =', filtered_metadataList)
+            filtered_metadataList = find_highest_samplingFreq(filtered_metadataList)
+        print('after highest freq: filtered_metadataList =', filtered_metadataList)
+        # print('len(filtered_metadataList) =', len(filtered_metadataList))
+        if len(filtered_metadataList) == 0:
+            print('No classifier for samplingFreq =', requested_samplingFreq, ' and epochTime =', requested_epochTime)
+            classifierID, model_samplingFreq, model_epochTime = -1, -1, -1
+        else:
+            filtered_metadata = filtered_metadataList[0]
+            classifierID, model_samplingFreq, model_epochTime = filtered_metadata[0], filtered_metadata[2], filtered_metadata[3]
+            print('classifierID =', classifierID)
 
-    return classifierID
+        '''
+                # if (requested_samplingFreq == 0 and requested_epochTime == 0) or (requested_samplingFreq == int(samplingFreq) and requested_epochTime == int(epochTime)):
+                if requested_epochTime == int(epochTime) or (requested_samplingFreq == 0 and requested_epochTime == 0):
+                        print('adding', classifierType, ':', classifierID, 'to dict.')
+                        classifierDict.update({classifierType : (classifierID, samplingFreq)})
+
+        # find a classifier that matches with requested samplingFreq and epochTime
+        if requested_classifierType in classifierDict:
+            classifierID, model_samplingFreq = classifierDict[requested_classifierType]
+            print('Using classifierID =', classifierID, 'whose classifierType is', requested_classifierType, ' and samplingFreq is', model_samplingFreq)
+
+        else:
+            classifierID, model_samplingFreq = 0, 0
+            print('No classifier for samplingFreq =', requested_samplingFreq, ' and epochTime =', requested_epochTime)
+        '''
+        return classifierID, model_samplingFreq, model_epochTime
 
 #--------------------------------------------
 # write names of files used for training the classifier
