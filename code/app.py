@@ -398,7 +398,7 @@ class RemApplication(QMainWindow):
         self.label_graph_ch2.setFont(QtGui.QFont('Courier New', 24))
         self.label_graph_ch2.setText('Epoch# : Prediction')
         self.label_graph_ch2.resize(self.label_graph_ch2.sizeHint())
-        self.label_graph_ch2.move(int(500 * self.scale), int(50 * self.scale))
+        self.label_graph_ch2.move(int(500 * self.scale), int(60 * self.scale))
 
         self.label_graph_eeg = QLabel(self)
         self.label_graph_eeg.setFont(QtGui.QFont('Courier New', 20))

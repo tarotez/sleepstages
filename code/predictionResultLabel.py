@@ -28,7 +28,7 @@ class PredictionResultLabel(QtWidgets.QLabel):
         self.stageCode = stageCode
         # print('in setLabel, labelContent = ' + self.labelContent)
         self.setText(self.labelContent)
-        self.setFont(QtGui.QFont('SansSerif', 24, QtGui.QFont.Bold))
+        self.setFont(QtGui.QFont('Courier New', 24, QtGui.QFont.Bold))
         self.resize(self.sizeHint())
         p = self.palette()
         p.setColor(self.foregroundRole(), self.stageColors[self.stageCode])
