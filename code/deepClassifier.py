@@ -253,6 +253,10 @@ class cnn_lstm(nn.Module):
         self.lstm_bidirectional = True if params.torch_lstm_bidirectional == 1 else False
         self.binNum4spectrum = round(params.wholeBand.getBandWidth() / params.binWidth4freqHisto)
         self.stft_time_bin_num = np.int(np.float(params.windowSizeInSec / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
+        # print('### params.downsample_outputDim =', params.downsample_outputDim)
+        # print('### self.rawDataDim =', self.rawDataDim)
+        # print('### self.binNum4spectrum =', self.binNum4spectrum)
+        # print('### self.stft_time_bin_num =', self.stft_time_bin_num)
 
         if params.useSTFT:
             if params.useFreqHisto and params.useTime:
@@ -296,8 +300,8 @@ class cnn_lstm(nn.Module):
         # print('# in __init__, self.rawDataDim =', self.rawDataDim)
         # print('# in __init__, self.strides =', self.strides)
 
-        # print('# in __init__, self.rawData_final_channel_num = ', self.rawData_final_channel_num, ', self.rawData_outputDim =', self.rawData_outputDim)
-        # print('# in __init__, self.combined_size = ', self.combined_size)
+
+        # print('# in __init__, self.rawData_final_channel_num = ', self.rawData_final_channel_num)
         # self.batn_first = nn.BatchNorm1d(1)
 
         self.relu = nn.ReLU(inplace=True)
@@ -385,6 +389,7 @@ class cnn_lstm(nn.Module):
 
         def cnn_on_stft(stft):
             # print('in cnn_on_stft(): stft.shape =', stft.shape)
+            # print('subseqLen =', subseqLen)
             stft = stft.reshape(batchSize * subseqLen, self.stft_channelNum, self.binNum4spectrum, self.stft_time_bin_num)
             # print('%%% in forward(), after reshape: stft.shape =', stft.shape)
             for batn, conv, drop in zip(self.batns_for_stft, self.convs_for_stft, self.drops_for_stft):
@@ -398,6 +403,7 @@ class cnn_lstm(nn.Module):
             if params.useFreqHisto:
                 if params.useSTFT:
                     # print('in forward() : x.shape =', x.shape)
+                    # print('self.rawDataDim =', self.rawDataDim)
                     freqFeature = cnn_on_stft(x[:,:,self.rawDataDim:-1])
                 else:
                     freqFeature = x[:,:,self.rawDataDim:-1]
@@ -436,6 +442,8 @@ class cnn_lstm(nn.Module):
                 # print('$$$ in forward() : x.shape =', x.shape)
                 # print('$$$ self.rawDataDim =', self.rawDataDim)
                 if params.useSTFT:
+                    # print('in forward() : x.shape =', x.shape)
+                    # print('self.rawDataDim =', self.rawDataDim)
                     freqFeature = cnn_on_stft(x[:,:,self.rawDataDim:-1])
                 else:
                     freqFeature = x[:,:,self.rawDataDim:-1]

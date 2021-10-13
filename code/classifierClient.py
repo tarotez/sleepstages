@@ -18,6 +18,7 @@ class ClassifierClient:
         self.recordWaves = recordWaves
         self.inputFileID = inputFileID
         self.chamberID = chamberID
+        chamberLabel = '_chamber' + str(self.chamberID+1)  # adds 1 because in Sleep Sign Recorder, chambers start from 1.
 
         self.params = ParameterSetup()
         if samplingFreq == 0:
@@ -66,7 +67,7 @@ class ClassifierClient:
         presentTime = timeFormatting.presentTimeEscaped()
         logFileID = 'classifier.' + presentTime
         if self.chamberID != -1:
-            logFileID += '_chamber' + str(self.chamberID)
+            logFileID += chamberLabel
         logFileName = logFileID + '.csv'
         self.logFile = open(self.params.logDir + '/' + logFileName, 'a')
 
@@ -95,7 +96,7 @@ class ClassifierClient:
         else:
             outputFileID = self.inputFileID
         if self.chamberID != -1:
-            outputFileID += '_chamber' + str(self.chamberID)
+            outputFileID += chamberLabel
 
         waveFileName = outputFileID + '_wave.csv'
 
@@ -121,7 +122,7 @@ class ClassifierClient:
         '''
         ksFileID = outputFileID
         if self.chamberID != -1:
-            outputFileID += '_chamber' + str(self.chamberID)
+            outputFileID += chamberLabel
         ksFileName = ksFileID + '_ks.csv'
         try:
             self.ksOutputFile = open(self.params.ksDir + '/' + ksFileName, 'a')
@@ -139,7 +140,7 @@ class ClassifierClient:
             self.predFileID = self.inputFileID
 
         if self.chamberID != -1:
-            self.predFileID += '_chamber' + str(self.chamberID)
+            self.predFileID += chamberLabel
 
         print('writes prediction results to ' + self.params.predDir + '/' + self.predFileID + '_pred.txt')
         self.predFile = open(self.params.predDir + '/' + self.predFileID + '_pred.txt', 'w')
@@ -147,11 +148,11 @@ class ClassifierClient:
         self.predFileWithTimeStamps = open(self.params.predDir + '/' + self.predFileID + '_pred_with_timestamps.txt', 'w')
 
     def setStagePredictor(self, classifierID):
-        paramFileName = 'params.' + classifierID + '.json'
+        paramFileName = 'params.' + str(classifierID) + '.json'
         finalClassifierDir = self.params.finalClassifierDir
         paramsForNetworkStructure = ParameterSetup(paramDir=finalClassifierDir, paramFileName=paramFileName)
         classifier = DeepClassifier(self.classLabels, classifierID=classifierID, paramsForDirectorySetup=self.params, paramsForNetworkStructure=paramsForNetworkStructure)
-        model_path = finalClassifierDir + '/weights.' + classifierID + '.pkl'
+        model_path = finalClassifierDir + '/weights.' + str(classifierID) + '.pkl'
         print('model_path = ', model_path)
         classifier.load_weights(model_path)
         self.stagePredictor = StagePredictor(paramsForNetworkStructure, self.extractor, classifier, finalClassifierDir, classifierID, self.params.markovOrderForPrediction)

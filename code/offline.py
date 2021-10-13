@@ -43,7 +43,13 @@ class RemOfflineApplication:
                     print('  processing ' + inputFileID)
                     try:
                         classifierID = selectClassifierID(self.finalClassifierDir, self.classifier_type)
-                        self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, inputFileID=inputFileID)
+                        if len(self.args) > 1:
+                            if self.args[1] == 'output_the_same_fileID':
+                                self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, inputFileID=inputFileID)
+                            else:
+                                self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID)
+                        else:
+                            self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID)
                         self.client.predictionStateOn()
                         self.client.hasGUI = False
                         # sys.stdout.write('classifierClient started by ' + str(channelOpt) + ' channel.')

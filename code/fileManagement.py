@@ -79,7 +79,7 @@ def selectClassifierID(finalClassifierDir, requested_classifierType, requested_s
                 filtered_metadataList = list(filterfunc(filtered_metadataList, request))
             # print('filtered_by_classifierType_and_epochTime =', filtered_metadataList)
             filtered_metadataList = find_highest_samplingFreq(filtered_metadataList)
-        print('after highest freq: filtered_metadataList =', filtered_metadataList)
+        # print('after highest freq: filtered_metadataList =', filtered_metadataList)
         # print('len(filtered_metadataList) =', len(filtered_metadataList))
         if len(filtered_metadataList) == 0:
             print('No classifier for samplingFreq =', requested_samplingFreq, ' and epochTime =', requested_epochTime)
