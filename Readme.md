@@ -114,8 +114,8 @@ The "sleep stages" repository contains the source code and text files that set u
 sleepstages/
   code/
   data/
-    pickled
     params
+    pickled
     waves
     WAVEDIR/
       Raw/
