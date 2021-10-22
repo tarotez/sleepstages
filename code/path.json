@@ -1,6 +1,6 @@
 {
 
 "pathPrefix" : "..",
-"paramsDir" : "data/pickled"
+"paramsDir" : "data/params"
 
 }

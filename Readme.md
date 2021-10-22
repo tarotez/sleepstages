@@ -115,6 +115,7 @@ sleepstages/
   code/
   data/
     pickled
+    params
     waves
     WAVEDIR/
       Raw/
@@ -131,7 +132,7 @@ The code in the "code" directory uses the file named "path.json" to find the "da
 
 ## Parameter setup
 
-The "data/pickled" directory should contain "params.json" for setting up parameters for feature extraction, training, and prediction.
+The "data/params" directory should contain "params.json" for setting up parameters for feature extraction, training, and prediction.
 
 Be editing "params.json", the behavior of the GUI and also of training can be altered.
 
