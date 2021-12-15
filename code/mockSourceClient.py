@@ -1,6 +1,4 @@
 import sys
-import threading
-import time
 import socket
 import struct
 import numpy as np
@@ -14,7 +12,7 @@ args = sys.argv
 if len(args) > 1:
     HOST = args[1]
 else:
-    HOST = '192.168.0.2'  # The server's hostname or IP address
+    HOST = '192.168.0.3'  # The server's hostname or IP address
 
 # print('HOST:', HOST)
 PORT = 45123       # The port used by the server
@@ -22,11 +20,27 @@ PORT = 45123       # The port used by the server
 sampleNum = 100
 chamberIDL = (random.randint(0,3) for _ in range(sampleNum))
 epochDict = {}
-signal = [float(i + 3.1416) for i in range(1280)]
+
+### samplingFreq = 128
+samplingFreq = 512
+epochTime = 10
+signal = [float(i + 3.1416) for i in range(samplingFreq * epochTime)]
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     s.connect((HOST, PORT))
+
+    samplingFreqByte = samplingFreq.to_bytes(2, 'little')
+    epochTimeByte = epochTime.to_bytes(2, 'little')
+    setupByte = samplingFreqByte + epochTimeByte
+    print('in mock, len(setupByte) = ', len(setupByte))
+    s.sendall(setupByte)
+    setupRespByte = s.recv(2)
+    setupResp = struct.unpack_from('H', setupRespByte, 0)[0]
+    print('setupResp =', setupResp)
+    if setupResp == 0:
+        print('network server returned an error code.')
+        exit()
 
     for samples in range(sampleNum):
 
@@ -55,7 +69,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # reqByte = chamberByte + epochByte + datetimeByte + signalByte
 
         # print('in mock, reqByte =', reqByte)
-        # print('in mock, len(reqByte) =', len(reqByte))
+        print('in mock, len(reqByte) =', len(reqByte))
 
         s.sendall(reqByte)
         resp = s.recv(8)

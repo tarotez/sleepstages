@@ -44,7 +44,7 @@ class RemOfflineApplication:
                     try:
                         classifierID = selectClassifierID(self.finalClassifierDir, self.classifier_type)
                         if len(self.args) > 1:
-                            if self.args[1] == 'output_the_same_fileID':
+                            if self.args[1] == '--output_the_same_fileID':
                                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, inputFileID=inputFileID)
                             else:
                                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID)

@@ -65,6 +65,8 @@ class NetworkServer:
             received_data = tcp_client.recv(BUFSIZE)
             observed_samplingFreq = struct.unpack_from('H', received_data, 0)[0]    #WORD
             observed_epochTime = struct.unpack_from('H', received_data, 2)[0]    #WORD
+            print('observed_samplingFreq =', observed_samplingFreq)
+            print('observed_epochTime =', observed_epochTime)
             observed_samplePointNum = observed_samplingFreq * observed_epochTime
             classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.params_for_classifier.finalClassifierDir, networkName, observed_samplingFreq, observed_epochTime)
             model_samplePointNum = model_samplingFreq * model_epochTime
@@ -83,7 +85,7 @@ class NetworkServer:
                     # try:
                         received_data = tcp_client.recv(BUFSIZE)
                         # print('received_data =', received_data)
-                        # print('len(received_data) =', len(received_data))
+                        #print('len(received_data) =', len(received_data))
 
                         if len(received_data) == 0:
                             exit()
@@ -125,11 +127,12 @@ class NetworkServer:
 
                             # EEG data
                             signalW = struct.unpack_from(fmt, received_data, 22)    #float
+                            #print('len(signalW) =', len(signalW))
                             signal_rawarray = np.array(signalW, dtype='float64')
-                            # print('before up/down sampling, signal_rawarray.shape =', signal_rawarray.shape)
+                            #print('before up/down sampling, signal_rawarray.shape =', signal_rawarray.shape)
 
-                            # print('model_samplePointNum =', model_samplePointNum)
-                            # print('observed_samplePointNum =', observed_samplePointNum)
+                            #print('model_samplePointNum =', model_samplePointNum)
+                            #print('observed_samplePointNum =', observed_samplePointNum)
 
                             # downsampling
                             if model_samplePointNum < observed_samplePointNum:

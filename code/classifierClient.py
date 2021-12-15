@@ -9,6 +9,7 @@ import timeFormatting
 # from filters import butter_lowpass_filter
 from algorithmFactory import AlgorithmFactory
 from deepClassifier import DeepClassifier
+from statistics import standardize, standardizer
 # from ksstatistics import StatisticalTester
 # from fileManagement import readStandardMice, readdMat, readdTensor
 
@@ -147,6 +148,10 @@ class ClassifierClient:
         self.predFileBeforeOverwrite = open(self.params.predDir + '/' + self.predFileID + '_pred_before_overwrite.txt', 'w')
         self.predFileWithTimeStamps = open(self.params.predDir + '/' + self.predFileID + '_pred_with_timestamps.txt', 'w')
 
+        self.max_storage_for_standardization = self.samplePointNum * 1000
+        self.standardizer_eeg = standardizer(self.max_storage_for_standardization)
+        self.standardizer_ch2 = standardizer(self.max_storage_for_standardization)
+
     def setStagePredictor(self, classifierID):
         paramFileName = 'params.' + str(classifierID) + '.json'
         finalClassifierDir = self.params.finalClassifierDir
@@ -221,8 +226,16 @@ class ClassifierClient:
             self.windowStartTime = timeStampSegment[0]
 
         # print('eegFragment =', eegFragment)
+        ### orig_one_record_partial, orig_raw_one_record_partial = self.normalize_eeg(eegFragment, ch2Fragment, self.past_eegSegment, self.past_ch2Segment)
+        standardized_eegFragment = self.standardizer_eeg.standardize(eegFragment)
+        if self.ch2_normalize_for_prediction:
+            standardized_ch2Fragment = self.standardizer_ch2.standardize(ch2Fragment)
+        else:
+            standardized_ch2Fragment = ch2Fragment
+        one_record_partial = np.array((standardized_eegFragment, standardized_ch2Fragment)).transpose()
+        raw_one_record_partial = np.array((eegFragment, ch2Fragment)).transpose()
 
-        one_record_partial, raw_one_record_partial = self.normalize_eeg(eegFragment, ch2Fragment, self.past_eegSegment, self.past_ch2Segment)
+
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_partial
         self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial
         one_record_for_graph_partial = self.normalize_one_record_partial_for_graph(raw_one_record_partial, self.past_eegSegment, self.past_ch2Segment)

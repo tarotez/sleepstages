@@ -3,7 +3,7 @@ import numpy as np
 from os.path import dirname, abspath
 from parameterSetup import ParameterSetup
 from stagePredictor import StagePredictor
-from statistics import standardize
+from statistics import standardizer
 from algorithmFactory import AlgorithmFactory
 from deepClassifier import DeepClassifier
 
@@ -99,7 +99,9 @@ def classifySequentially(params, paramID, paramDir, fileIDpair):
     # while startSamplePoint + wsizeInSamplePointNum <= samplePointNum:
     records_L = []
     timeStampSegments_L = []
-    all_past_eeg, all_past_ch2 = np.array([]), np.array([])
+    ### all_past_eeg, all_past_ch2 = np.array([]), np.array([])
+    standardizer_eeg = standardizer(samplePointNum)
+    standardizer_ch2 = standardizer(samplePointNum)
     # standardized_all_past_eeg = np.array([])
     for startSamplePoint in range(0, samplePointNum, timeWindowStrideInSamplePointNum):
         endSamplePoint = startSamplePoint + wsizeInSamplePointNum
@@ -107,10 +109,13 @@ def classifySequentially(params, paramID, paramDir, fileIDpair):
             break
         timeStampSegment = timeStamps[startSamplePoint:endSamplePoint]
         eegSegment = eeg[startSamplePoint:endSamplePoint]
-        standardized_eegSegment, all_past_eeg = standardize(eegSegment, all_past_eeg)
+        ### standardized_eegSegment, all_past_eeg = standardize(eegSegment, all_past_eeg)
+        standardized_eegSegment = standardizer_eeg.standardize(eegSegment)
+
         if params.useEMG:
             ch2Segment = ch2[startSamplePoint:endSamplePoint]
-            standardized_ch2Segment, all_past_ch2 = standardize(ch2Segment, all_past_ch2)
+            ### standardized_ch2Segment, all_past_ch2 = standardize(ch2Segment, all_past_ch2)
+            standardized_ch2Segment = standardizer_ch2.standardize(ch2Segment)
             one_record = np.r_[standardized_eegSegment, standardized_ch2Segment]
         else:
             one_record = standardized_eegSegment

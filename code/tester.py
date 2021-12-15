@@ -18,8 +18,7 @@ def printMetadata(params):
     # print('ch2TimeFrameNum = ' + str(params.ch2TimeFrameNum))
     # print('binWidth4freqHisto = ' + str(params.binWidth4freqHisto))
 
-
-def meanStatisticsForCV(sensitivityT, specificityT, accuracyT, precisionT, f1scoreT, mccT, mcMCCT, mcAccuracyT, confusionMatT, stageLabels):
+def meanStatisticsForCV(sampleNum, sensitivityT, specificityT, accuracyT, precisionT, f1scoreT, mccT, mcMCCT, mcAccuracyT, confusionMatT, stageLabels):
     methodNum, blockNum, testFileNum, labelNum = sensitivityT.shape
     # print('in meanStatistics, labelNum =', labelNum)
     # print('  testFileNum =', testFileNum)
@@ -35,21 +34,21 @@ def meanStatisticsForCV(sensitivityT, specificityT, accuracyT, precisionT, f1sco
         for labelID in range(labelNum):
             # print('  labelID =', labelID, end='')
             # print('  stageLabel = ' + stageLabels[labelID], end='')
-            sensitivityMeans[methodID,labelID] = sensitivityT[methodID,:,:,labelID].mean()
+            sensitivityMeans[methodID,labelID] = sensitivityT[methodID,:,:,labelID].sum() / sampleNum
             # print('  sensitivity = ' + "{0:.3f}".format(sensitivityMeans[methodID,labelID]), end='')
-            specificityMeans[methodID,labelID] = specificityT[methodID,:,:,labelID].mean()
+            specificityMeans[methodID,labelID] = specificityT[methodID,:,:,labelID].sum() / sampleNum
             # print('  specificity = ' + "{0:.3f}".format(specificityMeans[methodID,labelID]), end='')
-            accuracyMeans[methodID,labelID] = accuracyT[methodID,:,:,labelID].mean()
+            accuracyMeans[methodID,labelID] = accuracyT[methodID,:,:,labelID].sum() / sampleNum
             # print('  accuracy = ' + "{0:.3f}".format(accuracyMeans[methodID,labelID]), end='')
-            precisionMeans[methodID,labelID] = precisionT[methodID,:,:,labelID].mean()
+            precisionMeans[methodID,labelID] = precisionT[methodID,:,:,labelID].sum() / sampleNum
             # print('  precision = ' + "{0:.3f}".format(precisionMeans[methodID,labelID]), end='')
-            f1scoreMeans[methodID,labelID] = f1scoreT[methodID,:,:,labelID].mean()
+            f1scoreMeans[methodID,labelID] = f1scoreT[methodID,:,:,labelID].sum() / sampleNum
             # print('  f1score = ' + "{0:.3f}".format(f1scoreMeans[methodID,labelID]), end='')
-            mccMeans[methodID,labelID] = mccT[methodID,:,:,labelID].mean()
+            mccMeans[methodID,labelID] = mccT[methodID,:,:,labelID].sum() / sampleNum
             # print('  mcc = ' + "{0:.3f}".format(mccMeans[methodID,labelID]))
-        mcMCCMeans[methodID] = mcMCCT[methodID,:,:].mean()
+        mcMCCMeans[methodID] = mcMCCT[methodID,:,:].sum() / sampleNum
         # print('  mcMCC = ' + "{0:.3f}".format(mcMCCMeans[methodID]))
-        mcAccuracyMeans[methodID] = mcAccuracyT[methodID,:,:].mean()
+        mcAccuracyMeans[methodID] = mcAccuracyT[methodID,:,:].sum() / sampleNum
         # print('  mcAccuracy = ' + "{0:.3f}".format(mcAccuracyMeans[methodID]))
     return sensitivityMeans, specificityMeans, accuracyMeans, precisionMeans, f1scoreMeans, mccMeans, mcMCCMeans, mcAccuracyMeans
 
@@ -178,9 +177,9 @@ def test_by_classifierID(params, datasetType, classifierID):
         writePredictionResults(testFileIDandClassifierID, params, y_test, y_pred, resultFileDescription)
 
     if datasetType == 'test':
-        f = open(pickledDir + '/test_result.' + classifierID + '.test.pkl', 'wb')
+        f = open(paramDir + '/test_result.' + classifierID + '.test.pkl', 'wb')
     else:
-        f = open(pickledDir + '/test_result.' + classifierID + '.pkl', 'wb')
+        f = open(paramDir + '/test_result.' + classifierID + '.pkl', 'wb')
     pickle.dump((testFileIDandClassifierIDs, sensitivityL, specificityL, accuracyL, precisionL, f1scoreL, mccL, mcMCCL, mcAccuracyL, confusionMatL, stageLabels, fileNum, labelNum), f)
     f.close()
 

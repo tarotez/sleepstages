@@ -52,6 +52,28 @@ def centralize(segment, past_segment):
     max_length = 500000
     return standardized_segment, connect_within_max_length(past_segment, segment, max_length)
 
+class standardizer():
+    def __init__(self, max_storage_length):
+        self.max_storage_length = max_storage_length
+        self.connected = []
+
+    def standardize(self, new_samples):
+        self.connected = self.connected + list(new_samples)
+        self.connected = self.connected[:self.max_storage_length]
+        mean = np.mean(self.connected)
+        std = np.std(self.connected)
+        assert mean.shape == ()
+        assert std.shape == ()
+        assert std > 0
+        return (new_samples - mean) / std
+
+    def centralize(self, new_samples):
+        self.connected = self.connected + list(new_samples)
+        self.connected = self.connected[:self.max_storage_length]
+        mean = np.mean(self.connected)
+        assert mean.shape == ()
+        return new_samples - mean
+
 '''
 def recompMean(newVector, oldMean, oldSampleNum):
     newMean = (oldMean * oldSampleNum + np.sum(newVector)) / (oldSampleNum + newVector.shape[0])
