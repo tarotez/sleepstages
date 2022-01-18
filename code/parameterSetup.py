@@ -256,6 +256,23 @@ class ParameterSetup(object):
         self.ch2_variance_init = d['ch2_variance_init']
         self.ch2_oldTotalSampleNum_init = d['ch2_oldTotalSampleNum_init']
 
+        # used in statistics.py to set the range of past signal used for computing mean and std
+        if 'standardization_max_storage_window_num' in d:
+            self.standardization_max_storage_window_num = d['standardization_max_storage_window_num']
+        else:
+            self.standardization_max_storage_window_num = 5000
+
+        if 'standardization_trigger_interval' in d:
+            self.standardization_trigger_interval = d['standardization_trigger_interval']
+        else:
+            self.standardization_trigger_interval = 500
+
+        if 'standardization_early_trigger' in d:
+            self.standardization_early_trigger = d['standardization_early_trigger']
+        else:
+            self.standardization_early_trigger = [10, 20, 30, 40, 50, 100, 150, 200, 300, 400]
+
+
     def stageID2stageLabel(self, stageID):
         for key in self.stageLabel2stageID.keys():
             if self.stageLabel2stageID[key] == stageID:

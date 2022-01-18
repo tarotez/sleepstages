@@ -148,7 +148,7 @@ class ClassifierClient:
         self.predFileBeforeOverwrite = open(self.params.predDir + '/' + self.predFileID + '_pred_before_overwrite.txt', 'w')
         self.predFileWithTimeStamps = open(self.params.predDir + '/' + self.predFileID + '_pred_with_timestamps.txt', 'w')
 
-        self.max_storage_for_standardization = self.samplePointNum * 1000
+        self.max_storage_for_standardization = self.samplePointNum * self.params.standardization_max_storage_window_num
         self.standardizer_eeg = standardizer(self.max_storage_for_standardization)
         self.standardizer_ch2 = standardizer(self.max_storage_for_standardization)
 
@@ -229,12 +229,12 @@ class ClassifierClient:
         ### orig_one_record_partial, orig_raw_one_record_partial = self.normalize_eeg(eegFragment, ch2Fragment, self.past_eegSegment, self.past_ch2Segment)
         standardized_eegFragment = self.standardizer_eeg.standardize(eegFragment)
         if self.ch2_normalize_for_prediction:
-            standardized_ch2Fragment = self.standardizer_ch2.standardize(ch2Fragment)
+             standardized_ch2Fragment = self.standardizer_ch2.standardize(ch2Fragment)
         else:
-            standardized_ch2Fragment = ch2Fragment
+             standardized_ch2Fragment = ch2Fragment
+
         one_record_partial = np.array((standardized_eegFragment, standardized_ch2Fragment)).transpose()
         raw_one_record_partial = np.array((eegFragment, ch2Fragment)).transpose()
-
 
         self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_partial
         self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial

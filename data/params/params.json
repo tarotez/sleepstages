@@ -114,6 +114,10 @@
 
 "ch2_mean_init" : 0.7620,
 "ch2_variance_init" : 0.6962,
-"ch2_oldTotalSampleNum_init" : 460800
+"ch2_oldTotalSampleNum_init" : 460800,
+
+"standardization_max_storage_window_num" : 5000,
+"standardization_trigger_interval" : 200,
+"standardization_early_trigger" : [10, 20, 30, 40, 50, 100, 150]
 
 }
