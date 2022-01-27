@@ -63,9 +63,17 @@ class standardizer():
         self.trigger_interval = params.standardization_trigger_interval
         self.mean = 0
         self.std = 0
+        self.outlier_coef = 1000
+
+    def remove_outliers(self, segment):
+        if self.counter > 1:
+            bound = self.outlier_coef * self.std
+            segment = map(lambda x: min(x, bound), segment)
+            segment = map(lambda x: max(x, -bound), segment)
+        return list(segment)
 
     def standardize(self, new_samples):
-        self.connected = self.connected + list(new_samples)
+        self.connected = self.connected + list(self.remove_outliers(new_samples))
         self.connected = self.connected[-self.max_storage_length:]
         if (self.counter in self.early_trigger) or (self.counter % self.trigger_interval) == 0:
             self.mean = np.mean(self.connected)
@@ -77,13 +85,14 @@ class standardizer():
         return (new_samples - self.mean) / self.std
 
     def centralize(self, new_samples):
-        self.connected = self.connected + list(new_samples)
+        self.connected = self.connected + list(self.remove_outliers(new_samples))
         self.connected = self.connected[-self.max_storage_length:]
         if (self.counter in self.early_trigger) or (self.counter % self.trigger_interval) == 0:
             self.mean = np.mean(self.connected)
         self.counter += 1
         assert self.mean.shape == ()
         return new_samples - self.mean
+
 
 '''
 def recompMean(newVector, oldMean, oldSampleNum):
