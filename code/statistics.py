@@ -1,4 +1,5 @@
 import numpy as np
+import datetime
 from parameterSetup import ParameterSetup
 
 def linearFit(y):
@@ -58,26 +59,34 @@ class standardizer():
         params = ParameterSetup()
         self.max_storage_length = max_storage_length
         self.connected = []
-        self.counter = 0
+        self.segment_counter = 0
         self.early_trigger = params.standardization_early_trigger
         self.trigger_interval = params.standardization_trigger_interval
         self.mean = 0
         self.std = 0
         self.outlier_coef = 1000
+        self.logDir = params.logDir
 
     def remove_outliers(self, segment):
-        if self.counter > 1 and self.std > 0:
+        if self.segment_counter > 1 and self.std > 0:
             bound = self.outlier_coef * self.std
+            #------
+            # write to the log directory when an outlier appears.
+            if max(segment) > bound or min(segment) < - bound:
+                with open(self.logDir + '/standardization.log', 'a') as f:
+                    f.write('time = ' + str(datetime.datetime.now()) + ', segmentID = ' + str(self.segment_counter) + ', outlier = ' + str(max(segment) if max(segment) > bound else min(segment)) + '\n')
+                    f.flush()
+            #-------
             segment = map(lambda x: max(min(x, bound), -bound), segment)
         return list(segment)
 
     def standardize(self, new_samples):
         self.connected = self.connected + self.remove_outliers(new_samples)
         self.connected = self.connected[-self.max_storage_length:]
-        if (self.counter in self.early_trigger) or (self.counter % self.trigger_interval) == 0:
+        if (self.segment_counter in self.early_trigger) or (self.segment_counter % self.trigger_interval) == 0:
             self.mean = np.mean(self.connected)
             self.std = np.std(self.connected)
-        self.counter += 1
+        self.segment_counter += 1
         assert self.mean.shape == ()
         assert self.std.shape == ()
         assert self.std > 0
@@ -86,9 +95,9 @@ class standardizer():
     def centralize(self, new_samples):
         self.connected = self.connected + self.remove_outliers(new_samples)
         self.connected = self.connected[-self.max_storage_length:]
-        if (self.counter in self.early_trigger) or (self.counter % self.trigger_interval) == 0:
+        if (self.segment_counter in self.early_trigger) or (self.segment_counter % self.trigger_interval) == 0:
             self.mean = np.mean(self.connected)
-        self.counter += 1
+        self.segment_counter += 1
         assert self.mean.shape == ()
         return new_samples - self.mean
 
