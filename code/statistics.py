@@ -66,7 +66,7 @@ class standardizer():
         self.outlier_coef = 1000
 
     def remove_outliers(self, segment):
-        if self.counter > 1:
+        if self.counter > 1 and self.std > 0:
             bound = self.outlier_coef * self.std
             segment = map(lambda x: max(min(x, bound), -bound), segment)
         return list(segment)
