@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import datetime
+from datetime import datetime, time, timedelta
 from statistics import standardize, centralize, subtractLinearFit
 from connect_laser_device import connect_laser_device
 from parameterSetup import ParameterSetup
@@ -189,7 +189,7 @@ class ClassifierClient:
         eegFragment = np.zeros((self.updateGraph_samplePointNum))
         ch2Fragment = np.zeros((self.updateGraph_samplePointNum))
 
-        timeNow = str(datetime.datetime.now())
+        timeNow = str(datetime.now())
         self.logFile.write('timeNow = ' + timeNow + ', len(dataFromDaq) = ' + str(len(dataFromDaq)) + ', R->W thresh = ' + str(self.ch2_thresh_value) + ', self.currentCh2Intensity = ' + str(self.currentCh2Intensity) + '\n')
         self.logFile.flush()
 
@@ -226,7 +226,6 @@ class ClassifierClient:
             self.windowStartTime = timeStampSegment[0]
 
         # print('eegFragment =', eegFragment)
-        ### orig_one_record_partial, orig_raw_one_record_partial = self.normalize_eeg(eegFragment, ch2Fragment, self.past_eegSegment, self.past_ch2Segment)
         standardized_eegFragment = self.standardizer_eeg.standardize(eegFragment)
         if self.ch2_normalize_for_prediction:
              standardized_ch2Fragment = self.standardizer_ch2.standardize(ch2Fragment)
@@ -246,7 +245,7 @@ class ClassifierClient:
         self.sampleID += self.updateGraph_samplePointNum
 
         stagePrediction = '-'
-        if self.sampleID == self.samplePointNum:
+        if self.sampleID == self.samplePointNum:   # reached to the end of the epoch
             self.sampleID = 0
             eegSegment =  self.one_record[:,0]
             raw_eegSegment = self.raw_one_record[:,0]
@@ -297,20 +296,35 @@ class ClassifierClient:
                 # writes to waveOutputFile
                 if self.recordWaves:
                     # records raw data without standardization
-
                     eegOutputLimitNum = eegSegment.shape[0]
                     # below is for testing, print out only first 5 amplitudes
                     # eegOutputLimitNum = 5
-                    elems = self.windowStartTime.split(':')
-                    windowStartSecFloat = float(elems[-1])
+
+                    # print('self.windowStartTime =', self.windowStartTime)
+                    year, month, day = 2022, 1, 1
+                    start_hour_str, start_min_str, start_sec_str = self.windowStartTime.split(':')
+                    start_sec = int(np.floor(float(start_sec_str)))
+                    start_microsec = int(np.floor((10 ** 6) * (float(start_sec_str) - start_sec)))
+                    start_datetime = datetime(year, month, day, int(start_hour_str), int(start_min_str), start_sec, start_microsec)
+                    # print('start_datetime =', start_datetime)
+
                     outLine = ''
                     outLine_standardized = ''
+                    # print('----')
+                    # print('self.windowStartTime =', self.windowStartTime)
+                    # print('start_datetime = ', start_datetime)
+                    # print('self.samplingFreq =', self.samplingFreq)
+                    # print('self.raw_one_record.shape =', self.raw_one_record.shape)
+                    # print('eegOutputLimitNum =', eegOutputLimitNum)
+                    # print('start_datetime =', start_datetime)
                     for i in range(eegOutputLimitNum):
-                        secFloat = windowStartSecFloat + (i / self.samplingFreq)
-                        timePoint = elems[0] + ':' + elems[1] + ':' + str(secFloat)
-                        outLine += str(timePoint) + ', ' + str(self.raw_one_record[i,0]) + ', ' + str(self.raw_one_record[i,1]) + '\n'
-                        outLine_standardized += str(timePoint) + ', ' + str(self.one_record[i,0]) + ', ' + str(self.one_record[i,1]) + '\n'
-
+                         timePoint = start_datetime + timedelta(seconds = float(i) / self.samplingFreq)
+                         # print('   timePoint =', timePoint)
+                         outLine += str(timePoint) + ', ' + str(self.raw_one_record[i,0]) + ', ' + str(self.raw_one_record[i,1]) + '\n'
+                         outLine_standardized += str(timePoint) + ', ' + str(self.one_record[i,0]) + ', ' + str(self.one_record[i,1]) + '\n'
+                         # if i < 5 or eegOutputLimitNum - i < 5:
+                             # print('timePoint =', timePoint)
+                    # print('timePoint =', timePoint)
                     self.waveOutputFile.write(outLine)   # add at the end of the file
                     self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
                     self.waveOutputFile.flush()
@@ -331,6 +345,8 @@ class ClassifierClient:
             self.one_record_for_graph = np.zeros((self.samplePointNum, 2))
             self.segmentID += 1
             return stagePrediction
+        else:
+            return 0
 
     def writeToPredFile(self, prediction, prediction_before_overwrite, timeStampSegment):
         prediction_in_capital = self.params.capitalize_for_writing_prediction_to_file[prediction]
