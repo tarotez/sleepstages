@@ -43,7 +43,7 @@ def signal_generator(source_data, segmentLength):
 signals = [signal_generator(all_signal, samplingFreq * epochTime) for _ in range(chamberNum)]
 # print('len(signals) =', len(signals))
 
-dt = datetime.now()
+dtL = [datetime.now() for _ in range(chamberNum)]
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
@@ -66,8 +66,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         segment, epochID = signals[chamberID].__next__()
         chamberByte = int(chamberID).to_bytes(2, 'little')
         epochByte = epochID.to_bytes(4, 'little')
-
-        ### dt = datetime.now()
+        dt = dtL[chamberID]
         yearByte, monthByte, dayByte, hourByte, minuteByte, secondByte = map(lambda x: x.to_bytes(2, 'little'), (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second))
         microsecByte = dt.microsecond.to_bytes(4, 'little')
         datetimeByte = yearByte + monthByte + dayByte + hourByte + minuteByte + secondByte + microsecByte
@@ -90,5 +89,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         resp_epochID = struct.unpack_from('I', resp, 2)[0]    #DWORD
         resp_judge = struct.unpack_from('H', resp, 6)[0]
 
-        dt += timedelta(seconds=epochTime)
+        dtL[chamberID] += timedelta(seconds=epochTime)
         # print('c, e, j =', resp_chamberID, resp_epochID, resp_judge)
