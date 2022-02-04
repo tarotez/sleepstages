@@ -67,18 +67,28 @@ class standardizer():
         self.outlier_coef = 1000
         self.logDir = params.logDir
 
+    def write_outlier_log(self, outlier):
+        with open(self.logDir + '/standardization.log', 'a') as f:
+            f.write('time = ' + str(datetime.datetime.now()) + ', segmentID = ' + str(self.segment_counter) + ', outlier = ' + outlier + '\n')
+            f.flush()
+
     def remove_outliers(self, segment):
         if self.segment_counter > 1 and self.std > 0:
-            bound = self.outlier_coef * self.std
+            upper_bound = self.mean + self.outlier_coef * self.std
+            lower_bound = self.mean - self.outlier_coef * self.std
+            upper_std = self.mean + self.std
+            lower_std = self.mean - self.std
             #------
             # write to the log directory when an outlier appears.
-            if max(segment) > bound or min(segment) < - bound:
-                with open(self.logDir + '/standardization.log', 'a') as f:
-                    f.write('time = ' + str(datetime.datetime.now()) + ', segmentID = ' + str(self.segment_counter) + ', outlier = ' + str(max(segment) if max(segment) > bound else min(segment)) + '\n')
-                    f.flush()
-            #-------
-            segment = map(lambda x: max(min(x, bound), -bound), segment)
-        return list(segment)
+            if max(segment) > upper_bound:
+                self.write_outlier_log(max(segment))
+                segment = [upper_std if samplePoint > upper_bound else samplePoint for samplePoint in segment]
+
+            if min(segment) < lower_bound:
+                self.write_outlier_log(min(segment))
+                segment = [lower_std if samplePoint < lower_bound else samplePoint for samplePoint in segment]
+                
+        return segment
 
     def standardize(self, new_samples):
         self.connected = self.connected + self.remove_outliers(new_samples)
