@@ -69,7 +69,7 @@ class standardizer():
 
     def write_outlier_log(self, outlier):
         with open(self.logDir + '/standardization.log', 'a') as f:
-            f.write('time = ' + str(datetime.datetime.now()) + ', segmentID = ' + str(self.segment_counter) + ', outlier = ' + outlier + '\n')
+            f.write('time = ' + str(datetime.datetime.now()) + ', segmentID = ' + str(self.segment_counter) + ', outlier =' + str(outlier) + '\n')
             f.flush()
 
     def remove_outliers(self, segment):
