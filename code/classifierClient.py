@@ -61,7 +61,8 @@ class ClassifierClient:
         print('generating extractor: ')
         self.extractor = factory.generateExtractor()
 
-        self.classLabels = list(self.params.labelCorrectionDict.keys())[:self.params.maximumStageNum]
+        # self.classLabels = list(self.params.labelCorrectionDict.keys())[:self.params.maximumStageNum]
+        self.classLabels = self.params.sampleClassLabels[:self.params.maximumStageNum]
 
         self.setStagePredictor(classifierID)
 
