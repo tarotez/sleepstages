@@ -73,6 +73,7 @@ class standardizer():
             f.flush()
 
     def remove_outliers(self, segment):
+        assert type(segment) == list, 'the input segment to remove_outliers() is not a list'
         if self.segment_counter > 1 and self.std > 0:
             upper_bound = self.mean + self.outlier_coef * self.std
             lower_bound = self.mean - self.outlier_coef * self.std
@@ -87,11 +88,11 @@ class standardizer():
             if min(segment) < lower_bound:
                 self.write_outlier_log(min(segment))
                 segment = [lower_std if samplePoint < lower_bound else samplePoint for samplePoint in segment]
-                
+
         return segment
 
     def standardize(self, new_samples):
-        self.connected = self.connected + self.remove_outliers(new_samples)
+        self.connected = self.connected + self.remove_outliers(list(new_samples))
         self.connected = self.connected[-self.max_storage_length:]
         if (self.segment_counter in self.early_trigger) or (self.segment_counter % self.trigger_interval) == 0:
             self.mean = np.mean(self.connected)
@@ -103,7 +104,7 @@ class standardizer():
         return (new_samples - self.mean) / self.std
 
     def centralize(self, new_samples):
-        self.connected = self.connected + self.remove_outliers(new_samples)
+        self.connected = self.connected + self.remove_outliers(list(new_samples))
         self.connected = self.connected[-self.max_storage_length:]
         if (self.segment_counter in self.early_trigger) or (self.segment_counter % self.trigger_interval) == 0:
             self.mean = np.mean(self.connected)
