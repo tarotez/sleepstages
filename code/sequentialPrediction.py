@@ -54,7 +54,8 @@ def classifySequentially(params, paramID, paramDir, fileIDpair):
     classifierDir = params.classifierDir
     pwd = dirname(abspath(__file__))
     print('# classifierID =', classifierID)
-    classLabels = list(params.labelCorrectionDict.keys())[:params.maximumStageNum]
+    # classLabels = list(params.labelCorrectionDict.keys())[:params.maximumStageNum]
+    classLabels = self.params.sampleClassLabels[:self.params.maximumStageNum]
     paramFileName = 'params.' + classifierID + '.json'
     params_for_network_structure = ParameterSetup(paramDir=paramDir, paramFileName=paramFileName)
     if params.classifierType == 'deep':

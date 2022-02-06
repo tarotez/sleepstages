@@ -44,10 +44,7 @@ class DataReader:
         # parameters for making a histogram
         # wholeBand = params.wholeBand
         # binWidth4freqHisto = params.binWidth4freqHisto    # bin width in the frequency domain for visualizing spectrum as a histogram
-
-        # dictionary for label correction
-        # labelCorrectionDict = params.labelCorrectionDict
-
+    
         # for reading data
         # classifierDir = params.classifierDir
         # classifierName = params.classifierName

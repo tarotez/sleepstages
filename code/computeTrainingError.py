@@ -28,9 +28,6 @@ preContextSize = params.preContextSize
 wholeBand = params.wholeBand
 binWidth4freqHisto = params.binWidth4freqHisto    # bin width in the frequency domain for visualizing spectrum as a histogram
 
-# dictionary for label correction
-labelCorrectionDict = params.labelCorrectionDict
-
 # for reading data
 classifierDir = params.classifierDir
 # classifierName = params.classifierName
@@ -48,7 +45,7 @@ for paramID in range(paramNum):
 
     print('classifier parameter = ' + str(classifierParams[paramID]))
 
-    files =  listdir(classifierDir)    
+    files =  listdir(classifierDir)
     for excludedFileFullName in files:
 
         if excludedFileFullName.startswith('train_data.'):
@@ -80,8 +77,5 @@ for paramID in range(paramNum):
             precision = correctNum / y_length
             for labelID in range(len(stageLabels)):
                 print('  stageLabel = ' + stageLabels[labelID] + ', sensitivity = ' + "{0:.3f}".format(sensitivity[labelID]) + ', specificity = ' + "{0:.3f}".format(specificity[labelID]) + ', accuracy = ' + "{0:.3f}".format(accuracy[labelID]))
-            print('  precision = ' + "{0:.5f}".format(precision) + ' (= ' + str(correctNum) + '/' + str(y_length) +')')        
+            print('  precision = ' + "{0:.5f}".format(precision) + ' (= ' + str(correctNum) + '/' + str(y_length) +')')
             print('')
-
-
-

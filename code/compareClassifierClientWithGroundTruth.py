@@ -34,7 +34,7 @@ for line in f:
     elems = line.split(',')
     singleLabel = elems[1]
     if singleLabel in params.labelCorrectionDict.values():
-        labels.append(params.reverseLabel(singleLabel)
+        labels.append(params.reverseLabel(singleLabel))
 y_pred = np.array(labels)
 
 y_test = y_test[:y_pred.shape[0]]
@@ -48,7 +48,3 @@ for targetLabel in ['W', 'R', 'S']:
     accuracy = 1.0 * (TP + TN) / (TP + FP + FN + TN)
     specificity = 1.0 * TN / (TN + FP)
     print('for targetLabel = ' + targetLabel + ', sen = ' + str(sensitivity) + ', acc = ' + str(accuracy) + ', spec = ' + str(specificity))
-
-
-
-
