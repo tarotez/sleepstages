@@ -38,7 +38,7 @@ def extract(featureFilePath, stageFilePath):
 #--------------------------------------------
 # connect samples and train a model
 # def connectSamplesAndTrain(params, paramID, classifier, featureAndStageFileFullPathsL):
-def connectSamplesAndTrain(params, fileTripletL, paramID=0):
+def connectSamplesAndTrain(params, fileTripletL, stage_restriction, paramID=0):
     # label4EMG = params.label4withEMG if params.useEMG else params.label4withoutEMG
     # count mouseNum and get resampleNumPerMouse
     # mouseNum = -1 # subtract one because there's one excluded file
@@ -68,7 +68,8 @@ def connectSamplesAndTrain(params, fileTripletL, paramID=0):
             # x = trimFeatures(params, x)
             # print('after trimming, x.shape =', x.shape)
             x = np.array([x]).transpose((1,0,2))
-            y = restrictStages(params, y, params.maximumStageNum)
+            # y = restrictStages(params, y, params.maximumStageNum)
+            y = stage_restriction(y)
             # print('before subseq extraction, x.shape =', x.shape)
             for offset in range(0, len(x)-subseqLen):
                 x_subseq = x[offset:offset+subseqLen, :, :]
@@ -96,7 +97,8 @@ def connectSamplesAndTrain(params, fileTripletL, paramID=0):
                 # print('eegAndStageFile = ' + eegAndStageFile + ', x_train.shape = ' + str(x_train.shape))
         # x_train = trimFeatures(params, x_train)
         # print('%%% after trimming, x_train.shape =', x_train.shape)
-        y_train = restrictStages(params, y_train, params.maximumStageNum)
+        # y_train = restrictStages(params, y_train, params.maximumStageNum)
+        y_train = stage_restriction(y_train)
         classLabels = np.unique(y_train)
     ### (x_train, y_train) = supersample(x_train, y_train)
     print(' ')

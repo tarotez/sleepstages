@@ -30,6 +30,10 @@ for paramFileName in paramFiles:
     if paramFileName.startswith('params.') and not paramFileName.endswith('~'):
         print('paramFileName =', paramFileName)
         params = ParameterSetup(paramDir, paramFileName, outputDir)
+
+        def stage_restriction():
+            return lambda x: restrictStages(params, x, params.maximumStageNum)
+
         print('splitID =', splitID)
         blocks = read_blocks(params, splitID)
         classifierIDsByBlock = []
@@ -45,7 +49,7 @@ for paramFileName in paramFiles:
             if len(train_fileTripletL) > 0:
                 # print('training by', train_fileTripletL)
                 # print('')
-                classifierID = connectSamplesAndTrain(params, train_fileTripletL)
+                classifierID = connectSamplesAndTrain(params, train_fileTripletL, stage_restriction)
                 classifierIDsByBlock.append(classifierID)
             else:
                 print('No file for training.')
