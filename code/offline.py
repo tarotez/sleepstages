@@ -25,6 +25,7 @@ class RemOfflineApplication:
         self.postDir = params.postDir
         self.predDir = params.predDir
         self.finalClassifierDir = params.finalClassifierDir
+        self.samplingFreq = params.samplingFreq
 
         # eegFilePath = args[1]
         # inputFileID = splitext(split(eegFilePath)[1])[0]
@@ -60,7 +61,7 @@ class RemOfflineApplication:
 
                     try:
                         eegFilePath = self.postDir + '/' + inputFileName
-                        self.server = EEGFileReaderServer(self.client, eegFilePath)
+                        self.server = EEGFileReaderServer(self.client, eegFilePath, samplingFreq=self.samplingFreq)
 
                     except Exception as e:
                         print(str(e))

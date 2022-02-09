@@ -9,10 +9,10 @@ from dataReader import DataReader
 
 class EEGFileReaderServer:
 
-    def __init__(self, client, eegFilePath, sampRate=128, channelOpt=1):
+    def __init__(self, client, eegFilePath, samplingFreq=128, channelOpt=1):
 
         self.client = client
-        self.sampRate = sampRate
+        self.samplingFreq = samplingFreq
         if channelOpt == 1:
             self.useEMG = 0
         if channelOpt == 2:
@@ -22,7 +22,7 @@ class EEGFileReaderServer:
         pickledDir = self.params.pickledDir
         classifierType = self.params.classifierType
         classifierParams = self.params.classifierParams
-        samplingFreq = self.params.samplingFreq
+        # samplingFreq = self.params.samplingFreq
         windowSizeInSec = self.params.windowSizeInSec
         # self.wsizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
         self.wsizeInTimePoints = self.client.updateGraph_samplePointNum
@@ -62,10 +62,9 @@ class EEGFileReaderServer:
     def serve(self):
 
         global_t = 0
-        dt = 1.0 / self.sampRate
+        dt = 1.0 / self.samplingFreq
         for startSamplePoint in range(0, self.wNum, self.wsizeInTimePoints):
             now = datetime.datetime.now()
-            # print('sampling rate             : {}'.format(self.sampRate))
 
             endSamplePoint = startSamplePoint + self.wsizeInTimePoints
 

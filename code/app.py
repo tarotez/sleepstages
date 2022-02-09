@@ -114,7 +114,7 @@ class RemApplication(QMainWindow):
                     postFiles = listdir(self.params.postDir)
                     inputFileName = list(filter(lambda x: not x.startswith('.'), postFiles))[0]
                     eegFilePath = self.params.postDir + '/' + inputFileName
-                    self.server = EEGFileReaderServer(self.client, eegFilePath)
+                    self.server = EEGFileReaderServer(self.client, eegFilePath, samplingFreq=self.samplingFreq)
                 else:
                     self.server = DummyReadDAQServer(self.client, self.inputFileID, self.recordWaves, self.channelNum, self.offsetWindowID, self.sleepTime)
 
