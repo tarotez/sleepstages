@@ -13,14 +13,14 @@ args = sys.argv
 if len(args) > 1:
     inputSignalFreqHz = args[1]
 else:
-    inputSignalFreqHz = 0.125
+    inputSignalFreqHz = 0.5
 
 HOST = '192.168.0.3'  # The server's hostname or IP address
 # print('HOST:', HOST)
 PORT = 45123       # The port used by the server
 
 chamberNum = 4
-epochNum = 10
+epochNum = 2
 sampleNum = chamberNum * epochNum
 chamberIDL = np.random.permutation(reduce(lambda a, x: a + x, [[chamberID for chamberID in range(chamberNum)] for _ in range(epochNum)], []))
 # print('chamberIDL =', chamberIDL)
@@ -30,6 +30,14 @@ samplingFreq = 512
 epochTime = 10
 ### signal = [float(i + 3.1416) for i in range(samplingFreq * epochTime)]
 all_signal = [sin(2 * pi * inputSignalFreqHz * i / samplingFreq) for i in range(samplingFreq * epochTime * epochNum)]
+
+all_signal = []
+with open('../kissei_sleepsign/512Hz.csv') as f:
+    signal_short = [float(line.rstrip()) for line in f]
+
+all_signal = signal_short + signal_short + signal_short
+
+print('all_signal =', all_signal)
 
 def signal_generator(source_data, segmentLength):
     startSample = 0

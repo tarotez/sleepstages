@@ -6,6 +6,7 @@ from collections import defaultdict
 from functools import reduce
 from fileManagement import selectClassifierID
 from classifierClient import ClassifierClient
+from sampler import up_or_down_sampling
 
 # format the raw array to a style accepted by classifierClient
 def formatRawArray(timeStamp, samplingFreq, signal):
@@ -35,10 +36,7 @@ def generateClassifier(params, chamberID, observed_samplingFreq, observed_epochT
 # a server that accepts tcp network connection from this or a different machine
 class NetworkServer:
 
-    def __init__(self, samplingFreq, epochTime, graphUpdateFreqInHz, params_for_classifier):
-        self.samplingFreq = samplingFreq
-        self.epochTime = epochTime
-        self.graphUpdateFreqInHz = graphUpdateFreqInHz
+    def __init__(self, params_for_classifier):
         self.params_for_classifier = params_for_classifier
 
     def serve(self):
@@ -47,12 +45,6 @@ class NetworkServer:
         ### BUFSIZE = 10240
         BUFSIZE = 10240 * 16   # must be this big to process 1024 Hz
         networkName = 'UTSN-L'
-        # fmt = reduce(lambda a, _: a + 'f', range(1280), '')  # range used for unpacking EEG from received data
-        fmt = reduce(lambda a, _: a + 'f', range(self.samplingFreq * self.epochTime), '')  # range used for unpacking EEG from received data
-        print('------------------')
-        print('self.samplingFreq =', self.samplingFreq)
-        print('self.epochTime =', self.epochTime)
-        print('------------------')
         encode_judge = defaultdict(lambda: 3, w=0, n=1, r=2)  # for encoding judge result to a number
         ai_clients = {}
 
@@ -72,6 +64,7 @@ class NetworkServer:
             print('observed_samplingFreq =', observed_samplingFreq)
             print('observed_epochTime =', observed_epochTime)
             observed_samplePointNum = observed_samplingFreq * observed_epochTime
+            fmt = reduce(lambda a, _: a + 'f', range(observed_samplingFreq * observed_epochTime), '')  # range used for unpacking EEG from received data
             classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.params_for_classifier.finalClassifierDir, networkName, observed_samplingFreq, observed_epochTime)
             model_samplePointNum = model_samplingFreq * model_epochTime
 
@@ -139,24 +132,7 @@ class NetworkServer:
                             #print('model_samplePointNum =', model_samplePointNum)
                             #print('observed_samplePointNum =', observed_samplePointNum)
 
-                            # downsampling
-                            # print('-------')
-                            # print('model_samplePointNum =', model_samplePointNum)
-                            # print('observed_samplePointNum =', observed_samplePointNum)
-                            if model_samplePointNum < observed_samplePointNum:
-                                # print('-> downsampling')
-                                # print('before downsampling: signal_rawarray.shape =', signal_rawarray.shape)
-                                split_signal = np.array_split(signal_rawarray, model_samplePointNum)
-                                signal_rawarray = np.array([seg.mean() for seg in split_signal])
-                                # print('len(split_signal) =', len(split_signal))
-                                # print('split_signal[0].shape =', split_signal[0].shape)
-                                # print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
-
-                            # upsampling
-                            if model_samplePointNum > observed_samplePointNum:
-                                upsample_rate = np.int(np.ceil(1.0 * model_samplePointNum / observed_samplePointNum))
-                                signal_rawarray = np.array([[elem] * upsample_rate for elem in signal_rawarray]).flatten()[:model_samplePointNum]
-
+                            signal_rawarray = up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePointNum)
                             # print('after up/down sampling, signal_rawarray.shape =', signal_rawarray.shape)
 
                             # generate a new classifierClient when new chamberID comes.
@@ -165,8 +141,8 @@ class NetworkServer:
 
                             # Loops because classifierClients accepts segments, not full epochs, in order to visualize waves in GUI.
                             # Before the final segment, judgeStr is '-'.
-                            assert model_samplingFreq % self.graphUpdateFreqInHz == 0
-                            updateGraph_samplePointNum = np.int(model_samplingFreq / self.graphUpdateFreqInHz)
+                            assert model_samplingFreq % self.params_for_classifier.graphUpdateFreqInHz == 0
+                            updateGraph_samplePointNum = np.int(model_samplingFreq / self.params_for_classifier.graphUpdateFreqInHz)
                             assert updateGraph_samplePointNum > 0
                             startID = 0
                             while startID < signal_rawarray.shape[0]:

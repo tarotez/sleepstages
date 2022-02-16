@@ -3,6 +3,28 @@ from itertools import groupby
 import operator
 from parameterSetup import ParameterSetup
 
+def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePointNum):
+
+    # downsampling
+    # print('-------')
+    # print('model_samplePointNum =', model_samplePointNum)
+    # print('observed_samplePointNum =', observed_samplePointNum)
+    if model_samplePointNum < observed_samplePointNum:
+        # print('-> downsampling')
+        # print('before downsampling: signal_rawarray.shape =', signal_rawarray.shape)
+        split_signal = np.array_split(signal_rawarray, model_samplePointNum)
+        signal_rawarray = np.array([seg.mean() for seg in split_signal])
+        # print('len(split_signal) =', len(split_signal))
+        # print('split_signal[0].shape =', split_signal[0].shape)
+        # print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
+
+    # upsampling
+    if model_samplePointNum > observed_samplePointNum:
+        upsample_rate = np.int(np.ceil(1.0 * model_samplePointNum / observed_samplePointNum))
+        signal_rawarray = np.array([[elem] * upsample_rate for elem in signal_rawarray]).flatten()[:model_samplePointNum]
+
+    return signal_rawarray
+
 def supersample(x, y):
 
     params = ParameterSetup()
@@ -53,7 +75,7 @@ def supersample(x, y):
             if do_supersample:
                 while sampledIDs.shape[0] <= target_nums[classID]:
                     orderedIndices = np.arange(isTarget.shape[0])
-                    targetIDs = orderedIndices[isTarget==True]            
+                    targetIDs = orderedIndices[isTarget==True]
                     sampledIDs = np.r_[sampledIDs, targetIDs]
                     print('    sampledIDs.shape = ' + str(sampledIDs.shape))
 
@@ -63,7 +85,7 @@ def supersample(x, y):
             print('  x[sampledIDs].shape = ' + str(x[sampledIDs].shape))
             # print('x[sampled_IDs] = ' + str(x[sampled_IDs]))
             sampled_x = np.r_[sampled_x, x[sampledIDs]]
-            sampled_y = np.r_[sampled_y, y[sampledIDs]]            
+            sampled_y = np.r_[sampled_y, y[sampledIDs]]
             # print('sampled_y = ' + str(sampled_y) + ', y[sampled_IDs] = ' + str(y[sampled_IDs]))
             # if sampled_y.shape[0] > 0:
             #    sampled_y = np.r_[sampled_y, y[sampled_IDs]]
@@ -71,7 +93,7 @@ def supersample(x, y):
             #     sampled_y = y[sampled_IDs]
             # sampled_isTarget = isTarget[sampled_IDs]
             print('sampled_x.shape = ' + str(sampled_x.shape))
-            print('sampled_y.shape = ' + str(sampled_y.shape))            
+            print('sampled_y.shape = ' + str(sampled_y.shape))
             classID = classID + 1
         return (sampled_x, sampled_y)
     else:
@@ -117,7 +139,7 @@ def subsample(x, y):
             print('x[subsampledIDs].shape = ' + str(x[subsampledIDs].shape))
             # print('x[subsampled_IDs] = ' + str(x[subsampled_IDs]))
             subsampled_x = np.r_[subsampled_x, x[subsampledIDs]]
-            subsampled_y = np.r_[subsampled_y, y[subsampledIDs]]            
+            subsampled_y = np.r_[subsampled_y, y[subsampledIDs]]
             # print('subsampled_y = ' + str(subsampled_y) + ', y[subsampled_IDs] = ' + str(y[subsampled_IDs]))
             # if subsampled_y.shape[0] > 0:
             #    subsampled_y = np.r_[subsampled_y, y[subsampled_IDs]]
@@ -125,7 +147,7 @@ def subsample(x, y):
             #     subsampled_y = y[subsampled_IDs]
             # subsampled_isTarget = isTarget[subsampled_IDs]
             print('subsampled_x.shape = ' + str(subsampled_x.shape))
-            print('subsampled_y.shape = ' + str(subsampled_y.shape))            
+            print('subsampled_y.shape = ' + str(subsampled_y.shape))
             classID = classID + 1
         return (subsampled_x, subsampled_y)
     else:

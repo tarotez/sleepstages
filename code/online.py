@@ -8,7 +8,7 @@ class OnlineApplication:
         self.params = ParameterSetup()
 
     def start(self):
-        self.server = NetworkServer(self.params.samplingFreq, self.params.windowSizeInSec, self.params.graphUpdateFreqInHz, self.params)
+        self.server = NetworkServer(self.params)
         self.server.serve()
 
 if __name__ == '__main__':

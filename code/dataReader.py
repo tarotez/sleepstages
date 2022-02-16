@@ -7,6 +7,7 @@ import pickle
 import math
 import numpy as np
 from itertools import groupby
+from datetime import datetime, timedelta
 import codecs
 from parameterSetup import ParameterSetup
 from outlierMouseFilter import OutlierMouseFilter
@@ -22,49 +23,23 @@ class DataReader:
         self.metaDataLineNumUpperBound4stage = params.metaDataLineNumUpperBound4stage
         self.cueWhereEEGDataStarts = params.cueWhereEEGDataStarts
         self.cueWhereStageDataStarts = params.cueWhereStageDataStarts
+        self.params_pickledDir = params.pickledDir
+        self.samplingFreq_from_params = params.samplingFreq
         self.eegDir = 'Raw'
         self.stageDir = 'Judge'
 
     def readAll(self, sys):
-        #---------------
-        # set up parameters
-        # get params shared by programs
-        params = ParameterSetup()
         oFilter = OutlierMouseFilter()
         sdFilter = SDFilter()
-        pickledDir = params.pickledDir
-
-        # for signal processing
-        # windowSizeInSec = params.windowSizeInSec   # size of window in time for estimating the state
-        # samplingFreq = params.samplingFreq   # sampling frequency of data
-
-        # parameters for using history
-        # preContextSize = params.preContextSize
-
-        # parameters for making a histogram
-        # wholeBand = params.wholeBand
-        # binWidth4freqHisto = params.binWidth4freqHisto    # bin width in the frequency domain for visualizing spectrum as a histogram
-    
-        # for reading data
-        # classifierDir = params.classifierDir
-        # classifierName = params.classifierName
-        # samplePointNum = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
-        # time_step = 1 / samplingFreq
-        # binNum4spectrum = round(wholeBand.getBandWidth() / binWidth4freqHisto)
-        # # print('samplePointNum = ' + str(samplePointNum))
-        # past_eeg = np.empty((samplePointNum, 0), dtype = np.float)
-        # past_freqHisto = np.empty((binNum4spectrum, 0), dtype = np.float)
-        # print('in __init__, past_eeg.shape = ' + str(past_eeg.shape))
-        #----------------
-        # compute parameters
-        # wsizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
 
         #---------------
         # read files
-        outFiles = listdir(pickledDir)
+        outFiles = listdir(self.params_pickledDir)
         self.dirName = sys.argv[1]
         if len(sys.argv) > 2:
             pickledDir = self.dataDir + '/' + sys.argv[2]
+        else:
+            pickledDir = self.params_pickledDir
 
         dir_stem, dir_extension = splitext(self.dirName)
         if dir_extension != '.rar':
@@ -135,8 +110,10 @@ class DataReader:
             if line.startswith(self.cueWhereStageDataStarts):
                 break
             if i == self.metaDataLineNumUpperBound4stage - 1:
-                print('metadata header for stage file was not correct.')
-                quit()
+                # print('stage file without metadata header, but it\'s okay.')
+                stage_fp.close()
+                stage_fp = codecs.open(filePath, 'r', 'shift_jis')
+
         stagesL = []
         durationWindNumsL = []
         # lineCnt = 0
@@ -153,7 +130,12 @@ class DataReader:
             # print('   elems[0] = ' + elems[0] + ", elems[1] = " + elems[1])
             # print('elems[0] = ' + elems[0])
             # print('   elems[3] = ' + elems[3] + ", elems[4] = " + elems[4])
-            stageLabel = elems[2]
+            # print('line =', line)
+            # print('elems =', elems)
+            if len(elems) > 1:
+                stageLabel = elems[2]
+            else:
+                stageLabel = elems[0]
             durationWindNum = 1
             stageLabel = stageLabel.replace('*','')
             if stageLabel == 'NR':
@@ -198,6 +180,7 @@ class DataReader:
         timeStampsL = []
         eegL = []
         emgL = []
+        timeStamp = datetime.now()
         for line in eeg_fp:
             line = line.rstrip()
             # print('line = ' + line)
@@ -220,10 +203,18 @@ class DataReader:
                         emgL.append(float(elems[2]))
                     except ValueError:
                         emgL.append(0)
+            elif len(elems) == 1:
+                # when wave data contains no timestamp
+                timeStampsL.append(str(timeStamp).split(' ')[-1])
+                timeStamp += timedelta(seconds=1.0 / self.samplingFreq_from_params)
+                eegL.append(float(elems[0]))
+                # print(timeStampsL[-1], ':', eegL[-1])
 
         eeg = np.array(eegL)
         emg = np.array(emgL)
-        print('  eeg.shape = ' + str(eeg.shape) + ', emg.shape = ' + str(emg.shape))
         timeStamps = np.array(timeStampsL)
+        # print('eeg.shape = ' + str(eeg.shape) + ', emg.shape = ' + str(emg.shape))
+        # print('eeg[:10] =', eeg[:10])
+        # print('timeStamps[:10] =', timeStamps[:10])
         ### samplePointNum = eeg.shape[0]
         return eeg, emg, timeStamps
