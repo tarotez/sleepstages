@@ -30,6 +30,8 @@
 "windowSizeInSec" : 10,
 "samplingFreq" : 128,
 
+"graphUpdateFreqInHz" : 1,
+
 "writeWholeWaves" : 1,
 "computeKS" : 0,
 
