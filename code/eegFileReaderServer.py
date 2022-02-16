@@ -46,10 +46,9 @@ class EEGFileReaderServer:
         # self.timeStamps = timeStamps
 
         #####
-        model_samplingFreq = self.client....
-        model_samplePointNum = model_samplingFreq * ...
+        model_samplingFreq = 128
+        model_samplePointNum = model_samplingFreq * 10
         #######
-
 
         self.eeg = up_or_down_sampling(eeg, model_samplePointNum, observed_samplePointNum)
         self.emg = up_or_down_sampling(emg, model_samplePointNum, observed_samplePointNum)
