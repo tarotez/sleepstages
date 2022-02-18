@@ -366,7 +366,7 @@ class RemApplication(QMainWindow):
         self.nameLabel_samplingFreq.move(int(840 * self.scale), int(67 * self.scale))
         self.form_samplingFreq = QLineEdit(self)
         self.form_samplingFreq.setText(str(self.observed_samplingFreq))
-        self.form_samplingFreq.move(int(960 * self.scale), int(67 * self.scale))
+        self.form_samplingFreq.move(int(940 * self.scale), int(67 * self.scale))
         self.form_samplingFreq.resize(50, 20)
         self.form_samplingFreq.textChanged.connect(self.form_samplingFreq_text_change)
 
