@@ -51,7 +51,10 @@ class RemApplication(QMainWindow):
         self.channelIDs_all = self.params.channelIDs
 
         self.channelNum = 2 if (self.params.showCh2 or self.params.useCh2ForReplace) else 1
-        self.samplingFreq = self.params.samplingFreq
+        self.observed_samplingFreq = self.params.samplingFreq
+        self.observed_epochTime = self.params.windowSizeInSec
+        self.model_samplingFreq = 128
+        self.model_epochTime = 10
 
         self.eeg_visualize_mode_str_normalize = "Normalize-ON"
         self.eeg_visualize_mode_str_none = "Normalize-OFF"
@@ -114,7 +117,8 @@ class RemApplication(QMainWindow):
                     postFiles = listdir(self.params.postDir)
                     inputFileName = list(filter(lambda x: not x.startswith('.'), postFiles))[0]
                     eegFilePath = self.params.postDir + '/' + inputFileName
-                    self.server = EEGFileReaderServer(self.client, eegFilePath, samplingFreq=self.samplingFreq)
+                    self.server = EEGFileReaderServer(self.client, eegFilePath, model_samplingFreq=self.model_samplingFreq, model_epochTime=self.model_epochTime,
+                        observed_samplingFreq=self.observed_samplingFreq, observed_epochTime=self.observed_epochTime)
                 else:
                     self.server = DummyReadDAQServer(self.client, self.inputFileID, self.recordWaves, self.channelNum, self.offsetWindowID, self.sleepTime)
 
@@ -240,8 +244,10 @@ class RemApplication(QMainWindow):
         print('classifier_choice() activated.')
         if not self.prediction_started:
             self.classifier_type = text
-            classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
+            classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
             self.client.setStagePredictor(classifierID)
+            self.model_samplingFreq = model_samplingFreq
+            self.model_epochTime = model_epochTime
             print('classifier_type changed to', self.classifier_type)
 
     def initUI(self):
@@ -450,21 +456,23 @@ class RemApplication(QMainWindow):
             if len(self.args) > 1:
                 optionID = self.args[1]
                 if optionID == 'm':
-                    classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
+                    classifierID, self.model_samplingFreq, self.model_epochTime = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
                     self.inputFileID = self.args[2] if len(self.args) > 2 else self.randomlySelectInputFileID()
                     print('demo mode: reading inputFileID=', self.inputFileID)
                 elif optionID == 'o':
-                    classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
+                    classifierID, self.model_samplingFreq, self.model_epochTime = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
                     self.inputFileID = ''
                 else:
                     classifierID = optionID
                     self.inputFileID = ''
-                self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, self.inputFileID, self.offsetWindowID)
+                self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, self.inputFileID,
+                    samplingFreq=self.model_samplingFreq, epochTime=self.model_epochTime)
             else:   # Neither classifierID nor inputFileID are specified.
                 self.readFromDaq = True
-                classifierID = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
+                classifierID, self.model_samplingFreq, self.model_epochTime = selectClassifierID(self.params.finalClassifierDir, self.classifier_type)
                 print('Data is read from DAQ. classifier ID is randomly selected.')
-                self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID)
+                self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID,
+                    samplingFreq=self.model_samplingFreq, epochTime=self.model_epochTime)
             self.client.hasGUI = True
             self.ylim_value_eeg_box.setText(str(self.client.ylim_max_eeg))
             self.ylim_value_ch2_box.setText(str(self.client.ylim_max_ch2))

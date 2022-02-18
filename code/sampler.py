@@ -4,19 +4,23 @@ import operator
 from parameterSetup import ParameterSetup
 
 def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePointNum):
-
     # downsampling
-    # print('-------')
-    # print('model_samplePointNum =', model_samplePointNum)
-    # print('observed_samplePointNum =', observed_samplePointNum)
+    print('-------')
+    print('model_samplePointNum =', model_samplePointNum)
+    print('observed_samplePointNum =', observed_samplePointNum)
     if model_samplePointNum < observed_samplePointNum:
-        # print('-> downsampling')
-        # print('before downsampling: signal_rawarray.shape =', signal_rawarray.shape)
-        split_signal = np.array_split(signal_rawarray, model_samplePointNum)
+        print('-> downsampling')
+        print('before downsampling: signal_rawarray.shape =', signal_rawarray.shape)
+        epochNum = max(1, int(np.floor(1.0 * signal_rawarray.shape[0] / observed_samplePointNum)))
+        print('epochNum =', epochNum)
+        multiple = int(np.floor(1.0 * signal_rawarray.shape[0] / model_samplePointNum)) * model_samplePointNum * epochNum
+        split_signal = np.array_split(signal_rawarray[:multiple], model_samplePointNum * epochNum)
+        # for seg in split_signal:
+        #     print('len(seg) =', len(seg))
         signal_rawarray = np.array([seg.mean() for seg in split_signal])
-        # print('len(split_signal) =', len(split_signal))
-        # print('split_signal[0].shape =', split_signal[0].shape)
-        # print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
+        print('len(split_signal) =', len(split_signal))
+        print('split_signal[0].shape =', split_signal[0].shape)
+        print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
 
     # upsampling
     if model_samplePointNum > observed_samplePointNum:

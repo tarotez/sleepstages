@@ -33,6 +33,7 @@ class ClassifierClient:
         self.graphUpdateFreqInHz = self.params.graphUpdateFreqInHz   # frequency of updating the graph (if set to 1, redraws graph every second)
         assert self.samplingFreq / self.graphUpdateFreqInHz == np.floor(self.samplingFreq / self.graphUpdateFreqInHz)   # should be an integer
         self.updateGraph_samplePointNum = np.int(self.samplingFreq / self.graphUpdateFreqInHz)
+
         # print('self.updateGraph_samplePointNum =', self.updateGraph_samplePointNum)
         self.hasGUI = True
         self.graphColors = ['b','g']

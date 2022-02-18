@@ -20,7 +20,7 @@ HOST = '192.168.0.3'  # The server's hostname or IP address
 PORT = 45123       # The port used by the server
 
 chamberNum = 4
-epochNum = 2
+epochNum = 10
 sampleNum = chamberNum * epochNum
 chamberIDL = np.random.permutation(reduce(lambda a, x: a + x, [[chamberID for chamberID in range(chamberNum)] for _ in range(epochNum)], []))
 # print('chamberIDL =', chamberIDL)
@@ -37,7 +37,7 @@ with open('../kissei_sleepsign/512Hz.csv') as f:
 
 all_signal = signal_short + signal_short + signal_short
 
-print('all_signal =', all_signal)
+# print('all_signal =', all_signal)
 
 def signal_generator(source_data, segmentLength):
     startSample = 0

@@ -58,8 +58,8 @@ def selectClassifierID(finalClassifierDir, requested_classifierType, requested_s
     if requested_samplingFreq == 0 and requested_epochTime == 0:
         filtered_metadataList = list(filter_by_classifierType(classifierMetadataList, requested_classifierType))
         filtered_metadata = filtered_metadataList[0]
-        classifierID = filtered_metadata[0]
-        return classifierID
+        classifierID, model_samplingFreq, model_epochTime = filtered_metadata[0], filtered_metadata[2], filtered_metadata[3]
+        return classifierID, model_samplingFreq, model_epochTime
     else:
         # classifierMetadataList = filter_by_classifierType(classifierMetadataList, requested_classifierType)
         # classifierMetadataList = filter_by_samplingFreq(classifierMetadataList, requested_samplingFreq)
