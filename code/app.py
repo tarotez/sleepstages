@@ -195,6 +195,12 @@ class RemApplication(QMainWindow):
         except Exception as e:
             pass
 
+    def form_samplingFreq_text_change(self):
+        try:
+            self.observed_samplingFreq = float(self.form_samplingFreq.text())
+        except Exception as e:
+            pass
+
     def ch2_thresh_change(self):
         ch2_thresh_slider_value = self.ch2_thresh_slider.value()
         self.client.ch2_thresh_value = ch2_thresh_slider_value / self.ch2_thresh_slider_tick_factor
@@ -270,14 +276,14 @@ class RemApplication(QMainWindow):
 
         # change standardization of ch2
         self.nameLabel_terminal_label = QLabel(self)
-        self.nameLabel_terminal_label.setText('Terminal:')
+        self.nameLabel_terminal_label.setText('DAQ terminal:')
         self.nameLabel_terminal_label.move(int(250 * self.scale), int(35 * self.scale))
         self.terminal_combobox = QtWidgets.QComboBox(self)
         self.terminal_combobox.addItem(self.terminal_str_diff)
         self.terminal_combobox.addItem(self.terminal_str_rse)
         self.terminal_combobox.addItem(self.terminal_str_nrse)
         # self.terminal_combobox.addItem(self.terminal_str_pseudo) # not available for NI DAQ USB-6210
-        self.terminal_combobox.move(int(310 * self.scale), int(38 * self.scale))
+        self.terminal_combobox.move(int(330 * self.scale), int(38 * self.scale))
         self.terminal_combobox.resize(self.terminal_combobox.sizeHint())
         self.terminal_combobox.activated[str].connect(self.terminal_choice)
         self.terminal_combobox.setCurrentText(self.terminal_config)
@@ -309,8 +315,8 @@ class RemApplication(QMainWindow):
 
         # change standardization of eeg
         self.nameLabel_eeg_visualize_mode_label = QLabel(self)
-        self.nameLabel_eeg_visualize_mode_label.setText('EEG mode:')
-        self.nameLabel_eeg_visualize_mode_label.move(int(610 * self.scale), int(2 * self.scale))
+        self.nameLabel_eeg_visualize_mode_label.setText('EEG graph:')
+        self.nameLabel_eeg_visualize_mode_label.move(int(600 * self.scale), int(2 * self.scale))
         self.eeg_visualize_mode_combobox = QtWidgets.QComboBox(self)
         self.eeg_visualize_mode_combobox.addItem(self.eeg_visualize_mode_str_none)
         self.eeg_visualize_mode_combobox.addItem(self.eeg_visualize_mode_str_normalize)
@@ -320,8 +326,8 @@ class RemApplication(QMainWindow):
 
         # change standardization of ch2
         self.nameLabel_ch2_visualize_mode_label = QLabel(self)
-        self.nameLabel_ch2_visualize_mode_label.setText('Ch2 mode:')
-        self.nameLabel_ch2_visualize_mode_label.move(int(610 * self.scale), int(30 * self.scale))
+        self.nameLabel_ch2_visualize_mode_label.setText('Ch2 graph:')
+        self.nameLabel_ch2_visualize_mode_label.move(int(600 * self.scale), int(30 * self.scale))
         self.ch2_visualize_mode_combobox = QtWidgets.QComboBox(self)
         self.ch2_visualize_mode_combobox.addItem(self.ch2_visualize_mode_str_none)
         self.ch2_visualize_mode_combobox.addItem(self.ch2_visualize_mode_str_normalize)
@@ -343,18 +349,29 @@ class RemApplication(QMainWindow):
         # change usage of ch2
         self.nameLabel_ch2_usage_label = QLabel(self)
         self.nameLabel_ch2_usage_label.setText('Ch2 usage:')
-        self.nameLabel_ch2_usage_label.move(int(840 * self.scale), int(60 * self.scale))
+        self.nameLabel_ch2_usage_label.move(int(840 * self.scale), int(40 * self.scale))
         self.ch2_usage_combobox = QtWidgets.QComboBox(self)
         self.ch2_usage_combobox.addItem(self.ch2_usage_str_dontshowCh2)
         self.ch2_usage_combobox.addItem(self.ch2_usage_str_showCh2)
         self.ch2_usage_combobox.addItem(self.ch2_usage_str_overwrite)
-        self.ch2_usage_combobox.move(int(910 * self.scale), int(60 * self.scale))
+        self.ch2_usage_combobox.move(int(910 * self.scale), int(40 * self.scale))
         self.ch2_usage_combobox.resize(self.ch2_usage_combobox.sizeHint())
         self.ch2_usage_combobox.activated[str].connect(self.ch2_usage_choice)
         self.ch2_usage_combobox_setup()
 
+        # set sampling frequency of the input signal
+        self.nameLabel_samplingFreq = QLabel(self)
+        self.nameLabel_samplingFreq.setText('Sampling freq:')
+        self.nameLabel_samplingFreq.resize(self.nameLabel_samplingFreq.sizeHint())
+        self.nameLabel_samplingFreq.move(int(840 * self.scale), int(67 * self.scale))
+        self.form_samplingFreq = QLineEdit(self)
+        self.form_samplingFreq.setText(str(self.observed_samplingFreq))
+        self.form_samplingFreq.move(int(960 * self.scale), int(67 * self.scale))
+        self.form_samplingFreq.resize(50, 20)
+        self.form_samplingFreq.textChanged.connect(self.form_samplingFreq_text_change)
+
         self.ylim_label_eeg = QLabel(self)
-        self.ylim_label_eeg.setText('eeg y-max:')
+        self.ylim_label_eeg.setText('EEG y-max:')
         self.ylim_label_eeg.move(int(40 * self.scale), int(40 * self.scale))
         self.ylim_label_eeg.resize(self.ylim_label_eeg.sizeHint())
         self.ylim_value_eeg_box = QLineEdit(self)
@@ -371,7 +388,7 @@ class RemApplication(QMainWindow):
         self.ylim_slider_eeg.valueChanged.connect(self.ylim_change_eeg)
 
         self.ylim_label_ch2 = QLabel(self)
-        self.ylim_label_ch2.setText('ch2 y-max:')
+        self.ylim_label_ch2.setText('Ch2 y-max:')
         self.ylim_label_ch2.move(int(160 * self.scale), int(40 * self.scale))
         self.ylim_label_ch2.resize(self.ylim_label_ch2.sizeHint())
         self.ylim_value_ch2_box = QLineEdit(self)
@@ -389,8 +406,8 @@ class RemApplication(QMainWindow):
 
         self.ch2_thresh_slider_tick_factor = 4
         self.ch2_thresh_slider = QSlider(Qt.Horizontal, self)
-        self.ch2_thresh_slider.move(int(1035 * self.scale), int(20 * self.scale))
-        self.ch2_thresh_slider.resize(190, 20)
+        self.ch2_thresh_slider.move(int(1055 * self.scale), int(20 * self.scale))
+        self.ch2_thresh_slider.resize(170, 20)
         self.ch2_thresh_minimum = -2
         self.ch2_thresh_maximum = 10
         self.ch2_thresh_slider.setMinimum(self.ch2_thresh_minimum * self.ch2_thresh_slider_tick_factor)
