@@ -18,9 +18,9 @@ def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePo
         # for seg in split_signal:
         #     print('len(seg) =', len(seg))
         signal_rawarray = np.array([seg.mean() for seg in split_signal])
-        print('len(split_signal) =', len(split_signal))
-        print('split_signal[0].shape =', split_signal[0].shape)
-        print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
+        # print('len(split_signal) =', len(split_signal))
+        # print('split_signal[0].shape =', split_signal[0].shape)
+        # print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
 
     # upsampling
     if model_samplePointNum > observed_samplePointNum:
