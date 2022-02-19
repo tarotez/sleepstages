@@ -51,7 +51,7 @@ class RemOfflineApplication:
                                                                 samplingFreq=model_samplingFreq, epochTime=model_epochTime)
                             else:
                                 if self.args[1] == '--samplingFreq' and len(self.args) > 2:
-                                    observed_samplingFreq = self.args[2]
+                                    observed_samplingFreq = int(self.args[2])
                                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID,
                                     samplingFreq=model_samplingFreq, epochTime=model_epochTime)
                         else:
