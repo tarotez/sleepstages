@@ -143,6 +143,8 @@ def trainClassifier(params, outputDir, optionType, optionVals):
         train_fileTripletL, test_fileTripletL = getEEGAndFeatureFiles(params, testNum, offset, randomize)
     # print('train_fileTripletL =', train_fileTripletL)
     if len(train_fileTripletL) > 0:
-        connectSamplesAndTrain(params, train_fileTripletL)
+        def stage_restriction(orig_stageSeq):
+            return orig_stageSeq
+        connectSamplesAndTrain(params, train_fileTripletL, stage_restriction)
     else:
         print('%%% No file for training.')
