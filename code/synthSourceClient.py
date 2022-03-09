@@ -31,12 +31,6 @@ epochTime = 10
 ### signal = [float(i + 3.1416) for i in range(samplingFreq * epochTime)]
 all_signal = [sin(2 * pi * inputSignalFreqHz * i / samplingFreq) for i in range(samplingFreq * epochTime * epochNum)]
 
-all_signal = []
-with open('../kissei_sleepsign/512Hz.csv') as f:
-    signal_short = [float(line.rstrip()) for line in f]
-
-all_signal = signal_short + signal_short + signal_short
-
 # print('all_signal =', all_signal)
 
 def signal_generator(source_data, segmentLength):
