@@ -23,7 +23,7 @@ pip install PyDAQmx
 The source code and data files can be downloaded from GitHub by:
 
 ```
-git clone git@github.com/tarotez/sleepstages
+git clone git@github.com:tarotez/sleepstages.git
 ```
 
 Move to the code directory before running the program.
