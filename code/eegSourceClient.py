@@ -4,9 +4,9 @@ import struct
 import numpy as np
 from functools import reduce
 from os import listdir
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import reduce
-import random
+from time import sleep
 from dataReader import DataReader
 from parameterSetup import ParameterSetup
 
@@ -27,16 +27,21 @@ server_PORT = 45123
 # chamberIDL = (random.randint(0,3) for _ in range(sampleNum))
 # epochDict = {}
 
-samplingFreq = 128
+params = ParameterSetup()
+
+# samplingFreq = 128
 # samplingFreq = 512
-epochTime = 10
+# epochTime = 10
+samplingFreq = params.samplingFreq
+epochTime = params.windowSizeInSec
+# channelNum = params.input_channel_num
+
 epochSampleNum = samplingFreq * epochTime
 # signal = [float(i + 3.1416) for i in range(samplingFreq * epochTime)]
 chamberNum = 1
 ### chamberNum = 2
 # chamberNum = 1
 
-params = ParameterSetup()
 all_postFiles = listdir(params.postDir)
 postFiles = []
 for fileName in all_postFiles:
@@ -45,14 +50,17 @@ for fileName in all_postFiles:
 
 print('postFiles =', postFiles)
 
-eegFilePathL = []
 eegL = []
 for _, inputFileName in zip(range(chamberNum), postFiles):
     dataReader = DataReader()
     eegFilePath = params.postDir + '/' + inputFileName
     print('for EEG, reading file ' + eegFilePath)
+
+
     eeg, emg, timeStamps = dataReader.readEEG(eegFilePath)
-    eegFilePathL.append(eegFilePath)
+    ### eeg = dataReader.readMultiChannelEEGfromEDF(eegFilePath, channelNum)
+
+
     eegL.append(eeg)
 
 max_eegLength = reduce(max, [len(eeg) for eeg in eegL])
@@ -109,3 +117,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             resp_judge = struct.unpack_from('H', resp, 6)[0]
 
             print('c, e, j =', resp_chamberID, resp_epochID, resp_judge)
+
+
+        sleep(epochTime)
