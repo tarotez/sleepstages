@@ -12,13 +12,6 @@ from parameterSetup import ParameterSetup
 
 # sends mock signal to online.py by connectin to networkServer
 
-args = sys.argv
-if len(args) > 1:
-    server_HOST = args[1]
-else:
-    # HOST = '192.168.0.2'  # The server's hostname or IP address
-    server_HOST = 'localhost'
-
 # print('HOST:', HOST)
 # PORT = 45123       # The port used by the server
 server_PORT = 45123
@@ -28,12 +21,23 @@ server_PORT = 45123
 # epochDict = {}
 
 params = ParameterSetup()
-
 # samplingFreq = 128
 # samplingFreq = 512
 # epochTime = 10
 samplingFreq = params.samplingFreq
 epochTime = params.windowSizeInSec
+
+args = sys.argv
+if len(args) > 1:
+    server_HOST = args[1]
+else:
+    # HOST = '192.168.0.2'  # The server's hostname or IP address
+    server_HOST = 'localhost'
+
+if len(args) > 2:
+    epochWaitTime = float(args[2])
+else:
+    epochWaitTime = epochTime
 # channelNum = params.input_channel_num
 
 epochSampleNum = samplingFreq * epochTime
@@ -118,5 +122,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
             print('c, e, j =', resp_chamberID, resp_epochID, resp_judge)
 
-
-        sleep(epochTime)
+        sleep(epochWaitTime)
