@@ -5,9 +5,9 @@ from parameterSetup import ParameterSetup
 
 def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePointNum):
     # downsampling
-    print('-------')
-    print('model_samplePointNum =', model_samplePointNum)
-    print('observed_samplePointNum =', observed_samplePointNum)
+    # print('-------')
+    # print('model_samplePointNum =', model_samplePointNum)
+    # print('observed_samplePointNum =', observed_samplePointNum)
     if model_samplePointNum < observed_samplePointNum:
         print('-> downsampling')
         print('before downsampling: signal_rawarray.shape =', signal_rawarray.shape)
