@@ -100,8 +100,10 @@ class standardizer():
         self.segment_counter += 1
         assert self.mean.shape == ()
         assert self.std.shape == ()
-        assert self.std > 0
-        return (new_samples - self.mean) / self.std
+        if self.std > 0:
+            return (new_samples - self.mean) / self.std
+        else:
+            return new_samples - self.mean
 
     def centralize(self, new_samples):
         self.connected = self.connected + self.remove_outliers(list(new_samples))
