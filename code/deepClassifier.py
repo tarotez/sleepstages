@@ -70,22 +70,31 @@ class cnn_lstm(nn.Module):
     def __init__(self, params, num_classes):
         super(cnn_lstm, self).__init__()
         self.params = params
-        self.input_channelNum = 1
-        self.stft_channelNum = 1
-        self.rawDataDim = params.downsample_outputDim
+        self.stft_channelNum = params.input_channel_num
+
+        self.filter_nums = params.torch_filter_nums
+        self.kernel_sizes = params.torch_kernel_sizes
+        self.strides = params.torch_strides
+        self.filter_nums_for_stft = params.torch_filter_nums_for_stft
+        self.kernel_sizes_for_stft = params.torch_kernel_sizes_for_stft
+        self.strides_for_stft = params.torch_strides_for_stft
+        self.rawDataDim = params.samplingFreq * params.windowSizeInSec
+
         self.lstm_subseqLen = params.torch_lstm_length
         self.lstm_num_layers = params.torch_lstm_num_layers
         self.lstm_hidden_size = params.torch_lstm_hidden_size
         self.lstm_inputDim = params.torch_lstm_inputDim
         self.lstm_bidirectional = True if params.torch_lstm_bidirectional == 1 else False
         self.binNum4spectrum = round(params.wholeBand.getBandWidth() / params.binWidth4freqHisto)
-        self.stft_time_bin_num = np.int(np.float(params.windowSizeInSec / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
-        if params.extractorType.endswith('WithTime') and not params.useTime:
+        #--------------------
+        # below, an ad-hoc setup of time-bin num for STFT. It would be better if the constant "128" can be removed.
+        ### self.stft_time_bin_num = np.int(np.float(params.windowSizeInSec / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
+        ### self.stft_time_bin_num = np.int(np.float(params.windowSizeInSec * (params.samplingFreq / 128) / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
+        self.stft_time_bin_num = np.int(np.ceil(np.float(1.0 * params.windowSizeInSec * (1.0 * params.samplingFreq / 128) / params.stft_time_bin_in_seconds))) + 1   # plus one from edges
+        if params.useTime and not params.extractorType.endswith('WithTime'):
             print('Can\'t use ZT as a feature when extractorType has no ZT. Check params.json.')
             exit()
-            ####
 
-        # print('### params.downsample_outputDim =', params.downsample_outputDim)
         # print('### self.rawDataDim =', self.rawDataDim)
         # print('### self.binNum4spectrum =', self.binNum4spectrum)
         # print('### self.stft_time_bin_num =', self.stft_time_bin_num)
@@ -108,14 +117,16 @@ class cnn_lstm(nn.Module):
         # else:
         #     pass
 
+        ### outputDim_cnn_for_stft = self.filter_nums_for_stft[-1] * 3
+        reduced_binNum4spectrum = reduce(lambda a, x: np.int(np.ceil(a / x)), self.strides_for_stft, self.binNum4spectrum)
+        reduced_stft_time_bin_num = reduce(lambda a, x: np.int(np.ceil(a / x)), self.strides_for_stft, self.stft_time_bin_num)
+        outputDim_cnn_for_stft = self.filter_nums_for_stft[-1] * reduced_binNum4spectrum * reduced_stft_time_bin_num
+
         if params.useSTFT:
             if params.useFreqHisto and params.useTime:
-                # self.additionalFeatureDim = params.additionalFeatureDim
-                # self.additionalFeatureDim = self.binNum4spectrum * self.stft_time_bin_num + 1
-                self.additionalFeatureDim = params.outputDim_cnn_for_stft + 1
+                self.additionalFeatureDim = outputDim_cnn_for_stft + 1
             elif params.useFreqHisto and not params.useTime:
-                # self.additionalFeatureDim = self.binNum4spectrum * self.stft_time_bin_num
-                self.additionalFeatureDim = params.outputDim_cnn_for_stft
+                self.additionalFeatureDim = outputDim_cnn_for_stft
             elif not params.useFreqHisto and params.useTime:
                 self.additionalFeatureDim = 1
             else:
@@ -134,16 +145,14 @@ class cnn_lstm(nn.Module):
             # self.input_shape = (self.lstm_subseqLen, self.input_channelNum, self.rawDataDim + self.additionalFeatureDim)
         # else:
             # self.input_shape = (self.lstm_subseqLen, self.input_channelNum, self.additionalFeatureDim)
-        self.filter_nums = params.torch_filter_nums
-        self.kernel_sizes = params.torch_kernel_sizes
-        self.strides = params.torch_strides
-        self.filter_nums_for_stft = [8,8,8,8]
-        self.kernel_sizes_for_stft = [3,3,3,3]
-        self.strides_for_stft = [1,2,2,2]
+
         self.rawData_final_channel_num = self.filter_nums[-1]
         self.dropoutRate = params.dropoutRate
         self.skip_by = params.torch_skip_by
         self.layerNum = len(self.filter_nums)
+        print('filter_nums =', self.filter_nums)
+        print('kernel_sizes =', self.kernel_sizes)
+        print('strides =', self.strides)
         # self.stft_time_bin_in_seconds = params.stft_time_bin_in_seconds
         # self.avg_pool_size = params.torch_resnet_avg_pool_size
         # self.avg_pool = nn.AvgPool1d(self.avg_pool_size)
@@ -154,8 +163,8 @@ class cnn_lstm(nn.Module):
         # self.batn_first = nn.BatchNorm1d(1)
 
         self.relu = nn.ReLU(inplace=True)
-        in_channel_num = 1
-        skip_in_channel_num = in_channel_num
+        in_channel_num_for_block = params.input_channel_num
+        skip_in_channel_num = in_channel_num_for_block
         skip_inputDim = self.rawDataDim
         skip_in_blockID = 0
         batns = []
@@ -163,10 +172,10 @@ class cnn_lstm(nn.Module):
         drops = []
         skips = []
         for blockID, (out_channel_num, kernel_size, stride) in enumerate(zip(self.filter_nums, self.kernel_sizes, self.strides)):
-            batns.append(nn.BatchNorm1d(in_channel_num))
-            convs.append(self.conv(in_channel_num, out_channel_num, kernel_size, stride))
+            batns.append(nn.BatchNorm1d(in_channel_num_for_block))
+            convs.append(self.conv(in_channel_num_for_block, out_channel_num, kernel_size, stride))
             drops.append(nn.Dropout(self.dropoutRate))
-            in_channel_num = out_channel_num
+            in_channel_num_for_block = out_channel_num
 
             if blockID % self.skip_by == (self.skip_by - 1):
                 # print('# blockID =', blockID)
@@ -192,18 +201,19 @@ class cnn_lstm(nn.Module):
             batns_for_stft = []
             convs_for_stft = []
             drops_for_stft = []
-            in_channel_num = self.stft_channelNum
+            in_channel_num_for_block = self.stft_channelNum
             for blockID, (out_channel_num, kernel_size, stride) in enumerate(zip(self.filter_nums_for_stft, self.kernel_sizes_for_stft, self.strides_for_stft)):
-                batns_for_stft.append(nn.BatchNorm2d(in_channel_num))
-                convs_for_stft.append(self.conv2d(in_channel_num, out_channel_num, kernel_size, stride))
+                batns_for_stft.append(nn.BatchNorm2d(in_channel_num_for_block))
+                convs_for_stft.append(self.conv2d(in_channel_num_for_block, out_channel_num, kernel_size, stride))
                 drops_for_stft.append(nn.Dropout(self.dropoutRate))
-                in_channel_num = out_channel_num
+                in_channel_num_for_block = out_channel_num
             self.batns_for_stft = nn.ModuleList(batns_for_stft)
             self.convs_for_stft = nn.ModuleList(convs_for_stft)
             self.drops_for_stft = nn.ModuleList(drops_for_stft)
 
         # self.rawData_outputDim = reduce(lambda a, x: np.int(np.ceil((a - (x[0] - 1)) / x[1])), zip(self.kernel_sizes, self.strides), self.rawDataDim)
-        self.rawData_outputDim = reduce(lambda a, x: np.int(np.ceil(a / x[1])), zip(self.kernel_sizes, self.strides), self.rawDataDim)
+        # self.rawData_outputDim = reduce(lambda a, x: np.int(np.ceil(a / x[1])), zip(self.kernel_sizes, self.strides), self.rawDataDim)
+        self.rawData_outputDim = reduce(lambda a, x: np.int(np.ceil(a / x)), self.strides, self.rawDataDim)
         # print('$$$ self.additionalFeatureDim =', self.additionalFeatureDim)
         if self.params.useRawData:
             self.combined_size = (self.rawData_final_channel_num * self.rawData_outputDim) + self.additionalFeatureDim
@@ -261,7 +271,7 @@ class cnn_lstm(nn.Module):
                     if params.useTime:
                         freqFeature = x[:,:,self.rawDataDim:-1]
                     else:
-                        freqFeature = x[:,:,self.rawDataDim]
+                        freqFeature = x[:,:,self.rawDataDim:]
                 if params.useTime:
                     combined = cat((freqFeature.view(freqFeature.size(0), -1), x[:,:,-1].view(x.size(0), -1)), dim=1)
                 else:
@@ -272,12 +282,11 @@ class cnn_lstm(nn.Module):
                 combined = None
         else:
             rawDataPart = x[:,:,:self.rawDataDim]
-            # print('%%% rawDataPart.shape =', rawDataPart.shape)
+            # print('rawDataPart.shape =', rawDataPart.shape)
             rawDataCopy = rawDataPart
             skipOriginLayer = 0
             skipID = 0
             for blockID in range(len(self.convs)):
-                # print('  rawDataPart.shape =', rawDataPart.shape)
                 rawDataPart = self.batns[blockID](rawDataPart)
                 rawDataPart = self.convs[blockID](rawDataPart)
                 rawDataPart = self.relu(rawDataPart)
@@ -289,15 +298,15 @@ class cnn_lstm(nn.Module):
                     rawDataPart = rawDataPart + rawDataCopy
                     rawDataCopy = rawDataPart
                     skipDestinLayer = blockID + 1
-                    ### print('$%$%$%$%$%$%$%$ skip connection from layer ', skipOriginLayer, ' to layer ', skipDestinLayer, sep='')
+                    # print('skip connection from layer ', skipOriginLayer, ' to layer ', skipDestinLayer, sep='')
                     skipOriginLayer = skipDestinLayer
                     skipID += 1
             if params.useFreqHisto:
-                # print('$$$ in forward() : x.shape =', x.shape)
-                # print('$$$ self.rawDataDim =', self.rawDataDim)
+                # print('in forward() : x.shape =', x.shape)
+                # print('self.rawDataDim =', self.rawDataDim)
                 if params.useSTFT:
-                    #print('in forward() : x.shape =', x.shape)
-                    #print('self.rawDataDim =', self.rawDataDim)
+                    # print('in forward() : x.shape =', x.shape)
+                    # print('self.rawDataDim =', self.rawDataDim)
                     if params.useTime:
                         freqFeature = cnn_on_stft(x[:,:,self.rawDataDim:-1])
                     else:
@@ -369,10 +378,8 @@ class DeepClassifier():
         self.paramsForNetworkStructure = paramsForNetworkStructure
         self.weight_dir = paramsForDirectorySetup.pickledDir
         self.weight_path_best = self.weight_dir + '/weights.' + classifierID + '.pkl'
-        self.rawDataDim = paramsForNetworkStructure.downsample_outputDim
         self.maximumStageNum = paramsForNetworkStructure.maximumStageNum
         self.stageLabel2stageID = paramsForNetworkStructure.stageLabel2stageID
-        self.additionalFeatureDim = paramsForNetworkStructure.additionalFeatureDim
         # self.model_checkpoint_path = self.weight_dir + '/checkpoint.h5'
         self.optimizerType = paramsForNetworkStructure.optimizerType
         self.networkType = paramsForNetworkStructure.networkType
@@ -436,7 +443,7 @@ class DeepClassifier():
             model.cuda()
 
         ### print('$%$%$%$ in fit(), calling summary() with model.input_shape =', model.input_shape)
-        ### summary(model, model.input_shape, device=self.device_str)
+        # summary(model, model.input_shape, device=self.device_str)
         trainer = create_supervised_trainer(model, optimizer, self.criterion, device=self.device_str)
         metrics = {
             'accuracy':Accuracy(),
@@ -544,6 +551,7 @@ class DeepClassifier():
              featureTensor = np.array([featuresBySamples]).transpose([1,0,2])
 
           featureTensor = featureTensor.astype(np.float)
+          print('device:', self.device)
           featureTensor = torch.autograd.Variable(torch.tensor(featureTensor, dtype=torch.float)).to(self.device)
           print('featureTensor.shape =', featureTensor.shape)
 
@@ -590,6 +598,13 @@ class DeepClassifier():
                 batch_size=self.batch_size)
 
           print('The best model is saved at ', self.weight_path_best, ' with val_acc = ', self.best_accuracy, sep='')
+          del featureTensor
+          del train_data
+          del train_data_with_labels
+          if validationRatio > 0:
+              del val_data
+              del val_data_with_labels
+          torch.cuda.empty_cache()
 
     def load_weights(self, weight_path):
         print('loading weights in deepClassifier.py from', weight_path)
@@ -612,9 +627,14 @@ class DeepClassifier():
             if self.networkType != 'cnn_lstm' and len(featureTensor.shape) == 2:
                 featureTensor = np.array([featureTensor]).transpose([1,0,2])
             # print('featureTensor.shape =', featureTensor.shape)
+
             self.device_str = 'cuda' if torch.cuda.is_available() else 'cpu'
             self.device = torch.device(self.device_str)
             featureTensor = torch.tensor(featureTensor, dtype=torch.float).to(self.device)
+            if torch.cuda.is_available():
+                # print('using model.cuda()')
+                torch.cuda.device(self.device)
+                self.model.cuda()
 
             # print('# featureTensor.shape =', featureTensor.shape)
             self.model.eval()

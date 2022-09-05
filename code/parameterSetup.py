@@ -114,13 +114,13 @@ class ParameterSetup(object):
         self.subsampleRatios = d['subsampleRatios']
         self.supersample = d['supersample']
 
-        self.predict_by_batch = d['predict_by_batch']
+        # self.predict_by_batch = d['predict_by_batch']
 
         # self.replacesWWWRtoWWWW = d['replacesWWWRtoWWWW']
         self.numOfConsecutiveWsThatProhibitsR = d['numOfConsecutiveWsThatProhibitsR']
 
         # stride size used for prediction
-        self.timeWindowStrideInSec = d['timeWindowStrideInSec']
+        # self.timeWindowStrideInSec = d['timeWindowStrideInSec']
         # self.lookBackTimeWindowNum = d['lookBackTimeWindowNum']
 
         self.useRawData = d['useRawData']
@@ -172,20 +172,39 @@ class ParameterSetup(object):
         self.torch_resnet_resblock_stride_nums = d['torch_resnet_resblock_stride_nums']
         self.torch_resnet_avg_pool_size = d['torch_resnet_avg_pool_size']
 
-        self.deep_FCN_node_nums_by_layers = d['deep_FCN_node_nums_by_layers']
-        self.deep_CNN_filter_nums_by_layers = d['deep_CNN_filter_nums_by_layers']
-        self.deep_CNN_kernel_sizes_by_layers = d['deep_CNN_kernel_sizes_by_layers']
-        self.deep_CNN_kernel_stride_sizes_by_layers = d['deep_CNN_kernel_stride_sizes_by_layers']
-        self.deep_skipConnectionLayerNum = d['deep_skipConnectionLayerNum']
+        if 'torch_filter_nums_for_stft' in d:
+            self.torch_filter_nums_for_stft = d['torch_filter_nums_for_stft']
+        else:
+            self.torch_filter_nums_for_stft = [16,16,16,16]
+
+        if 'torch_kernel_sizes_for_stft' in d:
+            self.torch_kernel_sizes_for_stft = d['torch_kernel_sizes_for_stft']
+        else:
+            self.torch_kernel_sizes_for_stft = [3,3,3,3]
+
+        if 'torch_strides_for_stft' in d:
+            self.torch_strides_for_stft = d['torch_strides_for_stft']
+        else:
+            self.torch_strides_for_stft = [1,2,2,2]
+
+        if 'input_channel_num' in d:
+            self.input_channel_num = d['input_channel_num']
+        else:
+            self.input_channel_num = 1
+
+        if 'whiten' in d:
+            self.whiten = d['whiten']
+        else:
+            self.whiten = 1
 
         # dropoutRate
         self.dropoutRate = d['dropoutRate']
 
         # feature downsampling
-        self.downsample_outputDim = d['downsample_outputDim']
+        # self.downsample_outputDim = d['downsample_outputDim']
 
         # features used in rawDataWithFreqHistoWithTime
-        self.additionalFeatureDim = d['additionalFeatureDim']
+        # self.additionalFeatureDim = d['additionalFeatureDim']
 
         # markov order
         self.markovOrderForTraining = d['markovOrderForTraining']
@@ -228,13 +247,13 @@ class ParameterSetup(object):
 
         # label correction (dictionary)
         # self.classLabels = ['S', 'W', 'R']
-        self.labelCorrectionDict = {'S' : 'n', 'W' : 'w', 'R' : 'r', 'RW' : 'w', 'M' : 'm', 'P' : 'P', 'F2' : 'F2', '?' : '?', '-' : '-'}
+        self.labelCorrectionDict = {'S' : 'n', 'W' : 'w', 'R' : 'r', 'H' :'h', 'RW' : 'w', 'M' : 'm', 'P' : 'P', 'F2' : 'F2', '?' : '?', '-' : '-'}
         ### self.stageLabel2stageID = {'W': 0, 'S': 1, 'R': 2, 'M': 3, 'P': 4, 'RW': 5, 'F2' : 6}
         # self.stageLabels = ['W', 'S', 'R', 'M']
         # self.stageLabels4evaluation = ['W', 'S', 'R', 'M']
-        self.capitalize_for_writing_prediction_to_file = {'n' : '1', 'w' : 'W', 'r' : 'R', 'RW' : 'RW', 'm' : 'M', 'p' : 'P', 'F2' : 'F2', '?' : '?'}
-        self.capitalize_for_display = {'n' : 'NREM', 'w' : 'Wake', 'r' : 'REM', 'RW' : 'RW', 'm' : 'M', 'p' : 'P', 'F2' : 'F2', '?' : '?'}
-        self.capitalize_for_graphs = {'n' : 'S', 'w' : 'W', 'r' : 'R', 'RW' : 'RW', 'm' : 'M', 'p' : 'P', 'F2' : 'F2', '?' : '?'}
+        self.capitalize_for_writing_prediction_to_file = {'n' : '1', 'w' : 'W', 'r' : 'R', 'h': 'H', 'RW' : 'RW', 'm' : 'M', 'p' : 'P', 'F2' : 'F2', '?' : '?'}
+        self.capitalize_for_display = {'n' : 'NREM', 'w' : 'Wake', 'r' : 'REM', 'h' : 'HT', 'RW' : 'RW', 'm' : 'M', 'p' : 'P', 'F2' : 'F2', '?' : '?'}
+        self.capitalize_for_graphs = {'n' : 'S', 'w' : 'W', 'r' : 'R', 'h' : 'H', 'RW' : 'RW', 'm' : 'M', 'p' : 'P', 'F2' : 'F2', '?' : '?'}
 
         # for reading data files
         self.metaDataLineNumUpperBound4eeg = 100
@@ -246,8 +265,8 @@ class ParameterSetup(object):
         # ID for the classifierp
         # self.classifierID = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
 
-        orig_stageLabels = ['S', 'W', 'R', 'RW', 'M', 'P', 'F2', '?', '-']
-        self.stagesByDepth = ['r', 'n', 'w', '?']
+        orig_stageLabels = ['S', 'W', 'R', 'H', 'RW', 'M', 'P', 'F2', '?', '-']
+        self.stagesByDepth = ['r', 'n', 'w', 'h', '?']
         self.stageLabel2stageID = {stage : stageID for stage, stageID in zip(orig_stageLabels[:self.maximumStageNum], range(self.maximumStageNum))}
         self.correctedLabel2depthID = {stage : stageID for stage, stageID in zip(self.stagesByDepth, range(len(self.stagesByDepth)))}
         ### self.stageLabels4evaluation = [key for key in self.stageLabel2stageID.keys()]
