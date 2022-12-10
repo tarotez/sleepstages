@@ -87,6 +87,11 @@
 "torch_lstm_hidden_size" : 32,
 "torch_lstm_inputDim" : 32,
 "torch_lstm_bidirectional" : 1,
+
+"torch_filter_nums_for_stft" : [16,16,16,16],
+"torch_kernel_sizes_for_stft" : [3,3,3,3],
+"torch_strides_for_stft" : [1,2,2,2],
+
 "dropoutRate" : 0.25,
 
 "torch_resnet_layer_nums" : [2,2,2,2],
