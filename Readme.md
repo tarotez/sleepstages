@@ -130,6 +130,8 @@ We included a sample "WAVEDIR" named "data/sampledata". Its "Raw" and "Judge" di
 
 The code in the "code" directory uses the file named "path.json" to find the "data" directory. It can be changed to another directory name by rewriting "path.json".
 
+The "waves" directory is where EEG recordings are written out in case of online classification. By default, data/params/params.json is set to "writeWholeWaves" : 0, suppressing this output. By setting to "writeWholeWaves" : 1, whole EEG recordings are written out to the "waves" directory.
+
 ## Parameter setup
 
 The "data/params" directory should contain "params.json" for setting up parameters for feature extraction, training, and prediction.

@@ -32,7 +32,7 @@
 
 "graphUpdateFreqInHz" : 1,
 
-"writeWholeWaves" : 1,
+"writeWholeWaves" : 0,
 "computeKS" : 0,
 
 "bandMin" : 1,
