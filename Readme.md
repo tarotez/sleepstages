@@ -166,7 +166,7 @@ Taro Tezuka, Deependra Kumar, Sima Singh, Iyo Koyanagi, Toshie Naoi, Masanori Sa
 
 https://www.nature.com/articles/s41598-021-90332-1
 
-Iyo Koyanagi, Taro Tezuka, Jiahui Yu, Sakthivel Srinivasan, Toshie Naoi, Shinnosuke Yasugaki, Ayaka Nakai, Shimpei Taniguchi, Yu Hayashi, Yasushi Nakano and Masanori Sakaguchi, Fully automatic REM sleep stage-specific intervention systems using single EEG in mice, Neuroscience Research, October 4th, 2022.
+Iyo Koyanagi, Taro Tezuka, Jiahui Yu, Sakthivel Srinivasan, Toshie Naoi, Shinnosuke Yasugaki, Ayaka Nakai, Shimpei Taniguchi, Yu Hayashi, Yasushi Nakano and Masanori Sakaguchi, Fully automatic REM sleep stage-specific intervention systems using single EEG in mice, Neuroscience Research, 186:51-58, January 2023. [DOI:10.1016/j.neures.2022.10.001]
 
 https://www.sciencedirect.com/science/article/pii/S0168010222002620
 
