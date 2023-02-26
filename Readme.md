@@ -167,7 +167,7 @@ data/params : used for training and testing
 data/finalclassifier : used for making predictions by offline.py, online.py, and app.py
 ```
 
-Edit or revise data/finalclassifier/classifierTypes.csv so that the newly trained model can be used by applicational programs (offline.py, online.py and app.py). The format is
+Edit or revise data/finalclassifier/classifierTypes.csv so that the newly trained model can be used by applicational programs (offline.py, online.py and app.py). For each line, the format is
 
 ```
 classifierID, network type, sampling frequency, epoch time length.
