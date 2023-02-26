@@ -163,8 +163,8 @@ The "weights" file contains weight parameters obtained from training. The "param
 To have a newly trained model in applicational programs (offline.py, online.py and app.py), files params.json and weights.pkl must be copied from data/params to data/finalclassifier.
 
 ```
-data/params : for training and testing, cross validation
-data/finalclassifier : predicting using offline.py, online.py and app.py
+data/params : used for training and testing
+data/finalclassifier : used for making predictions by offline.py, online.py, and app.py
 ```
 
 Edit or revise data/finalclassifier/classifierTypes.csv so that the newly trained model can be used by applicational programs (offline.py, online.py and app.py). The format is
