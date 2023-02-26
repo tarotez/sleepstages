@@ -175,10 +175,9 @@ classifierID, network type, sampling frequency, epoch time length.
 
 In summary, the pipeline is as follows:
 
-1. Train using data/params, data/compare, and data/pickled
-2. Copy generated (good) files to data/finalclassifier
+1. Train using data/params and data/pickled
+2. Choose a good trained model and copy params.CLASSIFIER_ID.json and weights.CLASSIFIER_ID.pkl to to data/finalclassifier
 3. Run either offline.py, online.py or app.py
-
 
 ## Reference
 
