@@ -152,11 +152,32 @@ python computeTestError.py
 
 readOfflineEEGandStageLabels2pickle.py reads text files containing EEG raw data signals and ground truth stage labels from the WAVEDIR directory. It writes files starting with "eegAndStage" into the "data/pickled" directory. These files are in Python's pickle format to enable faster access.
 
-extractFeatures.py reads "eegAndStage" files and write files starting with "features". These files contain feature vectors used for training classifiers.
+extractFeatures.py reads "eegAndStage" files and write files starting with "features". These files contain feature vectors used for training classifiers. They will be generated in "data/pickled".
 
 trainClassifier.py reads "features" and writes files starting with "weights", "params", and "files_used_for_training". These files contain randomly generated six-character IDs (i.e., classifier IDs) in their file names.
 
 The "weights" file contains weight parameters obtained from training. The "params" file is a copy of "params.json" in "data/params" that is intended to save the parameters used for training the classifier. "files_used_for_training" indicates which recordings were used for training that classifier. These files are excluded when testing the classifier.
+
+## Using a newly trained model in prediction
+
+To have a newly trained model in applicational programs (offline.py, online.py and app.py), files params.json and weights.pkl must be copied from data/params to data/finalclassifier.
+
+```
+data/params : used for training and testing
+data/finalclassifier : used for making predictions by offline.py, online.py, and app.py
+```
+
+Edit or revise data/finalclassifier/classifierTypes.csv so that the newly trained model can be used by applicational programs (offline.py, online.py and app.py). For each line, the format is
+
+```
+classifierID, network type, sampling frequency, epoch time length.
+```
+
+In summary, the pipeline is as follows:
+
+1. Train using data/params and data/pickled
+2. Choose a good trained model and copy params.CLASSIFIER_ID.json and weights.CLASSIFIER_ID.pkl to to data/finalclassifier
+3. Run either offline.py, online.py or app.py
 
 ## Reference
 
