@@ -120,7 +120,7 @@ class ParameterSetup(object):
         self.numOfConsecutiveWsThatProhibitsR = d['numOfConsecutiveWsThatProhibitsR']
 
         # stride size used for prediction
-        # self.timeWindowStrideInSec = d['timeWindowStrideInSec']
+        self.timeWindowStrideInSec = d['timeWindowStrideInSec']
         # self.lookBackTimeWindowNum = d['lookBackTimeWindowNum']
 
         self.useRawData = d['useRawData']
