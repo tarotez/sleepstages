@@ -66,7 +66,7 @@ def stageLabel2oneHot(stageLabel, maximumStageNum, stageLabel2stageID):
     return oneHot
 
 def constructPastStagesOneHots(stageSeq, wID, pastStageLookUpNum, stageNum):
-    pastStagesOneHots = np.zeros((pastStageLookUpNum * stageNum, 1), dtype=np.float)
+    pastStagesOneHots = np.zeros((pastStageLookUpNum * stageNum, 1), dtype=float)
     for offset in range(1, pastStageLookUpNum + 1):
         oneHot = stageLabel2oneHot(stageSeq[wID - offset])
         # print('   offset = ' + str(offset))
