@@ -88,9 +88,9 @@ class cnn_lstm(nn.Module):
         self.binNum4spectrum = round(params.wholeBand.getBandWidth() / params.binWidth4freqHisto)
         #--------------------
         # below, an ad-hoc setup of time-bin num for STFT. It would be better if the constant "128" can be removed.
-        ### self.stft_time_bin_num = int(np.float(params.windowSizeInSec / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
-        ### self.stft_time_bin_num = int(np.float(params.windowSizeInSec * (params.samplingFreq / 128) / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
-        self.stft_time_bin_num = int(np.ceil(np.float(1.0 * params.windowSizeInSec * (1.0 * params.samplingFreq / 128) / params.stft_time_bin_in_seconds))) + 1   # plus one from edges
+        ### self.stft_time_bin_num = int(float(params.windowSizeInSec / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
+        ### self.stft_time_bin_num = int(float(params.windowSizeInSec * (params.samplingFreq / 128) / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
+        self.stft_time_bin_num = int(np.ceil(float(1.0 * params.windowSizeInSec * (1.0 * params.samplingFreq / 128) / params.stft_time_bin_in_seconds))) + 1   # plus one from edges
         if params.useTime and not params.extractorType.endswith('WithTime'):
             print('Can\'t use ZT as a feature when extractorType has no ZT. Check params.json.')
             exit()
@@ -550,7 +550,7 @@ class DeepClassifier():
           else:
              featureTensor = np.array([featuresBySamples]).transpose([1,0,2])
 
-          featureTensor = featureTensor.astype(np.float)
+          featureTensor = featureTensor.astype(float)
           print('device:', self.device)
           featureTensor = torch.autograd.Variable(torch.tensor(featureTensor, dtype=torch.float)).to(self.device)
           print('featureTensor.shape =', featureTensor.shape)
