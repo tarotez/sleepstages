@@ -142,7 +142,7 @@ class NetworkServer:
                             # Loops because classifierClients accepts segments, not full epochs, in order to visualize waves in GUI.
                             # Before the final segment, judgeStr is '-'.
                             assert model_samplingFreq % self.params_for_classifier.graphUpdateFreqInHz == 0
-                            updateGraph_samplePointNum = np.int(model_samplingFreq / self.params_for_classifier.graphUpdateFreqInHz)
+                            updateGraph_samplePointNum = int(model_samplingFreq / self.params_for_classifier.graphUpdateFreqInHz)
                             assert updateGraph_samplePointNum > 0
                             startID = 0
                             while startID < signal_rawarray.shape[0]:
