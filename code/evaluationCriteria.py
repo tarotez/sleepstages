@@ -44,7 +44,7 @@ def multiClassMCC(c):  # c is the confusion mat
 
 def y2confusionMat(y_test, y_pred, stageLabels):
     labelNum = len(stageLabels)
-    confusionMat = np.zeros((labelNum,labelNum), dtype=np.integer)
+    confusionMat = np.zeros((labelNum,labelNum), dtype=int)
     for labelID4test in range(labelNum):
         label4test = stageLabels[labelID4test]
         for labelID4pred in range(labelNum):

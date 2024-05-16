@@ -53,7 +53,7 @@ def oneHot2stageLabel(oneHot, stageLabels4evaluation, stageLabel2stageID):
     return '-'
 
 def stageLabel2oneHot(stageLabel, maximumStageNum, stageLabel2stageID):
-    oneHot = np.zeros((maximumStageNum), dtype=np.int)
+    oneHot = np.zeros((maximumStageNum), dtype=int)
     # print('stageLabel = ' + stageLabel)
     if stageLabel == 'None':
         print('stageLabel = ' + stageLabel)

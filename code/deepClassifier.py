@@ -61,11 +61,11 @@ class cnn_lstm(nn.Module):
 
     def conv(self, in_channels, out_channels, kernel_size, stride):
         return nn.Conv1d(in_channels, out_channels, kernel_size=kernel_size,
-                         stride=stride, padding=np.int(np.floor((kernel_size-1)/2)), bias=False)
+                         stride=stride, padding=int(np.floor((kernel_size-1)/2)), bias=False)
 
     def conv2d(self, in_channels, out_channels, kernel_size, stride):
         return nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size,
-                         stride=stride, padding=np.int(np.floor((kernel_size-1)/2)), bias=False)
+                         stride=stride, padding=int(np.floor((kernel_size-1)/2)), bias=False)
 
     def __init__(self, params, num_classes):
         super(cnn_lstm, self).__init__()
@@ -88,9 +88,9 @@ class cnn_lstm(nn.Module):
         self.binNum4spectrum = round(params.wholeBand.getBandWidth() / params.binWidth4freqHisto)
         #--------------------
         # below, an ad-hoc setup of time-bin num for STFT. It would be better if the constant "128" can be removed.
-        ### self.stft_time_bin_num = np.int(np.float(params.windowSizeInSec / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
-        ### self.stft_time_bin_num = np.int(np.float(params.windowSizeInSec * (params.samplingFreq / 128) / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
-        self.stft_time_bin_num = np.int(np.ceil(np.float(1.0 * params.windowSizeInSec * (1.0 * params.samplingFreq / 128) / params.stft_time_bin_in_seconds))) + 1   # plus one from edges
+        ### self.stft_time_bin_num = int(np.float(params.windowSizeInSec / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
+        ### self.stft_time_bin_num = int(np.float(params.windowSizeInSec * (params.samplingFreq / 128) / params.stft_time_bin_in_seconds)) + 1   # plus one from edges
+        self.stft_time_bin_num = int(np.ceil(np.float(1.0 * params.windowSizeInSec * (1.0 * params.samplingFreq / 128) / params.stft_time_bin_in_seconds))) + 1   # plus one from edges
         if params.useTime and not params.extractorType.endswith('WithTime'):
             print('Can\'t use ZT as a feature when extractorType has no ZT. Check params.json.')
             exit()
@@ -118,8 +118,8 @@ class cnn_lstm(nn.Module):
         #     pass
 
         ### outputDim_cnn_for_stft = self.filter_nums_for_stft[-1] * 3
-        reduced_binNum4spectrum = reduce(lambda a, x: np.int(np.ceil(a / x)), self.strides_for_stft, self.binNum4spectrum)
-        reduced_stft_time_bin_num = reduce(lambda a, x: np.int(np.ceil(a / x)), self.strides_for_stft, self.stft_time_bin_num)
+        reduced_binNum4spectrum = reduce(lambda a, x: int(np.ceil(a / x)), self.strides_for_stft, self.binNum4spectrum)
+        reduced_stft_time_bin_num = reduce(lambda a, x: int(np.ceil(a / x)), self.strides_for_stft, self.stft_time_bin_num)
         outputDim_cnn_for_stft = self.filter_nums_for_stft[-1] * reduced_binNum4spectrum * reduced_stft_time_bin_num
 
         if params.useSTFT:
@@ -180,7 +180,7 @@ class cnn_lstm(nn.Module):
             if blockID % self.skip_by == (self.skip_by - 1):
                 # print('# blockID =', blockID)
                 skip_out_layerID = blockID + 1
-                skip_outputDim = reduce(lambda a, x: np.int(np.ceil((a - (x[0] - 1)) / x[1])), zip(self.kernel_sizes[skip_in_blockID:skip_out_layerID], self.strides[skip_in_blockID:skip_out_layerID]), skip_inputDim)
+                skip_outputDim = reduce(lambda a, x: int(np.ceil((a - (x[0] - 1)) / x[1])), zip(self.kernel_sizes[skip_in_blockID:skip_out_layerID], self.strides[skip_in_blockID:skip_out_layerID]), skip_inputDim)
                 skip_kernel_size = self.kernel_sizes[skip_in_blockID]
                 skip_stride = reduce(lambda a, x: a * x, self.strides[skip_in_blockID:skip_out_layerID], 1)
                 # print('# skip_inputDim =', skip_inputDim, ', skip_kernel_size =', skip_kernel_size)
@@ -211,9 +211,9 @@ class cnn_lstm(nn.Module):
             self.convs_for_stft = nn.ModuleList(convs_for_stft)
             self.drops_for_stft = nn.ModuleList(drops_for_stft)
 
-        # self.rawData_outputDim = reduce(lambda a, x: np.int(np.ceil((a - (x[0] - 1)) / x[1])), zip(self.kernel_sizes, self.strides), self.rawDataDim)
-        # self.rawData_outputDim = reduce(lambda a, x: np.int(np.ceil(a / x[1])), zip(self.kernel_sizes, self.strides), self.rawDataDim)
-        self.rawData_outputDim = reduce(lambda a, x: np.int(np.ceil(a / x)), self.strides, self.rawDataDim)
+        # self.rawData_outputDim = reduce(lambda a, x: int(np.ceil((a - (x[0] - 1)) / x[1])), zip(self.kernel_sizes, self.strides), self.rawDataDim)
+        # self.rawData_outputDim = reduce(lambda a, x: int(np.ceil(a / x[1])), zip(self.kernel_sizes, self.strides), self.rawDataDim)
+        self.rawData_outputDim = reduce(lambda a, x: int(np.ceil(a / x)), self.strides, self.rawDataDim)
         # print('$$$ self.additionalFeatureDim =', self.additionalFeatureDim)
         if self.params.useRawData:
             self.combined_size = (self.rawData_final_channel_num * self.rawData_outputDim) + self.additionalFeatureDim
@@ -557,7 +557,7 @@ class DeepClassifier():
 
           if validationRatio > 0:
               sampleNum = len(labels)
-              trainIDends = np.int(np.floor(sampleNum * (1-validationRatio)))
+              trainIDends = int(np.floor(sampleNum * (1-validationRatio)))
               trainIDs = range(0,trainIDends)
               valIDs = range(trainIDends+1,sampleNum)
               train_data = featureTensor[trainIDs]

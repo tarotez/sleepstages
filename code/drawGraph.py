@@ -67,7 +67,7 @@ class DynamicGraphCanvas(GraphCanvas):
         self.color = color
         waveLen = wave.shape[0]
         # self.axes.plot(np.linspace(0, waveLen-1, waveLen), self.wave, self.color, linewidth=0.5)
-        self.axes.plot(np.linspace(0, waveLen-1, np.int(np.floor(waveLen / self.graphDotStride))), self.wave[::self.graphDotStride], self.color, linewidth=0.5)
+        self.axes.plot(np.linspace(0, waveLen-1, int(np.floor(waveLen / self.graphDotStride))), self.wave[::self.graphDotStride], self.color, linewidth=0.5)
         self.axes.set_ylim(graph_ylim)
         self.axes.set_xticks([640, 1280])
         self.axes.set_xticklabels(['5s', '10s'])

@@ -24,7 +24,7 @@ def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePo
 
     # upsampling
     if model_samplePointNum > observed_samplePointNum:
-        upsample_rate = np.int(np.ceil(1.0 * model_samplePointNum / observed_samplePointNum))
+        upsample_rate = int(np.ceil(1.0 * model_samplePointNum / observed_samplePointNum))
         signal_rawarray = np.array([[elem] * upsample_rate for elem in signal_rawarray]).flatten()[:model_samplePointNum]
 
     return signal_rawarray
@@ -56,11 +56,11 @@ def supersample(x, y):
         if do_supersample:
             max_class, max_elem_num = max(grouped)
             print('max_elem_num = ' + str(max_elem_num) + ' for max_class = ' + max_class)
-            target_nums = [np.int(x) for x in np.floor(max_elem_num * ratios)]
+            target_nums = [int(x) for x in np.floor(max_elem_num * ratios)]
         else:
             min_class, min_elem_num = max(grouped)
             print('min_elem_num = ' + str(min_elem_num) + ' for min_class = ' + min_class)
-            target_nums = [np.int(x) for x in np.floor(min_elem_num * ratios)]
+            target_nums = [int(x) for x in np.floor(min_elem_num * ratios)]
 
         print('target_nums = ' + str(target_nums))
         classID = 0
@@ -128,7 +128,7 @@ def subsample(x, y):
         grouped = [[key, len(list(g))] for key, g in groupby(sorted_y)]
         min_class, min_elem_num = min(grouped)
         print('min_elem_num = ' + str(min_elem_num))
-        target_nums = [np.int(x) for x in np.floor(min_elem_num * ratios)]
+        target_nums = [int(x) for x in np.floor(min_elem_num * ratios)]
         print('target_nums = ' + str(target_nums))
         classID = 0
         subsampled_x = np.zeros((0,featureDim), dtype=float)

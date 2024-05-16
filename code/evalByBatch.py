@@ -8,7 +8,7 @@ from classifierTrainer import trainClassifier
 
 args = sys.argv
 if len(args) > 1:
-    option = np.int(args[1])
+    option = int(args[1])
 else:
     option = -1
 fileMax = option
