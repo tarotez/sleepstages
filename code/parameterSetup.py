@@ -136,7 +136,7 @@ class ParameterSetup(object):
         self.optimizerType = d['optimizerType']
         self.adam_learningRate = d['adam_learningRate']
         self.sgd_learningRate = d['sgd_learningRate']
-        self.sgd_decay = np.float(d['sgd_decay'])
+        self.sgd_decay = float(d['sgd_decay'])
         self.sgd_momentum = d['sgd_momentum']
 
         # optimization parameters for deep learning
