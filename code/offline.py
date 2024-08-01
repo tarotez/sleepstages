@@ -44,7 +44,7 @@ class RemOfflineApplication:
                     fileCnt += 1
                     print('  processing ' + inputFileID)
                     try:
-                        classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.finalClassifierDir, self.classifier_type)
+                        classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.finalClassifierDir, self.classifier_type, requested_samplingFreq=observed_samplingFreq, requested_epochTime=observed_epochTime)
                         if len(self.args) > 1:
                             if self.args[1] == '--output_the_same_fileID':
                                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, inputFileID=inputFileID,
