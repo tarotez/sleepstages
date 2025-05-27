@@ -34,7 +34,7 @@ def generateClassifier(params, chamberID, observed_samplingFreq, observed_epochT
     return client
 
 # a server that accepts tcp network connection from this or a different machine
-class NetworkServer:
+class DumpServer:
 
     def __init__(self, params_for_classifier):
         self.params_for_classifier = params_for_classifier
@@ -63,9 +63,16 @@ class NetworkServer:
             observed_epochTime = struct.unpack_from('H', received_data, 2)[0]    #WORD
             print('observed_samplingFreq =', observed_samplingFreq)
             print('observed_epochTime =', observed_epochTime)
+
+
             observed_samplePointNum = observed_samplingFreq * observed_epochTime
             fmt = reduce(lambda a, _: a + 'f', range(observed_samplingFreq * observed_epochTime), '')  # range used for unpacking EEG from received data
             classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.params_for_classifier.finalClassifierDir, networkName, observed_samplingFreq, observed_epochTime)
+
+            print('classifierID =', classifierID)
+            print('model_samplingFreq =', model_samplingFreq)
+            print('model_epochTime =', model_epochTime)
+
             model_samplePointNum = model_samplingFreq * model_epochTime
 
             if classifierID == -1:
@@ -81,8 +88,8 @@ class NetworkServer:
                 while True:
                     # try:
                         received_data = tcp_client.recv(BUFSIZE)
-                        # print('received_data =', received_data)
-                        #print('len(received_data) =', len(received_data))
+                        print('received_data =', received_data)
+                        print('len(received_data) =', len(received_data))
 
                         if len(received_data) == 0:
                             exit()
@@ -142,7 +149,7 @@ class NetworkServer:
                             # Loops because classifierClients accepts segments, not full epochs, in order to visualize waves in GUI.
                             # Before the final segment, judgeStr is '-'.
                             assert model_samplingFreq % self.params_for_classifier.graphUpdateFreqInHz == 0
-                            updateGraph_samplePointNum = int(model_samplingFreq / self.params_for_classifier.graphUpdateFreqInHz)
+                            updateGraph_samplePointNum = np.int(model_samplingFreq / self.params_for_classifier.graphUpdateFreqInHz)
                             assert updateGraph_samplePointNum > 0
                             startID = 0
                             while startID < signal_rawarray.shape[0]:

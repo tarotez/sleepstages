@@ -69,7 +69,7 @@ for _, inputFileName in zip(range(chamberNum), postFiles):
 
 max_eegLength = reduce(max, [len(eeg) for eeg in eegL])
 print('max_eegLen =', max_eegLength)
-epochNum = np.int(np.floor(max_eegLength / epochSampleNum))
+epochNum = int(np.floor(max_eegLength / epochSampleNum))
 print('epochNum =', epochNum)
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -96,7 +96,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         chamberID_permuted = np.random.permutation([c for c in range(chamberNum)])
 
         for chamberID in chamberID_permuted:
-            chamberByte = np.int(chamberID).to_bytes(2, 'little')
+            chamberByte = int(chamberID).to_bytes(2, 'little')
             dt = datetime.now()
             yearByte, monthByte, dayByte, hourByte, minuteByte, secondByte = map(lambda x: x.to_bytes(2, 'little'), (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second))
             microsecByte = dt.microsecond.to_bytes(4, 'little')

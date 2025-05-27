@@ -27,10 +27,8 @@
 "networkType" : "cnn_lstm",
 "classifierParams" : [64],
 
-"windowSizeInSec" : 10,
+"windowSizeInSec" : 4,
 "samplingFreq" : 128,
-
-"graphUpdateFreqInHz" : 1,
 
 "writeWholeWaves" : 0,
 "computeKS" : 0,
@@ -72,13 +70,13 @@
 "sgd_decay" : "1e-6",
 "sgd_momentum" : 0.1,
 
-"deep_epochs" : 50,
+"deep_epochs" : 20,
 "deep_steps_per_epoch" : 0,
 "deep_batch_size" : 32,
 
 "torch_loss_function" : "cross_entropy",
-"torch_filter_nums" : [64,64,64,64,64,64,64,64],
-"torch_kernel_sizes" : [9,9,9,9,7,7,7,7],
+"torch_filter_nums" : [48,48,48,48,64,64,64,64],
+"torch_kernel_sizes" : [9,9,7,7,7,5,3,3],
 "torch_strides" : [1,2,2,2,2,2,2,2],
 "torch_skip_by" : 4,
 "torch_patience" : 0,
@@ -89,8 +87,8 @@
 "torch_lstm_bidirectional" : 1,
 
 "torch_filter_nums_for_stft" : [16,16,16,16],
-"torch_kernel_sizes_for_stft" : [3,3,3,3],
-"torch_strides_for_stft" : [1,2,2,2],
+"torch_kernel_sizes_for_stft" : [5,3,3,3],
+"torch_strides_for_stft" : [1,1,2,2],
 
 "dropoutRate" : 0.25,
 
@@ -100,9 +98,7 @@
 "torch_resnet_resblock_stride_nums" : [1,1,2,2],
 "torch_resnet_avg_pool_size" : 1,
 
-"input_channel_num" : 1,
-    
-"use_cnn_for_freq" : 1,
+"use_cnn_for_freq" : 0,
 "stft_segment_num" : 10,
 
 "deep_FCN_node_nums_by_layers" : [1280,320,160],
@@ -123,10 +119,6 @@
 
 "ch2_mean_init" : 0.7620,
 "ch2_variance_init" : 0.6962,
-"ch2_oldTotalSampleNum_init" : 460800,
-
-"standardization_max_storage_window_num" : 720,
-"standardization_trigger_interval" : 1000,
-"standardization_early_trigger" : [10, 20, 30, 40, 50, 100, 250, 500, 750]
+"ch2_oldTotalSampleNum_init" : 460800
 
 }

@@ -11,7 +11,7 @@ def printMetadata(params):
     print('classifier type = ' + str(params.classifierType))
     print('classifierParams = ' + str(params.classifierParams))
     print('pastStageLookUpNum = ' + str(params.pastStageLookUpNum))
-    print('timeWindowStrideInSec = ' + str(params.timeWindowStrideInSec))
+    # print('timeWindowStrideInSec = ' + str(params.timeWindowStrideInSec))
     print('useEMG = ' + str(params.useEMG))
     print('numOfConsecutiveWsThatProhibitsR = ' + str(params.numOfConsecutiveWsThatProhibitsR))
     print('markovOrderForPrediction = ' + str(params.markovOrderForPrediction))

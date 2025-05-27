@@ -14,7 +14,7 @@ class FeatureExtractorRawDataWithSTFT(FeatureExtractor):
         params = ParameterSetup()
         self.samplingFreq = params.samplingFreq
         self.stft_time_bin_in_seconds = params.stft_time_bin_in_seconds
-        self.stft_nperseg = np.int(np.floor(256.0 * self.stft_time_bin_in_seconds))
+        self.stft_nperseg = int(np.floor(256.0 * self.stft_time_bin_in_seconds))
         self.extractorType = 'rawDataWithSTFT'
         self.lightPeriodStartTime = params.lightPeriodStartTime
         self.wholeBand = params.wholeBand
@@ -26,7 +26,7 @@ class FeatureExtractorRawDataWithSTFT(FeatureExtractor):
         return np.array([e[0] for e in zipped]), np.array([e[1] for e in zipped])
 
     def binning(self, Zxx, freqs, freqBinNum):
-        binSize = np.int(np.floor(1.0 * len(Zxx) / freqBinNum))
+        binSize = int(np.floor(1.0 * len(Zxx) / freqBinNum))
         Zxx_binned = np.array([np.sum(np.abs(Zxx[(binID*binSize):((binID+1)*binSize)]),axis=0) for binID in range(freqBinNum)])
         freqs_binned = np.array([np.mean(freqs[(binID*binSize):((binID+1)*binSize)],axis=0) for binID in range(freqBinNum)])
         return Zxx_binned, freqs_binned

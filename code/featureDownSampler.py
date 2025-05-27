@@ -23,7 +23,7 @@ class FeatureDownSampler():
             # print('not downsampling')
             outputTensor = inputTensor
         else:
-            poolingSize = np.int(np.floor(np.float(inputDim/outputDim)))
+            poolingSize = int(np.floor(np.float(inputDim/outputDim)))
             poolingStrideSize = poolingSize
             # print('poolingSize = ' + str(poolingSize))
             # downsample by appling max(arg()) to regions
