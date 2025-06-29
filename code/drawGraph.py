@@ -3,7 +3,7 @@ import sys
 import os
 import random
 from matplotlib.backends import qt_compat
-use_pyside = qt_compat.QT_API == qt_compat.QT_API_PYSIDE
+use_pyside = qt_compat.QT_API == qt_compat.QT_API_PYSIDE2
 if use_pyside:
     from PySide import QtWidgets, QtCore
 else:
