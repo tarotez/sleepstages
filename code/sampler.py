@@ -1,6 +1,5 @@
 import numpy as np
 from itertools import groupby
-import operator
 from parameterSetup import ParameterSetup
 
 def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePointNum):
@@ -11,6 +10,9 @@ def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePo
     if model_samplePointNum < observed_samplePointNum:
         print('-> downsampling')
         print('before downsampling: signal_rawarray.shape =', signal_rawarray.shape)
+        # print('before downsampling: signal_rawarray[:20] =', signal_rawarray[:20])
+        
+        ##### code below uses array_split.
         epochNum = max(1, int(np.floor(1.0 * signal_rawarray.shape[0] / observed_samplePointNum)))
         print('epochNum =', epochNum)
         multiple = int(np.floor(1.0 * signal_rawarray.shape[0] / model_samplePointNum)) * model_samplePointNum * epochNum
@@ -20,10 +22,26 @@ def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePo
         signal_rawarray = np.array([seg.mean() for seg in split_signal])
         # print('len(split_signal) =', len(split_signal))
         # print('split_signal[0].shape =', split_signal[0].shape)
-        # print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
+
+        ##### Code below uses a for-loop instead of split.
+        # total_magnitude, sample_point_counter = 0, 0
+        # signal_list = []
+        # downsample_rate = int(round(observed_samplePointNum / model_samplePointNum))
+        # print('downsample_rate =', downsample_rate)
+        # for magnitude in signal_rawarray:
+        #     total_magnitude += float(magnitude)
+        #     # print('total_magnitude =', total_magnitude)
+        #     sample_point_counter += 1        
+        #     if sample_point_counter == downsample_rate:            
+        #         signal_list.append(total_magnitude / downsample_rate)
+        #         total_magnitude, sample_point_counter = 0, 0
+        # signal_rawarray = np.array(signal_list)
+        #####
+        print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
 
     # upsampling
     if model_samplePointNum > observed_samplePointNum:
+        print('-> upsampling')
         upsample_rate = int(np.ceil(1.0 * model_samplePointNum / observed_samplePointNum))
         signal_rawarray = np.array([[elem] * upsample_rate for elem in signal_rawarray]).flatten()[:model_samplePointNum]
 
