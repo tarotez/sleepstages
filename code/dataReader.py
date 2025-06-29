@@ -9,14 +9,33 @@ import numpy as np
 from itertools import groupby
 from datetime import datetime, timedelta
 import codecs
+# import pyedflib
+import importlib.util
 from parameterSetup import ParameterSetup
 from outlierMouseFilter import OutlierMouseFilter
 from sdFilter import SDFilter
+from sampler import up_or_down_sampling
+
+def downsample(signal, inputHz, outputHz):
+    epochTime = 1
+    return up_or_down_sampling(signal, outputHz * epochTime, inputHz * epochTime)  # output first, input second.
+
+def skimTimeStamps(timeStamps, inputHz, outputHz):
+    if inputHz > outputHz:
+        downsample_ratio = int(np.floor(inputHz / outputHz))
+        print('downsample_ratio =', downsample_ratio)
+        return timeStamps[::downsample_ratio]
+    elif inputHz < outputHz:
+        print('upsampling not implemented.')
+        exit()
+    else:
+        return timeStamps
 
 class DataReader:
 
     def __init__(self):
         params = ParameterSetup()
+        self.params = params
         self.dataDir = params.dataDir
         # for data handling
         self.metaDataLineNumUpperBound4eeg = params.metaDataLineNumUpperBound4eeg
@@ -25,21 +44,27 @@ class DataReader:
         self.cueWhereStageDataStarts = params.cueWhereStageDataStarts
         self.params_pickledDir = params.pickledDir
         self.samplingFreq_from_params = params.samplingFreq
+        self.epochTime = params.windowSizeInSec
         self.eegDir = 'Raw'
         self.stageDir = 'Judge'
 
     def readAll(self, sys):
         oFilter = OutlierMouseFilter()
         sdFilter = SDFilter()
+        args = sys.argv
 
         #---------------
         # read files
         outFiles = listdir(self.params_pickledDir)
-        self.dirName = sys.argv[1]
-        if len(sys.argv) > 2:
-            pickledDir = self.dataDir + '/' + sys.argv[2]
+        self.dirName = args[1]
+        if len(args) > 3:
+            self.inputHz = int(args[2])
+            self.outputHz = int(args[3])
         else:
-            pickledDir = self.params_pickledDir
+            self.inputHz = 0
+            self.outputHz = 0
+
+        pickledDir = self.params_pickledDir
 
         dir_stem, dir_extension = splitext(self.dirName)
         if dir_extension != '.rar':
@@ -74,6 +99,7 @@ class DataReader:
                                     fileName4stage = fileFullName2
                             if fileName4stage == '' and len(sys.argv) == 2:
                                 print('file ' + fileName4eeg + ' does not have a corresponding stage file.')
+                                exit()
                             else:
                                 print('self.dirName = ' + self.dirName + ', fileName4eeg = ' + fileName4eeg + ', fileName4stage = ' + fileName4stage)
 
@@ -88,23 +114,29 @@ class DataReader:
 
                                 #---------------
                                 # write data
-                                if sdFilter.isOutlier(eeg):
-                                    print('file' + fileID + ' is an outlier in terms of mean or std')
+                                # if sdFilter.isOutlier(eeg):
+                                #    print('file' + fileID + ' is an outlier in terms of mean or std')
+                                # else:
+                                # eeg = (eeg - np.mean(eeg)) / np.std(eeg)
+                                # emg = (emg - np.mean(emg)) / np.std(emg)
+                                if fileName4stage == '':
+                                    saveData = (eeg, emg, timeStamps)
+                                    outpath = open(pickledDir + '/eegOnly.' + fileID + '.pkl', 'wb')
                                 else:
-                                    # eeg = (eeg - np.mean(eeg)) / np.std(eeg)
-                                    # emg = (emg - np.mean(emg)) / np.std(emg)
-                                    if fileName4stage == '':
-                                        saveData = (eeg, emg, timeStamps)
-                                        outpath = open(pickledDir + '/eegOnly.' + fileID + '.pkl', 'wb')
-                                    else:
-                                        saveData = (eeg, emg, stageSeq, timeStamps)
-                                        outpath = open(pickledDir + '/eegAndStage.' + fileID + '.pkl', 'wb')
-                                    pickle.dump(saveData, outpath)
+                                    saveData = (eeg, emg, stageSeq, timeStamps)
+                                    outpath = open(pickledDir + '/' + self.params.eegFilePrefix + '.' + fileID + '.pkl', 'wb')
+                                pickle.dump(saveData, outpath)
+
+    def open_with_codecs(self, path):
+        if self.params.eegFilePrefix.startswith('eegAndStage'):
+            return codecs.open(path, 'r', 'shift_jis')
+        else:
+            return open(path)
 
     #---------------
     # read stageSeq
     def readStageSeq(self, filePath):
-        stage_fp = codecs.open(filePath, 'r', 'shift_jis')
+        stage_fp = self.open_with_codecs(filePath)
         for i in range(self.metaDataLineNumUpperBound4stage):    # skip lines that describes metadata
             line = stage_fp.readline()
             if line.startswith(self.cueWhereStageDataStarts):
@@ -112,7 +144,7 @@ class DataReader:
             if i == self.metaDataLineNumUpperBound4stage - 1:
                 # print('stage file without metadata header, but it\'s okay.')
                 stage_fp.close()
-                stage_fp = codecs.open(filePath, 'r', 'shift_jis')
+                stage_fp = self.open_with_codecs(filePath)
 
         stagesL = []
         durationWindNumsL = []
@@ -132,8 +164,11 @@ class DataReader:
             # print('   elems[3] = ' + elems[3] + ", elems[4] = " + elems[4])
             # print('line =', line)
             # print('elems =', elems)
-            if len(elems) > 1:
+            # stageLabel = elems[-1]
+            if len(elems) > 2:
                 stageLabel = elems[2]
+            elif len(elems) > 1:
+                stageLabel = elems[1]
             else:
                 stageLabel = elems[0]
             durationWindNum = 1
@@ -142,6 +177,17 @@ class DataReader:
                 stageLabel = 'S'
             if stageLabel == '2':
                 stageLabel = 'S'
+            if stageLabel == 'l':
+                stageLabel = 'W'
+            if stageLabel == 'w':
+                stageLabel = 'W'
+            if stageLabel == 'hh':
+                stageLabel = 'H'
+            if stageLabel == 'h':
+                stageLabel = 'H'
+            if stageLabel == 'M':
+                stageLabel = 'S'
+            
             stagesL.append(stageLabel)
             durationWindNumsL.append(durationWindNum)
 
@@ -159,8 +205,7 @@ class DataReader:
     #---------------
     # read eeg and emg data
     def readEEG(self, filePath):
-        ### eeg_fp = codecs.open(filePath, 'r', 'shift_jis')
-        eeg_fp = codecs.open(filePath, 'r', 'shift_jis')
+        eeg_fp = self.open_with_codecs(filePath)
         for i in range(self.metaDataLineNumUpperBound4eeg):    # skip 18 lines that describes metadata
             line = eeg_fp.readline()
             # print('line = ' + line)
@@ -168,8 +213,8 @@ class DataReader:
                 break
             if i == self.metaDataLineNumUpperBound4eeg - 1:
                 # print('eeg file without metadata header, but it\'s okay.')
-                eeg_fp.close()
-                eeg_fp = codecs.open(filePath, 'r', 'shift_jis')
+                eeg_fp.close()                
+                eeg_fp = self.open_with_codecs(filePath)
                 ### print('metadata (header) for the EEG file is not correct.')
                 ## quit()
         #-----------
@@ -181,9 +226,10 @@ class DataReader:
         eegL = []
         emgL = []
         timeStamp = datetime.now()
-        for line in eeg_fp:
+        for line_cnt, line in enumerate(eeg_fp):
             line = line.rstrip()
-            # print('line = ' + line)
+            # if line_cnt < 5:
+            #    print('line = ' + line)
             if ',' in line:
                 elems = line.split(',')
             elif '\t' in line:
@@ -213,8 +259,52 @@ class DataReader:
         eeg = np.array(eegL)
         emg = np.array(emgL)
         timeStamps = np.array(timeStampsL)
-        # print('eeg.shape = ' + str(eeg.shape) + ', emg.shape = ' + str(emg.shape))
-        # print('eeg[:10] =', eeg[:10])
-        # print('timeStamps[:10] =', timeStamps[:10])
+        print('eeg.shape = ' + str(eeg.shape) + ', emg.shape = ' + str(emg.shape))
+        print('eeg[:10] =', eeg[:10])
+        print('timeStamps[:10] =', timeStamps[:10])
         ### samplePointNum = eeg.shape[0]
+
+        if hasattr(self, 'inputHz') and hasattr(self, 'outputHz'):
+            if self.inputHz > 0 and self.outputHz > 0:
+                print('downsampling from', self.inputHz, 'Hz to', self.outputHz, 'Hz.')
+                print('original eeg length =', len(eeg))
+                print('original timeStamps length =', len(timeStamps))
+                eeg = downsample(eeg, self.inputHz, self.outputHz)
+                emg = downsample(emg, self.inputHz, self.outputHz)
+                timeStamps = skimTimeStamps(timeStamps, self.inputHz, self.outputHz)
+                print('downsampled eeg length =', len(eeg))
+                print('downsampled timeStamps length =', len(timeStamps))
+
         return eeg, emg, timeStamps
+
+
+    def readMultiChannelEEGfromEDF(self, filePath, channelNum):    
+        pyedflib = __import__('pyedflib')    
+        with pyedflib.EdfReader(filePath) as f:
+            # n = f.signals_in_file
+            # signal_labels = f.getSignalLabels()
+            eegTimePointsNum = f.getNSamples()[0]
+            eegMulti = np.zeros((eegTimePointsNum, channelNum))
+            # for i in np.arange(n):
+            for i in np.arange(channelNum):
+                eegMulti[:, i] = f.readSignal(i)
+
+            print('eegMulti.shape =', eegMulti.shape)
+
+            timeStamps = []
+            timeStamp = f.getStartdatetime()
+            for _ in range(eegTimePointsNum):
+                timeStamps.append(str(timeStamp).split(' ')[-1])
+                timeStamp += timedelta(seconds=1.0 / self.samplingFreq_from_params)
+
+            if hasattr(self, 'inputHz') and hasattr(self, 'outputHz'):
+                if self.inputHz > 0 and self.outputHz > 0:
+                    print('downsampling from', self.inputHz, 'Hz to', self.outputHz, 'Hz.')
+                    print('original eeg shape =', eegMulti.shape)
+                    print('original timeStamps length =', len(timeStamps))
+                    eegMulti = np.array([downsample(eeg, self.inputHz, self.outputHz) for eeg in eegMulti.transpose()]).transpose()
+                    timeStamps = skimTimeStamps(timeStamps, self.inputHz, self.outputHz)
+                    print('downsampled eeg shape =', eegMulti.shape)
+                    print('downsampled timeStamps length =', len(timeStamps))
+
+            return eegMulti, timeStamps

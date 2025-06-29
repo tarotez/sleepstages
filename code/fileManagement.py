@@ -21,13 +21,13 @@ def classifierMetadata(finalClassifierDir, classifierID):
     return sampFreq, epochTime
 '''
 
-def selectClassifierID(finalClassifierDir, requested_classifierType, requested_samplingFreq=0, requested_epochTime=0):
+def selectClassifierID(finalClassifierDir, requested_networkType_code, requested_samplingFreq=0, requested_epochTime=0):
     classifierTypeFileName = 'classifierTypes.csv'
     classifierDict = {}
-    # print('requested_samplingFreq =', requested_samplingFreq, 'requested_epochTime =', requested_epochTime)
+    print('requested_networkType_code =', requested_networkType_code, ', requested_samplingFreq =', requested_samplingFreq, ', requested_epochTime =', requested_epochTime, '.')
 
-    def filter_by_classifierType(classifierMetadataList, classifierType):
-        return filter(lambda x: x[1] == classifierType, classifierMetadataList)
+    def filter_by_networkType_code(classifierMetadataList, networkType_code):
+        return filter(lambda x: x[1] == networkType_code, classifierMetadataList)
 
     def filter_by_samplingFreq(classifierMetadataList, samplingFreq):
         return filter(lambda x: x[2] == samplingFreq, classifierMetadataList)
@@ -48,32 +48,32 @@ def selectClassifierID(finalClassifierDir, requested_classifierType, requested_s
     classifierMetadataList = []
     with open(finalClassifierDir + '/' + classifierTypeFileName) as f:
         for line in f:
-            classifierID, classifierType, samplingFreq, epochTime = [elem.strip() for elem in line.split(',')]
-            print(classifierID, ',', classifierType, ',', samplingFreq, ',', epochTime)
-            classifierMetadataList.append((classifierID, classifierType, int(samplingFreq), int(epochTime)))
+            classifierID, networkType_code, samplingFreq, epochTime = [elem.strip() for elem in line.split(',')]
+            print(classifierID, ',', networkType_code, ',', samplingFreq, ',', epochTime)
+            classifierMetadataList.append((classifierID, networkType_code, int(samplingFreq), int(epochTime)))
             #### needs to prioritize a model with the correct samplingFrequency.
             #### use a model with a samplingFreq different from requested_samplingFreq by downsampling,
             #### only if there's no model with the corresponding samplingFreq.
 
     if requested_samplingFreq == 0 and requested_epochTime == 0:
-        filtered_metadataList = list(filter_by_classifierType(classifierMetadataList, requested_classifierType))
+        filtered_metadataList = list(filter_by_networkType_code(classifierMetadataList, requested_networkType_code))
         filtered_metadata = filtered_metadataList[0]
         classifierID, model_samplingFreq, model_epochTime = filtered_metadata[0], filtered_metadata[2], filtered_metadata[3]
         return classifierID, model_samplingFreq, model_epochTime
     else:
-        # classifierMetadataList = filter_by_classifierType(classifierMetadataList, requested_classifierType)
+        # classifierMetadataList = filter_by_classifierType(classifierMetadataList, requested_networkType_code)
         # classifierMetadataList = filter_by_samplingFreq(classifierMetadataList, requested_samplingFreq)
         # classifierMetadataList = filter_by_epochTime(classifierMetadataList, requested_epochTime)
-        # print('requested_classifierType =', requested_classifierType)
+        # print('requested_networkType_code =', requested_networkType_code)
         # print('requested_samplingFreq =', requested_samplingFreq)
         # print('requested_epochTime =', requested_epochTime)
-        func_and_requests = [(filter_by_classifierType, requested_classifierType), (filter_by_samplingFreq, requested_samplingFreq), (filter_by_epochTime, requested_epochTime)]
+        func_and_requests = [(filter_by_networkType_code, requested_networkType_code), (filter_by_samplingFreq, requested_samplingFreq), (filter_by_epochTime, requested_epochTime)]
         filtered_metadataList = classifierMetadataList
         for filterfunc, request in func_and_requests:
             filtered_metadataList = list(filterfunc(filtered_metadataList, request))
         # print('after perfect match: filtered_metadataList =', filtered_metadataList)
         if len(filtered_metadataList) == 0:
-            func_and_requests_short = [(filter_by_classifierType, requested_classifierType), (filter_by_epochTime, requested_epochTime)]
+            func_and_requests_short = [(filter_by_networkType_code, requested_networkType_code), (filter_by_epochTime, requested_epochTime)]
             filtered_metadataList = classifierMetadataList
             for filterfunc, request in func_and_requests_short:
                 filtered_metadataList = list(filterfunc(filtered_metadataList, request))
@@ -92,13 +92,13 @@ def selectClassifierID(finalClassifierDir, requested_classifierType, requested_s
         '''
                 # if (requested_samplingFreq == 0 and requested_epochTime == 0) or (requested_samplingFreq == int(samplingFreq) and requested_epochTime == int(epochTime)):
                 if requested_epochTime == int(epochTime) or (requested_samplingFreq == 0 and requested_epochTime == 0):
-                        print('adding', classifierType, ':', classifierID, 'to dict.')
+                        print('adding', networkType_code, ':', classifierID, 'to dict.')
                         classifierDict.update({classifierType : (classifierID, samplingFreq)})
 
         # find a classifier that matches with requested samplingFreq and epochTime
-        if requested_classifierType in classifierDict:
-            classifierID, model_samplingFreq = classifierDict[requested_classifierType]
-            print('Using classifierID =', classifierID, 'whose classifierType is', requested_classifierType, ' and samplingFreq is', model_samplingFreq)
+        if requested_networkType_code in classifierDict:
+            classifierID, model_samplingFreq = classifierDict[requested_networkType_code]
+            print('Using classifierID =', classifierID, 'whose classifierType is', requested_networkType_code, ' and samplingFreq is', model_samplingFreq)
 
         else:
             classifierID, model_samplingFreq = 0, 0
@@ -113,6 +113,17 @@ def writeTrainFileIDsUsedForTraining(params, classifierID, fileTripletL):
     for trip in fileTripletL:
         f.write(str(trip[0]) + ',' + trip[1] + ',' + trip[2] + '\n')
     f.close()
+
+def writeTrainFileIDsUsedForFineTuning(params, fine_tuned_classifierID, pretrained_classifierID, fileTripletL):
+    with open(params.classifierDir + '/files_used_for_fine_tuning.' + fine_tuned_classifierID + '.csv', 'w') as f:
+        for trip in fileTripletL:
+            f.write(str(trip[0]) + ',' + trip[1] + ',' + trip[2] + '\n')
+    with open(params.classifierDir + '/files_used_for_training.' + pretrained_classifierID + '.csv', 'w') as in_fh:
+        with open(params.classifierDir + '/files_used_for_pretraining.' + fine_tuned_classifierID + '.csv', 'w') as out_fh:
+            for line in in_fh:
+                out_fh.write(line + '\n')
+    with open(params.classifierDir + '/pretrained_model_used.' + fine_tuned_classifierID + '.txt', 'w') as f:
+        f.write(pretrained_classifierID)
 
 def readTrainFileIDsUsedForTraining(params, classifierID):
     f = open(params.classifierDir + '/files_used_for_training.' + classifierID + '.csv', 'r')
@@ -156,11 +167,23 @@ def filterByPrefix(seq, prefix):
 def filterEEGFiles(params, files):
     return filterByPrefix(files, params.eegFilePrefix)
 
+def filterStageFiles(params, files):
+    return filterByPrefix(files, 'stages')
+
 def filterFeatureFiles(params, files):
     return filterByPrefix(files, params.featureFilePrefix)
 
 def getFileIDFromEEGFile(fileName):
     return fileName.split('.')[1]
+    
+def convert_eegFileName2stageFileName(eegFileName):
+    _, fileID, suffix = eegFileName.split('.')
+    fileIDcomponents = fileID.split('_')
+    if len(fileIDcomponents) > 2:
+        shortenedFileID = '_'.join(fileIDcomponents[:-2])
+    else:
+        shortenedFileID = '_'.join(fileIDcomponents)
+    return 'stages.' + shortenedFileID + '.' + suffix
 
 def getExtractorFromFeatureFile(fileName):
     return fileName.split('.')[1]
@@ -172,10 +195,16 @@ def getFileIDFromFeatureFile(fileName):
     return fileName.split('.')[3]
 
 def getAllEEGFiles(params):
-    eegAndStageFiles = filterEEGFiles(params, listdir(params.eegDir))
-    if(len(eegAndStageFiles)) == 0:
-        raise Exception('no eegAndStage...pkl file in', params.eegDir)
-    return eegAndStageFiles
+    eegFiles = filterEEGFiles(params, listdir(params.eegDir))
+    if(len(eegFiles)) == 0:
+        raise Exception('no target file found file in', params.eegDir)
+    return eegFiles
+
+def getAllStageFiles(params):
+    stageFiles = filterStageFiles(params, listdir(params.eegDir))
+    if(len(stageFiles)) == 0:
+        raise Exception('no target file found file in', params.eegDir)
+    return stageFiles
 
 def fileIDsFromEEGFiles(eegFiles):
     return list(map(getFileIDFromEEGFile, eegFiles))
@@ -202,6 +231,7 @@ def getEEGFiles(params, fileIDs):
 def getFeatureFiles(params, fileIDs):
     f0 = filterFeatureFiles(params, listdir(params.featureDir))
     # print('in getFeatureFiles, f0 =', f0)
+    # print('fileIDs =', fileIDs)
     f1 = filterFiles(f0, getFileIDFromFeatureFile, fileIDs)
     # print('in getFeatureFiles, f1 =', f1)
     f2 = filterFiles(f1, getExtractorFromFeatureFile, [params.extractorType])
@@ -380,7 +410,7 @@ def getFileIDs(targetDir, prefix):
         fileIDwithPrefix, file_extension = splitext(fileFullName)
         if file_extension == '.pkl' and fileIDwithPrefix.startswith(prefix):
             elems = fileIDwithPrefix.split('.')
-            fileID = elems[1]
+            fileID = '.'.join(elems[1:])
             fileIDs.append(fileID)
     # print('fileIDs = ' + str(fileIDs))
     return fileIDs

@@ -14,19 +14,26 @@ class RemOfflineApplication:
     def __init__(self, args):
         self.args = args
         self.classifier_type = 'UTSN-L'
-        pass
 
     def start(self):
-        channelOpt = 1
+        networkType_code_dict = {'simple_cnn':'UTSN', 'cnn_lstm':'UTSN-L'}
+        # channelOpt = 1
         params = ParameterSetup()
         self.recordWaves = params.writeWholeWaves
         self.extractorType = params.extractorType
         self.classifierType = params.classifierType
+        self.networkType_code = networkType_code_dict[params.networkType]
         self.postDir = params.postDir
         self.predDir = params.predDir
         self.finalClassifierDir = params.finalClassifierDir
         observed_samplingFreq = params.samplingFreq
         observed_epochTime = params.windowSizeInSec
+
+        if len(self.args) > 1:
+            if not self.args[1].startswith('--'):
+                observed_samplingFreq = int(self.args[1])
+            if len(self.args) > 2:
+                observed_epochTime = int(self.args[2])
 
         # eegFilePath = args[1]
         # inputFileID = splitext(split(eegFilePath)[1])[0]
@@ -44,14 +51,15 @@ class RemOfflineApplication:
                     fileCnt += 1
                     print('  processing ' + inputFileID)
                     try:
-                        classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.finalClassifierDir, self.classifier_type, requested_samplingFreq=observed_samplingFreq, requested_epochTime=observed_epochTime)
+                        # classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.finalClassifierDir, self.classifierType, requested_samplingFreq=observed_samplingFreq, requested_epochTime=observed_epochTime)
+                        classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.finalClassifierDir, self.networkType_code, requested_samplingFreq=observed_samplingFreq, requested_epochTime=observed_epochTime)
                         if len(self.args) > 1:
                             if self.args[1] == '--output_the_same_fileID':
                                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID, inputFileID=inputFileID,
                                                                 samplingFreq=model_samplingFreq, epochTime=model_epochTime)
                             else:
-                                if self.args[1] == '--samplingFreq' and len(self.args) > 2:
-                                    observed_samplingFreq = int(self.args[2])
+                                # if self.args[1] == '--samplingFreq' and len(self.args) > 2:
+                                #    observed_samplingFreq = int(self.args[2])
                                 self.client = ClassifierClient(self.recordWaves, self.extractorType, self.classifierType, classifierID,
                                     samplingFreq=model_samplingFreq, epochTime=model_epochTime)
                         else:

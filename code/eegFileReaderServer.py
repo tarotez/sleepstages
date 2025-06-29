@@ -19,9 +19,9 @@ class EEGFileReaderServer:
             self.useEMG = 1
 
         self.params = ParameterSetup()
-        pickledDir = self.params.pickledDir
-        classifierType = self.params.classifierType
-        classifierParams = self.params.classifierParams
+        # pickledDir = self.params.pickledDir
+        # classifierType = self.params.classifierType
+        # classifierParams = self.params.classifierParams
         # samplingFreq = self.params.samplingFreq
         # windowSizeInSec = self.params.windowSizeInSec
         # self.wsizeInTimePoints = samplingFreq * windowSizeInSec   # window size. data is sampled at 128 Hz, so 1280 sample points = 10 sec.
@@ -36,25 +36,26 @@ class EEGFileReaderServer:
         # stageSeq = dataReader.readStageSeq(stageFilePath)
         # print('timeStamps[0] =', timeStamps[0])
         # print('self.samplingFreq =', self.samplingFreq)
+        # print('observed_epochTime =', observed_epochTime)
         model_samplePointNum = model_samplingFreq * model_epochTime
         observed_samplePointNum = observed_samplingFreq * observed_epochTime
         self.model_samplingFreq = model_samplingFreq
-
         # print('observed_samplePointNum =', observed_samplePointNum)
+
         # self.eeg = eeg
         # self.emg = emg
         # self.timeStamps = timeStamps
         eeg, emg, timeStamps = dataReader.readEEG(eegFilePath)
-        print('Starting to resample. Before resampling, eeg.shape =', eeg.shape)
+        # print('Starting to resample. Before resampling, eeg.shape =', eeg.shape)
         self.eeg = up_or_down_sampling(eeg, model_samplePointNum, observed_samplePointNum)
         if self.useEMG:
             self.emg = up_or_down_sampling(emg, model_samplePointNum, observed_samplePointNum)
         else:
             self.emg = []
-        print('Finished resampling. After resampling, eeg.shape =', self.eeg.shape)
+        # print('Finished resampling. After resampling, eeg.shape =', self.eeg.shape)
         # print('before resampling: len(timeStamps) =', len(timeStamps))
         resampledLen = self.eeg.shape[0]
-        self.timeStamps = self.convertTimeStamps(timeStamps, resampledLen, model_samplingFreq, model_samplePointNum, observed_samplePointNum)
+        self.timeStamps = self.convertTimeStamps(timeStamps, resampledLen, model_samplingFreq, model_samplePointNum, observed_samplePointNum)        
         # print('after resampling: len(timeStamps) =', len(self.timeStamps))
         self.eegLen = self.eeg.shape[0]
         # print('eegLen =', self.eegLen)
@@ -97,13 +98,13 @@ class EEGFileReaderServer:
 
     def serve(self):
 
-        global_t = 0
-        dt = 1.0 / self.model_samplingFreq
+        # global_t = 0
+        # dt = 1.0 / self.model_samplingFreq
         # print('eeg.shape[0] =', self.eeg.shape[0])
         # print('eegLen =', self.eegLen)
         # print('wsizeInTimePoints =', self.wsizeInTimePoints)
         for startSamplePoint in range(0, self.eegLen, self.wsizeInTimePoints):
-            now = datetime.now()
+            # now = datetime.now()
             endSamplePoint = startSamplePoint + self.wsizeInTimePoints
             timeStamps_fragment = self.timeStamps[startSamplePoint:endSamplePoint]
             eeg_fragment = self.eeg[startSamplePoint:endSamplePoint]
