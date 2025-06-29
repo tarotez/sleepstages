@@ -3,7 +3,7 @@ import numpy as np
 from os import listdir
 from os.path import dirname, abspath
 from stagePredictor import StagePredictor
-from statistics import recompMean, recompVariance
+from statistics_processing import recompMean, recompVariance
 from algorithmFactory import AlgorithmFactory
 from parameterSetup import ParameterSetup
 from sequentialPrediction import voteForStagePrediction

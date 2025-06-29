@@ -606,6 +606,28 @@ class DeepClassifier():
               del val_data_with_labels
           torch.cuda.empty_cache()
 
+    # def freeze_except_last_layer(self):
+    #     # print('model =', self.model)
+    #     paramNum = len(list(self.model.parameters()))
+    #     for paramCnt, param in enumerate(self.model.parameters()):
+    #         if paramCnt < paramNum - 1:
+    #             param.requires_grad = False
+    #             # print(str(paramCnt) + ': param.shape =', param.shape)
+    #         # print('param =', param)
+    #     # print('paramNum =', paramNum)
+    #     return
+
+    def freeze_except_final_layers(self):
+        # print('model =', self.model)
+        paramNum = len(list(self.model.parameters()))
+        for paramCnt, param in enumerate(self.model.parameters()):
+            if paramCnt < paramNum - self.model.params.number_of_final_layers_exempt_from_freezing:
+                param.requires_grad = False
+                # print(str(paramCnt) + ': param.shape =', param.shape)
+            # print('param =', param)
+        # print('paramNum =', paramNum)
+        return
+        
     def load_weights(self, weight_path):
         print('loading weights in deepClassifier.py from', weight_path)
         self.model = self.generateModel()

@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from datetime import datetime, time, timedelta
-from statistics import standardize, centralize, subtractLinearFit
+from statistics_processing import standardizer, standardize
 from connect_laser_device import connect_laser_device
 from parameterSetup import ParameterSetup
 from stagePredictor import StagePredictor
@@ -9,27 +9,31 @@ import timeFormatting
 # from filters import butter_lowpass_filter
 from algorithmFactory import AlgorithmFactory
 from deepClassifier import DeepClassifier
-from statistics import standardize, standardizer
 # from ksstatistics import StatisticalTester
 # from fileManagement import readStandardMice, readdMat, readdTensor
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 class ClassifierClient:
     def __init__(self, recordWaves, extractorType, classifierType, classifierID, inputFileID='', offsetWindowID=0, chamberID=-1, samplingFreq=0, epochTime=0):
+
+        self.params = ParameterSetup()
+        self.setStagePredictor(classifierID, extractorType)
+
         self.recordWaves = recordWaves
         self.inputFileID = inputFileID
         self.chamberID = chamberID
         chamberLabel = '_chamber' + str(self.chamberID+1)  # adds 1 because in Sleep Sign Recorder, chambers start from 1.
 
-        self.params = ParameterSetup()
         if samplingFreq == 0:
-            self.samplingFreq = self.params.samplingFreq
+            self.samplingFreq = self.paramsForNetworkStructure.samplingFreq
         else:
             self.samplingFreq = samplingFreq
+
         if epochTime == 0:
-            self.samplePointNum = self.params.windowSizeInSec * self.samplingFreq  # the number of sample points received at once
+            self.samplePointNum = self.paramsForNetworkStructure.windowSizeInSec * self.samplingFreq  # the number of sample points received at once
         else:
             self.samplePointNum = epochTime * self.samplingFreq  # the number of sample points received at once
+
         self.graphUpdateFreqInHz = self.params.graphUpdateFreqInHz   # frequency of updating the graph (if set to 1, redraws graph every second)
         assert self.samplingFreq / self.graphUpdateFreqInHz == np.floor(self.samplingFreq / self.graphUpdateFreqInHz)   # should be an integer
         self.updateGraph_samplePointNum = int(self.samplingFreq / self.graphUpdateFreqInHz)
@@ -45,7 +49,7 @@ class ClassifierClient:
         self.segmentID = offsetWindowID
 
         # makes a classifier class
-        label4EMG = self.params.label4withoutEMG
+        # label4EMG = self.params.label4withoutEMG
 
         self.showCh2 = self.params.showCh2
         self.useCh2ForReplace = self.params.useCh2ForReplace
@@ -55,17 +59,7 @@ class ClassifierClient:
 
         self.past_eegSegment, self.past_ch2Segment = np.array([]), np.array([])
         # self.previous_eeg, self.previous_ch2 = np.array([]), np.array([])
-
-        classifierFilePrefix = self.params.classifierFilePrefix
-
-        factory = AlgorithmFactory(extractorType)
-        print('generating extractor: ')
-        self.extractor = factory.generateExtractor()
-
-        # self.classLabels = list(self.params.labelCorrectionDict.keys())[:self.params.maximumStageNum]
-        self.classLabels = self.params.sampleClassLabels[:self.params.maximumStageNum]
-
-        self.setStagePredictor(classifierID)
+        # classifierFilePrefix = self.params.classifierFilePrefix
 
         presentTime = timeFormatting.presentTimeEscaped()
         logFileID = 'classifier.' + presentTime
@@ -151,18 +145,23 @@ class ClassifierClient:
         self.predFileWithTimeStamps = open(self.params.predDir + '/' + self.predFileID + '_pred_with_timestamps.txt', 'w')
 
         self.max_storage_for_standardization = self.samplePointNum * self.params.standardization_max_storage_window_num
-        self.standardizer_eeg = standardizer(self.max_storage_for_standardization)
-        self.standardizer_ch2 = standardizer(self.max_storage_for_standardization)
+        self.standardizer_eeg = standardizer(self.params, self.max_storage_for_standardization)
+        self.standardizer_ch2 = standardizer(self.params, self.max_storage_for_standardization)
 
-    def setStagePredictor(self, classifierID):
+    def setStagePredictor(self, classifierID, extractorType):
         paramFileName = 'params.' + str(classifierID) + '.json'
         finalClassifierDir = self.params.finalClassifierDir
-        paramsForNetworkStructure = ParameterSetup(paramDir=finalClassifierDir, paramFileName=paramFileName)
-        classifier = DeepClassifier(self.classLabels, classifierID=classifierID, paramsForDirectorySetup=self.params, paramsForNetworkStructure=paramsForNetworkStructure)
+        self.paramsForNetworkStructure = ParameterSetup(paramDir=finalClassifierDir, paramFileName=paramFileName)
+        # self.classLabels = list(self.params.labelCorrectionDict.keys())[:self.params.maximumStageNum]
+        self.classLabels = self.paramsForNetworkStructure.sampleClassLabels[:self.paramsForNetworkStructure.maximumStageNum]
+        classifier = DeepClassifier(self.classLabels, classifierID=classifierID, paramsForDirectorySetup=self.params, paramsForNetworkStructure=self.paramsForNetworkStructure)
         model_path = finalClassifierDir + '/weights.' + str(classifierID) + '.pkl'
         print('model_path = ', model_path)
         classifier.load_weights(model_path)
-        self.stagePredictor = StagePredictor(paramsForNetworkStructure, self.extractor, classifier, finalClassifierDir, classifierID, self.params.markovOrderForPrediction)
+        factory = AlgorithmFactory(self.paramsForNetworkStructure, extractorType)
+        # print('generating extractor: ')
+        self.extractor = factory.generateExtractor()
+        self.stagePredictor = StagePredictor(self.paramsForNetworkStructure, self.extractor, classifier, finalClassifierDir, classifierID, self.params.markovOrderForPrediction)
 
     def normalize_eeg(self, eegFragment, ch2Fragment, past_eegSegment, past_ch2Segment):
         one_record_partial = np.zeros((self.updateGraph_samplePointNum, 2))

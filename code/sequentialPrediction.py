@@ -3,7 +3,7 @@ import numpy as np
 from os.path import dirname, abspath
 from parameterSetup import ParameterSetup
 from stagePredictor import StagePredictor
-from statistics import standardizer
+from statistics_processing import standardizer
 from algorithmFactory import AlgorithmFactory
 from deepClassifier import DeepClassifier
 
