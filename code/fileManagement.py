@@ -98,7 +98,7 @@ def selectClassifierID(finalClassifierDir, requested_networkType_code, requested
         # find a classifier that matches with requested samplingFreq and epochTime
         if requested_networkType_code in classifierDict:
             classifierID, model_samplingFreq = classifierDict[requested_networkType_code]
-            print('Using classifierID =', classifierID, 'whose classifierType is', requested_networkType_code, ' and samplingFreq is', model_samplingFreq)
+            print('Using classifierID =', classifierID, 'whose networkType_code is', requested_networkType_code, ' and samplingFreq is', model_samplingFreq)
 
         else:
             classifierID, model_samplingFreq = 0, 0
@@ -175,7 +175,7 @@ def filterFeatureFiles(params, files):
 
 def getFileIDFromEEGFile(fileName):
     return fileName.split('.')[1]
-    
+
 def convert_eegFileName2stageFileName(eegFileName):
     _, fileID, suffix = eegFileName.split('.')
     fileIDcomponents = fileID.split('_')
