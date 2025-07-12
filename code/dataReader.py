@@ -187,7 +187,7 @@ class DataReader:
                 stageLabel = 'H'
             if stageLabel == 'M':
                 stageLabel = 'S'
-            
+
             stagesL.append(stageLabel)
             durationWindNumsL.append(durationWindNum)
 
@@ -213,7 +213,7 @@ class DataReader:
                 break
             if i == self.metaDataLineNumUpperBound4eeg - 1:
                 # print('eeg file without metadata header, but it\'s okay.')
-                eeg_fp.close()                
+                eeg_fp.close()
                 eeg_fp = self.open_with_codecs(filePath)
                 ### print('metadata (header) for the EEG file is not correct.')
                 ## quit()
@@ -259,9 +259,9 @@ class DataReader:
         eeg = np.array(eegL)
         emg = np.array(emgL)
         timeStamps = np.array(timeStampsL)
-        print('eeg.shape = ' + str(eeg.shape) + ', emg.shape = ' + str(emg.shape))
-        print('eeg[:10] =', eeg[:10])
-        print('timeStamps[:10] =', timeStamps[:10])
+        # print('eeg.shape = ' + str(eeg.shape) + ', emg.shape = ' + str(emg.shape))
+        # print('eeg[:10] =', eeg[:10])
+        # print('timeStamps[:10] =', timeStamps[:10])
         ### samplePointNum = eeg.shape[0]
 
         if hasattr(self, 'inputHz') and hasattr(self, 'outputHz'):
@@ -278,8 +278,8 @@ class DataReader:
         return eeg, emg, timeStamps
 
 
-    def readMultiChannelEEGfromEDF(self, filePath, channelNum):    
-        pyedflib = __import__('pyedflib')    
+    def readMultiChannelEEGfromEDF(self, filePath, channelNum):
+        pyedflib = __import__('pyedflib')
         with pyedflib.EdfReader(filePath) as f:
             # n = f.signals_in_file
             # signal_labels = f.getSignalLabels()
