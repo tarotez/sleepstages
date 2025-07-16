@@ -1,12 +1,12 @@
 from __future__ import print_function
 import numpy as np
-from parameterSetup import ParameterSetup
 from freqAnalysisTools import band
 from featureExtractor import FeatureExtractor
 
 class FeatureExtractorClassical(FeatureExtractor):
 
-    def __init__(self):
+    def __init__(self, params):
+        self.params = params
         self.extractorType = 'classical'
 
     def getFeatures(self, eegSegment, timeStampSegment, time_step, local_mu, local_sigma):

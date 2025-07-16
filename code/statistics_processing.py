@@ -55,8 +55,8 @@ def centralize(segment, past_segment):
     return standardized_segment, connect_within_max_length(past_segment, segment, max_length)
 
 class standardizer():
-    def __init__(self, max_storage_length):
-        params = ParameterSetup()
+    def __init__(self, params, max_storage_length):
+        # params = ParameterSetup()
         self.max_storage_length = max_storage_length
         self.connected = []
         self.segment_counter = 0

@@ -4,14 +4,13 @@ from itertools import groupby
 from functools import reduce
 from operator import add
 from scipy import signal
-from parameterSetup import ParameterSetup
 from featureExtractor import FeatureExtractor
 from globalTimeManagement import getTimeDiffInSeconds
 
 class FeatureExtractorRawDataWithSTFT(FeatureExtractor):
 
-    def __init__(self):
-        params = ParameterSetup()
+    def __init__(self, params):
+        self.params = params
         self.samplingFreq = params.samplingFreq
         self.stft_time_bin_in_seconds = params.stft_time_bin_in_seconds
         self.stft_nperseg = int(np.floor(256.0 * self.stft_time_bin_in_seconds))

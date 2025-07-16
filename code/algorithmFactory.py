@@ -2,47 +2,48 @@ import importlib
 
 class AlgorithmFactory:
 
-    def __init__(self, extractorType):
+    def __init__(self, params, extractorType):
+        self.params = params
         self.extractorType = extractorType
 
     def generateExtractor(self):
         # print('@@@@@@@ in AlgorithmFactory, extractorType = ' + self.extractorType)
         if self.extractorType == 'classical':
             module = importlib.import_module('featureExtractorClassical')
-            extractor = module.FeatureExtractorClassical()
+            extractor = module.FeatureExtractorClassical(self.params)
         elif self.extractorType == 'freqHisto':
             module = importlib.import_module('featureExtractorFreqHisto')
-            extractor = module.FeatureExtractorFreqHisto()
+            extractor = module.FeatureExtractorFreqHisto(self.params)
         elif self.extractorType == 'freqHistoWithTime':
             module = importlib.import_module('featureExtractorFreqHistoWithTime')
-            extractor = module.FeatureExtractorFreqHistoWithTime()
+            extractor = module.FeatureExtractorFreqHistoWithTime(self.params)
         elif self.extractorType == 'wavelet':
             module = importlib.import_module('featureExtractorWavelet')
-            extractor = module.FeatureExtractorWavelet()
+            extractor = module.FeatureExtractorWavelet(self.params)
         elif self.extractorType == 'wavelet-downsampled':
             module = importlib.import_module('featureExtractorWaveletDownSampled')
-            extractor = module.FeatureExtractorWaveletDownSampled()
+            extractor = module.FeatureExtractorWaveletDownSampled(self.params)
         elif self.extractorType == 'realFourier':
             module = importlib.import_module('featureExtractorRealFourier')
-            extractor = module.FeatureExtractorRealFourier()
+            extractor = module.FeatureExtractorRealFourier(self.params)
         elif self.extractorType == 'realFourier-downsampled':
             module = importlib.import_module('featureExtractorRealFourierDownSampled')
-            extractor = module.FeatureExtractorRealFourierDownSampled()
+            extractor = module.FeatureExtractorRealFourierDownSampled(self.params)
         elif self.extractorType == 'complexFourier':
             module = importlib.import_module('featureExtractorComplexFourier')
-            extractor = module.FeatureExtractorComplexFourier()
+            extractor = module.FeatureExtractorComplexFourier(self.params)
         elif self.extractorType == 'rawData':
             module = importlib.import_module('featureExtractorRawData')
-            extractor = module.FeatureExtractorRawData()
+            extractor = module.FeatureExtractorRawData(self.params)
         elif self.extractorType == 'rawDataWithFreqHistoWithTime':
             module = importlib.import_module('featureExtractorRawDataWithFreqHistoWithTime')
-            extractor = module.FeatureExtractorRawDataWithFreqHistoWithTime()
+            extractor = module.FeatureExtractorRawDataWithFreqHistoWithTime(self.params)
         elif self.extractorType == 'rawDataWithSTFT':
             module = importlib.import_module('featureExtractorRawDataWithSTFT')
-            extractor = module.FeatureExtractorRawDataWithSTFT()            
+            extractor = module.FeatureExtractorRawDataWithSTFT(self.params)
         elif self.extractorType == 'rawDataWithSTFTWithTime':
             module = importlib.import_module('featureExtractorRawDataWithSTFTWithTime')
-            extractor = module.FeatureExtractorRawDataWithSTFTWithTime()
+            extractor = module.FeatureExtractorRawDataWithSTFTWithTime(self.params)
         # elif self.extractorType.fine(',') > -1:
         #    module = importlib.import_module('featureExtractorMerged')
         #    print('using FeatureExtractorMerged')

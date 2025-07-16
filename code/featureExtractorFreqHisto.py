@@ -1,19 +1,19 @@
 from __future__ import print_function
 import numpy as np
 from itertools import groupby
-from parameterSetup import ParameterSetup
 from featureExtractor import FeatureExtractor
 
 class FeatureExtractorFreqHisto(FeatureExtractor):
 
-    def __init__(self):
+    def __init__(self, params):
+        self.params = params
         self.extractorType = 'freqHisto'
 
     def getFeatures(self, eegSegment, timeStampSegment, time_step, local_mu, local_sigma):
 
         #---------------
         # compute power spectrum and sort it
-        params = ParameterSetup()
+        params = self.params
         wholeBand = params.wholeBand
         binWidth4freqHisto = params.binWidth4freqHisto
         binNum4spectrum = round(wholeBand.getBandWidth() / binWidth4freqHisto)

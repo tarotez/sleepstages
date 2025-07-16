@@ -3,7 +3,8 @@ from featureExtractor import FeatureExtractor
 
 class FeatureExtractorRawData(FeatureExtractor):
 
-    def __init__(self):
+    def __init__(self, params):
+        self.params = params
         self.extractorType = 'rawData'
 
     def getFeatures(self, eegSegment, timeStampSegment, time_step, local_mu, local_sigma):

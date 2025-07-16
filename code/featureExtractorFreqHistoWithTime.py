@@ -1,13 +1,13 @@
 from __future__ import print_function
 import numpy as np
 from itertools import groupby
-from parameterSetup import ParameterSetup
 from featureExtractor import FeatureExtractor
 from globalTimeManagement import getTimeDiffInSeconds
 
 class FeatureExtractorFreqHistoWithTime(FeatureExtractor):
 
-    def __init__(self):
+    def __init__(self, params):
+        self.params = params
         self.extractorType = 'freqHistoWithTime'
         self.lightPeriodStartTime = '09:00:00.000'
 
@@ -15,7 +15,7 @@ class FeatureExtractorFreqHistoWithTime(FeatureExtractor):
 
         #---------------
         # compute power spectrum and sort it
-        params = ParameterSetup()
+        params = self.params
         wholeBand = params.wholeBand
         binWidth4freqHisto = params.binWidth4freqHisto
         binNum4spectrum = round(wholeBand.getBandWidth() / binWidth4freqHisto)

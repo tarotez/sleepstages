@@ -1,14 +1,13 @@
 from __future__ import print_function
 import numpy as np
 from itertools import groupby
-from parameterSetup import ParameterSetup
 from featureExtractor import FeatureExtractor
 from globalTimeManagement import getTimeDiffInSeconds
 
 class FeatureExtractorRawDataWithFreqHistoWithTime(FeatureExtractor):
 
-    def __init__(self):
-        params = ParameterSetup()
+    def __init__(self, params):
+        self.params = params
         self.extractorType = 'rawDataWithFreqHistoWithTime'
         self.lightPeriodStartTime = params.lightPeriodStartTime
         self.wholeBand = params.wholeBand
