@@ -1,7 +1,6 @@
 import pickle
 import numpy as np
 from os.path import dirname, abspath
-from parameterSetup import ParameterSetup
 from stagePredictor import StagePredictor
 from statistics_processing import standardizer
 from algorithmFactory import AlgorithmFactory
@@ -45,7 +44,8 @@ def classifySequentially(params, paramID, paramDir, fileIDpair):
         label4EMG = params.label4withoutEMG
 
     params.classifierName = classifierFilePrefix + '.' + classifierType +  '.' + label4EMG + '.excludedFileID.' + testFileID + '.classifierID.' + classifierID
-    factory = AlgorithmFactory(extractorType)
+    params_for_network_structure = params
+    factory = AlgorithmFactory(params_for_network_structure, extractorType)
     extractor = factory.generateExtractor()
 
     # if params.classifierType == 'deep':
@@ -56,8 +56,8 @@ def classifySequentially(params, paramID, paramDir, fileIDpair):
     print('# classifierID =', classifierID)
     # classLabels = list(params.labelCorrectionDict.keys())[:params.maximumStageNum]
     classLabels = params.sampleClassLabels[:params.maximumStageNum]
-    paramFileName = 'params.' + classifierID + '.json'
-    params_for_network_structure = ParameterSetup(paramDir=paramDir, paramFileName=paramFileName)
+    # paramFileName = 'params.' + classifierID + '.json'
+    # params_for_network_structure = ParameterSetup(paramDir=paramDir, paramFileName=paramFileName)
     if params.classifierType == 'deep':
         classifier = DeepClassifier(classLabels, classifierID=classifierID, paramsForDirectorySetup=params, paramsForNetworkStructure=params_for_network_structure)
         # if classifierID == '':

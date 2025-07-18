@@ -27,8 +27,8 @@
 "networkType" : "cnn_lstm",
 "classifierParams" : [64],
 
-"windowSizeInSec" : 10,
-"samplingFreq" : 128,
+"windowSizeInSec" : 4,
+"samplingFreq" : 512,
 
 "graphUpdateFreqInHz" : 1,
 
@@ -101,7 +101,7 @@
 "torch_resnet_avg_pool_size" : 1,
 
 "input_channel_num" : 1,
-    
+
 "use_cnn_for_freq" : 1,
 "stft_segment_num" : 10,
 
