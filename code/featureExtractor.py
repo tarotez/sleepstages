@@ -5,8 +5,9 @@ from emgProcessing import emg2feature
 
 class FeatureExtractor():
 
-    def __init__(self):
+    def __init__(self, params):
         self.extractorType = ''
+        self.params = params
 
     def getFeatures(self, eegSegment, timeStampSegment, time_step):
         print('passing getFeatures because FeatureExtractor is an interface.')
