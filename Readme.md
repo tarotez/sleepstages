@@ -32,7 +32,17 @@ Move to the code directory before running the program.
 cd sleepstages/code
 ```
 
-## Running a demo
+## Predicting from CUI and without activating GUI
+
+Sleep stages for wave files in the "data/aipost" directory can be predicted without activating the GUI. Instead of running app.py, run
+
+```
+python offline.py
+```
+
+The predicted result is written out as files in the "data/prediction" directory.
+
+## Running a GUI demo
 
 The program can be run in a demo mode (mockup mode) by
 
@@ -85,16 +95,6 @@ If EMG nor mouse movement is not recorded, the column for Channel 2 can be left 
 ## Overwriting of predicted stages using Channel 2
 
 Channel 2 is used to overwrite the predicted sleep stage to "Wake" when an excessive mouse movement is detected. The algorithm for judging a mouse movement is as follows. Each 10-seconds epoch is divided into 80 segments (that is, each segment is 0.125 second-long). Within each segment, the amplitude of Channel 2 is averaged. When the maximum of these 80 averaged amplitudes exceeds the threshold set by the scrollbar on the GUI, the predicted sleep stage is changed to "Wake". In "data/prediction", files ending with "_pred_before_overwrite.txt" list predicted stages before overwriting, and files ending with "_pred.txt" list predicted stages after overwriting.
-
-## Predicting from CUI and without activating GUI
-
-Sleep stages for wave files in the "data/aipost" directory can be predicted without activating the GUI. Instead of running app.py, run
-
-```
-python offline.py
-```
-
-The predicted result is written out as files in the "data/prediction" directory.
 
 ## Evaluating the results
 
