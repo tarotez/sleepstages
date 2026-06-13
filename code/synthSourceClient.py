@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 from functools import reduce
 import random
 from math import pi, sin
+from time import sleep
+from parameterSetup import ParameterSetup
 
 # sends mock signal to online.py by connectin to networkServer
 
@@ -13,27 +15,35 @@ args = sys.argv
 if len(args) > 1:
     inputSignalFreqHz = args[1]
 else:
-    inputSignalFreqHz = 0.5
+    inputSignalFreqHz = 5
 
-HOST = '192.168.0.3'  # The server's hostname or IP address
+### HOST = '192.168.0.3'  # The server's hostname or IP address
+HOST = '127.0.0.1'
 # print('HOST:', HOST)
 PORT = 45123       # The port used by the server
 
-chamberNum = 4
-epochNum = 10
+params = ParameterSetup()
+### samplingFreq = 128
+# samplingFreq = 512
+# epochTime = 10
+samplingFreq = params.samplingFreq
+epochTime = params.windowSizeInSec
+slidingWindowStepSizeInSec = 1   # the interval for sending epochs by sliding window
+
+inputHours = 24
+epochNum = int(np.ceil(inputHours * 60 * 60 / epochTime))
+
+chamberNum = 1
 sampleNum = chamberNum * epochNum
 chamberIDL = np.random.permutation(reduce(lambda a, x: a + x, [[chamberID for chamberID in range(chamberNum)] for _ in range(epochNum)], []))
 # print('chamberIDL =', chamberIDL)
 
-### samplingFreq = 128
-samplingFreq = 512
-epochTime = 10
 ### signal = [float(i + 3.1416) for i in range(samplingFreq * epochTime)]
 all_signal = [sin(2 * pi * inputSignalFreqHz * i / samplingFreq) for i in range(samplingFreq * epochTime * epochNum)]
 
 # print('all_signal =', all_signal)
 
-def signal_generator(source_data, segmentLength):
+def signal_generator(source_data, segmentLength, epochTime):
     startSample = 0
     epochID = 0
     while True:
@@ -41,8 +51,9 @@ def signal_generator(source_data, segmentLength):
         yield source_data[startSample:endSample], epochID
         startSample += segmentLength
         epochID += 1
+        sleep(epochTime)
 
-signals = [signal_generator(all_signal, samplingFreq * epochTime) for _ in range(chamberNum)]
+signals = [signal_generator(all_signal, samplingFreq * epochTime, epochTime) for _ in range(chamberNum)]
 # print('len(signals) =', len(signals))
 
 dtL = [datetime.now() for _ in range(chamberNum)]
@@ -91,5 +102,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         resp_epochID = struct.unpack_from('I', resp, 2)[0]    #DWORD
         resp_judge = struct.unpack_from('H', resp, 6)[0]
 
-        dtL[chamberID] += timedelta(seconds=epochTime)
+        ### dtL[chamberID] += timedelta(seconds=epochTime)
+        dtL[chamberID] += timedelta(seconds=slidingWindowStepSizeInSec)
         # print('c, e, j =', resp_chamberID, resp_epochID, resp_judge)
+
+
