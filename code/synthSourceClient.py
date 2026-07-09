@@ -27,7 +27,10 @@ params = ParameterSetup()
 # samplingFreq = 512
 # epochTime = 10
 samplingFreq = params.samplingFreq
-epochTime = params.windowSizeInSec
+# epochTime = params.windowSizeInSec
+slidingWindowStepSizeInSec = params.slidingWindowStepSizeInSec   # the interval for sending epochs by sliding window^M
+epochTime = slidingWindowStepSizeInSec
+
 slidingWindowStepSizeInSec = 1   # the interval for sending epochs by sliding window
 
 inputHours = 24
@@ -102,8 +105,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         resp_epochID = struct.unpack_from('I', resp, 2)[0]    #DWORD
         resp_judge = struct.unpack_from('H', resp, 6)[0]
 
-        ### dtL[chamberID] += timedelta(seconds=epochTime)
-        dtL[chamberID] += timedelta(seconds=slidingWindowStepSizeInSec)
-        # print('c, e, j =', resp_chamberID, resp_epochID, resp_judge)
+        # dtL[chamberID] += timedelta(seconds=epochTime)
+        dtL[chamberID] += timedelta(seconds=slidingWindowStepSizeInSeca)
+        # print('chamber, epoch, judge =', resp_chamberID, resp_epochID, resp_judge)
 
 

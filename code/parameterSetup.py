@@ -55,6 +55,9 @@ class ParameterSetup(object):
         self.windowSizeInSec = d['windowSizeInSec']   # size of window in time for estimating the state
         self.samplingFreq = d['samplingFreq']   # sampling frequency of data
 
+        # step size for using a sliding window        
+        self.slidingWindowStepSizeInSec = d['slidingWindowStepSizeInSec'] if 'slidingWindowStepSizeInSec' in d else self.windowSizeInSec
+
         if 'graphUpdateFreqInHz' in d:
             self.graphUpdateFreqInHz = d['graphUpdateFreqInHz']
         else:

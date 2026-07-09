@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from collections import deque
 from datetime import datetime, time, timedelta
 from statistics_processing import standardizer, standardize
 from connect_laser_device import connect_laser_device
@@ -33,6 +34,12 @@ class ClassifierClient:
             self.samplePointNum = self.paramsForNetworkStructure.windowSizeInSec * self.samplingFreq  # the number of sample points received at once
         else:
             self.samplePointNum = epochTime * self.samplingFreq  # the number of sample points received at once
+
+        self.slidingWindowStepSizeInSec = self.params.slidingWindowStepSizeInSec
+        self.eegIncrementQueue_lenMax = int(np.ceil(self.paramsForNetworkStructure.windowSizeInSec / self.slidingWindowStepSizeInSec))
+        self.timeStampIncrementQueue = deque()
+        self.eegIncrementQueue = deque()
+        self.ch2IncrementQueue = deque()
 
         self.graphUpdateFreqInHz = self.params.graphUpdateFreqInHz   # frequency of updating the graph (if set to 1, redraws graph every second)
         assert self.samplingFreq / self.graphUpdateFreqInHz == np.floor(self.samplingFreq / self.graphUpdateFreqInHz)   # should be an integer
@@ -186,14 +193,8 @@ class ClassifierClient:
     def process(self, dataFromDaq):
         # print('in client, dataToClient.shape =', dataToClient.shape)
         # print('in client, dataFromDaq =', dataFromDaq)
-        timeStampSegment = [_ for _ in range(self.updateGraph_samplePointNum)]
-        eegFragment = np.zeros((self.updateGraph_samplePointNum))
-        ch2Fragment = np.zeros((self.updateGraph_samplePointNum))
 
-        timeNow = str(datetime.now())
-        self.logFile.write('timeNow = ' + timeNow + ', len(dataFromDaq) = ' + str(len(dataFromDaq)) + ', R->W thresh = ' + str(self.ch2_thresh_value) + ', self.currentCh2Intensity = ' + str(self.currentCh2Intensity) + '\n')
-        self.logFile.flush()
-
+        timeStampIncrementL, eegIncrementL, ch2IncrementL = [], [], []
         for sampleCnt, inputLine in enumerate(dataFromDaq.split('\n')):
             if not inputLine:
                 continue
@@ -218,44 +219,22 @@ class ClassifierClient:
             # print('input_elems =', input_elems)
             # print('len(timeStampSegment) =', len(timeStampSegment))
             # print('sampleCnt =', sampleCnt)
-            timeStampSegment[sampleCnt] = input_elems[0]
-            eegFragment[sampleCnt] = float(input_elems[1])
+            timeStampIncrementL.append(input_elems[0])
+            eegIncrementL.append(float(input_elems[1]))            
             if len(input_elems) > 2:
-                ch2Fragment[sampleCnt] = float(input_elems[2])
+                ch2IncrementL.append(float(input_elems[2]))                
+        self.timeStampIncrementQueue.append(timeStampIncrementL)
+        self.eegIncrementQueue.append(eegIncrementL)
+        self.ch2IncrementQueue.append(ch2IncrementL)
+        sampleIncrementNum = len(eegIncrementL)
 
         if self.sampleID == 0:
-            self.windowStartTime = timeStampSegment[0]
+            self.windowStartTime = timeStampIncrementL[0]
 
         # print('eegFragment =', eegFragment)
-        standardized_eegFragment = self.standardizer_eeg.standardize(eegFragment)
-        if self.ch2_normalize_for_prediction:
-             standardized_ch2Fragment = self.standardizer_ch2.standardize(ch2Fragment)
-        else:
-             standardized_ch2Fragment = ch2Fragment
-
-        one_record_partial = np.array((standardized_eegFragment, standardized_ch2Fragment)).transpose()
-        raw_one_record_partial = np.array((eegFragment, ch2Fragment)).transpose()
-
-        self.one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_partial
-        self.raw_one_record[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = raw_one_record_partial
-        one_record_for_graph_partial = self.normalize_one_record_partial_for_graph(raw_one_record_partial, self.past_eegSegment, self.past_ch2Segment)
-        self.one_record_for_graph[self.sampleID:(self.sampleID+self.updateGraph_samplePointNum),:] = one_record_for_graph_partial
-
-        if self.hasGUI:
-            self.updateGraphPartially(self.one_record_for_graph)
-        self.sampleID += self.updateGraph_samplePointNum
-
+        
         stagePrediction = '-'
-        if self.sampleID == self.samplePointNum:   # reached to the end of the epoch
-            self.sampleID = 0
-            eegSegment =  self.one_record[:,0]
-            raw_eegSegment = self.raw_one_record[:,0]
-            self.past_eegSegment = np.r_[self.past_eegSegment, raw_eegSegment]
-            if self.showCh2 or self.useCh2ForReplace:
-                ch2Segment = self.one_record[:,1]
-                raw_ch2Segment = self.raw_one_record[:,1]
-                self.past_ch2Segment = np.r_[self.past_ch2Segment, raw_ch2Segment]
-
+        if len(self.eegIncrementQueue) == self.eegIncrementQueue_lenMax:
             # print('self.predictionState =', self.predictionState)
             replaced = False
             if self.predictionState:
@@ -264,7 +243,16 @@ class ClassifierClient:
                     serialClient.write(b'c')
                     print('clear sent to serialClient to reset')
 
-                stagePrediction = self.stagePredictor.predict(eegSegment, timeStampSegment, self.params.stageLabels4evaluation, self.params.stageLabel2stageID)
+                # print('self.eegIncrementQueue =', self.eegIncrementQueue)
+                def flatten_queue(queue):
+                    concatenatedL = []
+                    for elem in queue:
+                        concatenatedL += elem
+                    return np.array(concatenatedL)
+                timeStampSegment = flatten_queue(self.timeStampIncrementQueue)
+                raw_eegEpoch = flatten_queue(self.eegIncrementQueue)
+                standardized_eegEpoch = self.standardizer_eeg.standardize(raw_eegEpoch)
+                stagePrediction = self.stagePredictor.predict(standardized_eegEpoch, timeStampSegment, self.params.stageLabels4evaluation, self.params.stageLabel2stageID)
 
                 # print('stagePrediction =', stagePrediction)
                 stagePrediction_before_overwrite = stagePrediction
@@ -274,8 +262,8 @@ class ClassifierClient:
                 stagePrediction = '?'
 
             # update prediction results in graphs by moving all graphs one window
-            if self.hasGUI:
-                self.updateGraph(self.segmentID, stagePrediction, stagePrediction_before_overwrite, replaced)
+            # if self.hasGUI:
+            #     self.updateGraph(self.segmentID, stagePrediction, stagePrediction_before_overwrite, replaced)
 
             # write out to file
             if self.predictionState:
@@ -295,41 +283,41 @@ class ClassifierClient:
 
                 #------------------------------------------
                 # writes to waveOutputFile
-                if self.recordWaves:
-                    # records raw data without standardization
-                    eegOutputLimitNum = eegSegment.shape[0]
-                    # below is for testing, print out only first 5 amplitudes
-                    # eegOutputLimitNum = 5
+                # if self.recordWaves:
+                #     # records raw data without standardization
+                #     eegOutputLimitNum = eegSegment.shape[0]
+                #     # below is for testing, print out only first 5 amplitudes
+                #     # eegOutputLimitNum = 5
 
-                    # print('self.windowStartTime =', self.windowStartTime)
-                    year, month, day = 2022, 1, 1
-                    start_hour_str, start_min_str, start_sec_str = self.windowStartTime.split(':')
-                    start_sec = int(np.floor(float(start_sec_str)))
-                    start_microsec = int(np.floor((10 ** 6) * (float(start_sec_str) - start_sec)))
-                    start_datetime = datetime(year, month, day, int(start_hour_str), int(start_min_str), start_sec, start_microsec)
-                    # print('start_datetime =', start_datetime)
+                #     # print('self.windowStartTime =', self.windowStartTime)
+                #     year, month, day = 2022, 1, 1
+                #     start_hour_str, start_min_str, start_sec_str = self.windowStartTime.split(':')
+                #     start_sec = int(np.floor(float(start_sec_str)))
+                #     start_microsec = int(np.floor((10 ** 6) * (float(start_sec_str) - start_sec)))
+                #     start_datetime = datetime(year, month, day, int(start_hour_str), int(start_min_str), start_sec, start_microsec)
+                #     # print('start_datetime =', start_datetime)
 
-                    outLine = ''
-                    outLine_standardized = ''
-                    # print('----')
-                    # print('self.windowStartTime =', self.windowStartTime)
-                    # print('start_datetime = ', start_datetime)
-                    # print('self.samplingFreq =', self.samplingFreq)
-                    # print('self.raw_one_record.shape =', self.raw_one_record.shape)
-                    # print('eegOutputLimitNum =', eegOutputLimitNum)
-                    # print('start_datetime =', start_datetime)
-                    for i in range(eegOutputLimitNum):
-                         timePoint = start_datetime + timedelta(seconds = float(i) / self.samplingFreq)
-                         # print('   timePoint =', timePoint)
-                         outLine += str(timePoint) + ', ' + str(self.raw_one_record[i,0]) + ', ' + str(self.raw_one_record[i,1]) + '\n'
-                         outLine_standardized += str(timePoint) + ', ' + str(self.one_record[i,0]) + ', ' + str(self.one_record[i,1]) + '\n'
-                         # if i < 5 or eegOutputLimitNum - i < 5:
-                             # print('timePoint =', timePoint)
-                    # print('timePoint =', timePoint)
-                    self.waveOutputFile.write(outLine)   # add at the end of the file
-                    self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
-                    self.waveOutputFile.flush()
-                    self.waveOutputFile_standardized.flush()
+                #     outLine = ''
+                #     outLine_standardized = ''
+                #     # print('----')
+                #     # print('self.windowStartTime =', self.windowStartTime)
+                #     # print('start_datetime = ', start_datetime)
+                #     # print('self.samplingFreq =', self.samplingFreq)
+                #     # print('self.raw_one_record.shape =', self.raw_one_record.shape)
+                #     # print('eegOutputLimitNum =', eegOutputLimitNum)
+                #     # print('start_datetime =', start_datetime)
+                #     for i in range(eegOutputLimitNum):
+                #          timePoint = start_datetime + timedelta(seconds = float(i) / self.samplingFreq)
+                #          # print('   timePoint =', timePoint)
+                #          outLine += str(timePoint) + ', ' + str(self.raw_one_record[i,0]) + ', ' + str(self.raw_one_record[i,1]) + '\n'
+                #          outLine_standardized += str(timePoint) + ', ' + str(self.one_record[i,0]) + ', ' + str(self.one_record[i,1]) + '\n'
+                #          # if i < 5 or eegOutputLimitNum - i < 5:
+                #              # print('timePoint =', timePoint)
+                #     # print('timePoint =', timePoint)
+                #     self.waveOutputFile.write(outLine)   # add at the end of the file
+                #     self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
+                #     self.waveOutputFile.flush()
+                #     self.waveOutputFile_standardized.flush()
 
                 #------------------------------------------
                 # Encode to binary for serial connection.
@@ -341,9 +329,9 @@ class ClassifierClient:
                     # print(' -> sending', stagePrediction_replaced, 'to serialClient')
                     serialClient.write(stagePrediction_replaced.encode('utf-8'))
 
-            self.one_record = np.zeros((self.samplePointNum, 2))
-            self.raw_one_record = np.zeros((self.samplePointNum, 2))
-            self.one_record_for_graph = np.zeros((self.samplePointNum, 2))
+            self.timeStampIncrementQueue.popleft()
+            self.eegIncrementQueue.popleft()
+            self.ch2IncrementQueue.popleft()
             self.segmentID += 1
             return stagePrediction
         else:

@@ -33,7 +33,8 @@ def selectClassifierID(finalClassifierDir, requested_networkType_code, requested
         return filter(lambda x: x[2] == samplingFreq, classifierMetadataList)
 
     def filter_by_epochTime(classifierMetadataList, epochType):
-        return filter(lambda x: x[3] == epochType, classifierMetadataList)
+        return filter(lambda x: x[3] % epochType == 0, classifierMetadataList)
+        # return filter(lambda x: x[3] == epochType, classifierMetadataList)
 
     def find_highest_samplingFreq(classifierMetadataList):
         filteredMetadataList = []

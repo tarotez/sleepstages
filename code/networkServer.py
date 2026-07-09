@@ -66,7 +66,8 @@ class NetworkServer:
             observed_samplePointNum = observed_samplingFreq * observed_epochTime
             fmt = reduce(lambda a, _: a + 'f', range(observed_samplingFreq * observed_epochTime), '')  # range used for unpacking EEG from received data
             classifierID, model_samplingFreq, model_epochTime = selectClassifierID(self.params_for_classifier.finalClassifierDir, networkName, observed_samplingFreq, observed_epochTime)
-            model_samplePointNum = model_samplingFreq * model_epochTime
+            # model_samplePointNum = model_samplingFreq * model_epochTime
+            model_samplePointNum = int(np.round(model_samplingFreq * model_epochTime * self.params_for_classifier.slidingWindowStepSizeInSec / self.params_for_classifier.windowSizeInSec))^M
 
             if classifierID == -1:
                 res = 0
@@ -142,16 +143,19 @@ class NetworkServer:
                             # Loops because classifierClients accepts segments, not full epochs, in order to visualize waves in GUI.
                             # Before the final segment, judgeStr is '-'.
                             assert model_samplingFreq % self.params_for_classifier.graphUpdateFreqInHz == 0
-                            updateGraph_samplePointNum = int(model_samplingFreq / self.params_for_classifier.graphUpdateFreqInHz)
-                            assert updateGraph_samplePointNum > 0
-                            startID = 0
-                            while startID < signal_rawarray.shape[0]:
-                                # print('startID =', startID)
-                                # print('len(signal_rawarray[startID:startID+updateGraph_samplePointNum]) =', len(signal_rawarray[startID:startID+updateGraph_samplePointNum]))
-                                dataToAIClient = formatRawArray(startDT, model_samplingFreq, signal_rawarray[startID:startID+updateGraph_samplePointNum])
-                                # print('in server, dataToAIClient =', dataToAIClient)
-                                judgeStr = ai_clients[chamberID].process(dataToAIClient)
-                                startID += updateGraph_samplePointNum
+                            # updateGraph_samplePointNum = int(model_samplingFreq / self.params_for_classifier.graphUpdateFreqInHz)
+                            # assert updateGraph_samplePointNum > 0
+                            # startID = 0
+                            # while startID < signal_rawarray.shape[0]:
+                            #     # print('startID =', startID)
+                            #     # print('len(signal_rawarray[startID:startID+updateGraph_samplePointNum]) =', len(signal_rawarray[startID:startID+updateGraph_samplePointNum]))
+                            #     dataToAIClient = formatRawArray(startDT, model_samplingFreq, signal_rawarray[startID:startID+updateGraph_samplePointNum])
+                            #     # print('in server, dataToAIClient =', dataToAIClient)
+                            #     judgeStr = ai_clients[chamberID].process(dataToAIClient)
+                            #     startID += updateGraph_samplePointNum
+
+                            dataToAIClient = formatRawArray(startDT, model_samplingFreq, signal_rawarray)
+                            judgeStr = ai_clients[chamberID].process(dataToAIClient)
 
                             cByte = chamberID.to_bytes(2, 'little')
                             eByte = epochID.to_bytes(4, 'little')
