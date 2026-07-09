@@ -8,13 +8,13 @@ def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePo
     # print('model_samplePointNum =', model_samplePointNum)
     # print('observed_samplePointNum =', observed_samplePointNum)
     if model_samplePointNum < observed_samplePointNum:
-        print('-> downsampling')
-        print('before downsampling: signal_rawarray.shape =', signal_rawarray.shape)
+        # print('-> downsampling')
+        # print('before downsampling: signal_rawarray.shape =', signal_rawarray.shape)
         # print('before downsampling: signal_rawarray[:20] =', signal_rawarray[:20])
         
         ##### code below uses array_split.
         epochNum = max(1, int(np.floor(1.0 * signal_rawarray.shape[0] / observed_samplePointNum)))
-        print('epochNum =', epochNum)
+        # print('epochNum =', epochNum)
         multiple = int(np.floor(1.0 * signal_rawarray.shape[0] / model_samplePointNum)) * model_samplePointNum * epochNum
         split_signal = np.array_split(signal_rawarray[:multiple], model_samplePointNum * epochNum)
         # for seg in split_signal:
@@ -37,7 +37,7 @@ def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePo
         #         total_magnitude, sample_point_counter = 0, 0
         # signal_rawarray = np.array(signal_list)
         #####
-        print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
+        # print('after downsampling: signal_rawarray.shape =', signal_rawarray.shape)
 
     # upsampling
     if model_samplePointNum > observed_samplePointNum:

@@ -251,6 +251,7 @@ class ClassifierClient:
                     return np.array(concatenatedL)
                 timeStampSegment = flatten_queue(self.timeStampIncrementQueue)
                 raw_eegEpoch = flatten_queue(self.eegIncrementQueue)
+                ch2Segment = flatten_queue(self.ch2IncrementQueue)
                 standardized_eegEpoch = self.standardizer_eeg.standardize(raw_eegEpoch)
                 stagePrediction = self.stagePredictor.predict(standardized_eegEpoch, timeStampSegment, self.params.stageLabels4evaluation, self.params.stageLabel2stageID)
 

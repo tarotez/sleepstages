@@ -28,6 +28,7 @@
 "classifierParams" : [64],
 
 "windowSizeInSec" : 4,
+"slidingWindowStepSizeInSec" : 1,
 "samplingFreq" : 512,
 
 "graphUpdateFreqInHz" : 1,
