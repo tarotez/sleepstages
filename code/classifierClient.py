@@ -114,7 +114,7 @@ class ClassifierClient:
 
         if self.writeWholeWaves:
             self.waveOutputFile = open(self.params.waveOutputDir + '/' + waveFileName, 'a')
-            self.waveOutputFile_standardized = open(self.params.waveOutputDir + '/standardized_' + waveFileName, 'a')
+            # self.waveOutputFile_standardized = open(self.params.waveOutputDir + '/standardized_' + waveFileName, 'a')
 
         self.predictionState = 0
         self.one_record = np.zeros((self.samplePointNum, 2))
@@ -277,33 +277,12 @@ class ClassifierClient:
                 #------------------------------------------
                 # writes to waveOutputFile
                 if self.writeWholeWaves:
-                    # records raw data without standardization
-                    eegOutputLimitNum = raw_eegEpoch.shape[0]
-                    # below is for testing, print out only first 5 amplitudes
-                    # eegOutputLimitNum = 5
-
-                    # print('self.windowStartTime =', self.windowStartTime)
-                    year, month, day = 2020, 1, 1
-                    start_hour_str, start_min_str, start_sec_str = self.windowStartTime.split(':')
-                    start_sec = int(np.floor(float(start_sec_str)))
-                    start_microsec = int(np.floor((10 ** 6) * (float(start_sec_str) - start_sec)))
-                    start_datetime = datetime(year, month, day, int(start_hour_str), int(start_min_str), start_sec, start_microsec)
-                    # print('start_datetime =', start_datetime)
-
-                    outLine = ''
-                    outLine_standardized = ''
-                    for i in range(eegOutputLimitNum):
-                         timePoint = start_datetime + timedelta(seconds = float(i) / self.samplingFreq)
-                         # print('   timePoint =', timePoint)
-                         outLine += str(timePoint) + ', ' + str(raw_eegEpoch) + ', ' + str(ch2Segment) + '\n'
-                         outLine_standardized += str(timePoint) + ', ' + str(standardized_eegEpoch) + ', ' + str(ch2Segment) + '\n'
-                         # if i < 5 or eegOutputLimitNum - i < 5:
-                             # print('timePoint =', timePoint)
-                    # print('timePoint =', timePoint)
-                    self.waveOutputFile.write(outLine)   # add at the end of the file
-                    self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
-                    self.waveOutputFile.flush()
-                    self.waveOutputFile_standardized.flush()
+                    if len(timeStampSegment) > 0:
+                        outLine = ''
+                        for timeStamp, raw_sample in zip(timeStampSegment, raw_eegEpoch):
+                            outLine += str(timeStamp) + ', ' + str(raw_sample) + '\n'
+                        self.waveOutputFile.write(outLine)   # add at the end of the file
+                        self.waveOutputFile.flush()
 
                 #------------------------------------------
                 # Encode to binary for serial connection.
