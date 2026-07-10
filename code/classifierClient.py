@@ -15,12 +15,12 @@ from deepClassifier import DeepClassifier
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 class ClassifierClient:
-    def __init__(self, recordWaves, extractorType, classifierType, classifierID, inputFileID='', offsetWindowID=0, chamberID=-1, samplingFreq=0, epochTime=0):
+    def __init__(self, writeWholeWaves, extractorType, classifierType, classifierID, inputFileID='', offsetWindowID=0, chamberID=-1, samplingFreq=0, epochTime=0):
 
         self.params = ParameterSetup()
         self.setStagePredictor(classifierID, extractorType)
 
-        self.recordWaves = recordWaves
+        self.writeWholeWaves = writeWholeWaves
         self.inputFileID = inputFileID
         self.chamberID = chamberID
         chamberLabel = '_chamber' + str(self.chamberID+1)  # adds 1 because in Sleep Sign Recorder, chambers start from 1.
@@ -112,7 +112,7 @@ class ClassifierClient:
         self.ch2_graph_normalize = 0
         self.currentCh2Intensity = 0
 
-        if self.recordWaves:
+        if self.writeWholeWaves:
             self.waveOutputFile = open(self.params.waveOutputDir + '/' + waveFileName, 'a')
             self.waveOutputFile_standardized = open(self.params.waveOutputDir + '/standardized_' + waveFileName, 'a')
 
@@ -259,15 +259,7 @@ class ClassifierClient:
                 stagePrediction_before_overwrite = stagePrediction
                 if self.useCh2ForReplace:
                     stagePrediction, replaced = self.replaceToWake(stagePrediction, ch2Segment)
-            else:
-                stagePrediction = '?'
 
-            # update prediction results in graphs by moving all graphs one window
-            # if self.hasGUI:
-            #     self.updateGraph(self.segmentID, stagePrediction, stagePrediction_before_overwrite, replaced)
-
-            # write out to file
-            if self.predictionState:
                 #----
                 # if the prediction is P, then use the previous one
                 if stagePrediction == 'P':
@@ -284,41 +276,34 @@ class ClassifierClient:
 
                 #------------------------------------------
                 # writes to waveOutputFile
-                # if self.recordWaves:
-                #     # records raw data without standardization
-                #     eegOutputLimitNum = eegSegment.shape[0]
-                #     # below is for testing, print out only first 5 amplitudes
-                #     # eegOutputLimitNum = 5
+                if self.writeWholeWaves:
+                    # records raw data without standardization
+                    eegOutputLimitNum = raw_eegEpoch.shape[0]
+                    # below is for testing, print out only first 5 amplitudes
+                    # eegOutputLimitNum = 5
 
-                #     # print('self.windowStartTime =', self.windowStartTime)
-                #     year, month, day = 2022, 1, 1
-                #     start_hour_str, start_min_str, start_sec_str = self.windowStartTime.split(':')
-                #     start_sec = int(np.floor(float(start_sec_str)))
-                #     start_microsec = int(np.floor((10 ** 6) * (float(start_sec_str) - start_sec)))
-                #     start_datetime = datetime(year, month, day, int(start_hour_str), int(start_min_str), start_sec, start_microsec)
-                #     # print('start_datetime =', start_datetime)
+                    # print('self.windowStartTime =', self.windowStartTime)
+                    year, month, day = 2020, 1, 1
+                    start_hour_str, start_min_str, start_sec_str = self.windowStartTime.split(':')
+                    start_sec = int(np.floor(float(start_sec_str)))
+                    start_microsec = int(np.floor((10 ** 6) * (float(start_sec_str) - start_sec)))
+                    start_datetime = datetime(year, month, day, int(start_hour_str), int(start_min_str), start_sec, start_microsec)
+                    # print('start_datetime =', start_datetime)
 
-                #     outLine = ''
-                #     outLine_standardized = ''
-                #     # print('----')
-                #     # print('self.windowStartTime =', self.windowStartTime)
-                #     # print('start_datetime = ', start_datetime)
-                #     # print('self.samplingFreq =', self.samplingFreq)
-                #     # print('self.raw_one_record.shape =', self.raw_one_record.shape)
-                #     # print('eegOutputLimitNum =', eegOutputLimitNum)
-                #     # print('start_datetime =', start_datetime)
-                #     for i in range(eegOutputLimitNum):
-                #          timePoint = start_datetime + timedelta(seconds = float(i) / self.samplingFreq)
-                #          # print('   timePoint =', timePoint)
-                #          outLine += str(timePoint) + ', ' + str(self.raw_one_record[i,0]) + ', ' + str(self.raw_one_record[i,1]) + '\n'
-                #          outLine_standardized += str(timePoint) + ', ' + str(self.one_record[i,0]) + ', ' + str(self.one_record[i,1]) + '\n'
-                #          # if i < 5 or eegOutputLimitNum - i < 5:
-                #              # print('timePoint =', timePoint)
-                #     # print('timePoint =', timePoint)
-                #     self.waveOutputFile.write(outLine)   # add at the end of the file
-                #     self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
-                #     self.waveOutputFile.flush()
-                #     self.waveOutputFile_standardized.flush()
+                    outLine = ''
+                    outLine_standardized = ''
+                    for i in range(eegOutputLimitNum):
+                         timePoint = start_datetime + timedelta(seconds = float(i) / self.samplingFreq)
+                         # print('   timePoint =', timePoint)
+                         outLine += str(timePoint) + ', ' + str(raw_eegEpoch) + ', ' + str(ch2Segment) + '\n'
+                         outLine_standardized += str(timePoint) + ', ' + str(standardized_eegEpoch) + ', ' + str(ch2Segment) + '\n'
+                         # if i < 5 or eegOutputLimitNum - i < 5:
+                             # print('timePoint =', timePoint)
+                    # print('timePoint =', timePoint)
+                    self.waveOutputFile.write(outLine)   # add at the end of the file
+                    self.waveOutputFile_standardized.write(outLine_standardized)   # add at the end of the file
+                    self.waveOutputFile.flush()
+                    self.waveOutputFile_standardized.flush()
 
                 #------------------------------------------
                 # Encode to binary for serial connection.
@@ -329,6 +314,13 @@ class ClassifierClient:
                     stagePrediction_replaced = 'w' if stagePrediction == '?' else stagePrediction
                     # print(' -> sending', stagePrediction_replaced, 'to serialClient')
                     serialClient.write(stagePrediction_replaced.encode('utf-8'))
+
+            else:
+                stagePrediction = '?'
+
+            # update prediction results in graphs by moving all graphs one window
+            # if self.hasGUI:
+            #     self.updateGraph(self.segmentID, stagePrediction, stagePrediction_before_overwrite, replaced)
 
             self.timeStampIncrementQueue.popleft()
             self.eegIncrementQueue.popleft()
