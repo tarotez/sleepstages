@@ -264,11 +264,7 @@ class ClassifierClient:
                 # if the prediction is P, then use the previous one
                 if stagePrediction == 'P':
                     # print('stagePrediction == P for wID = ' + str(wID))
-                    if len(self.y_pred_L) > 0:
-                        finalClassifierDirPrediction = self.y_pred_L[len(self.y_pred_L)-1]
-                        # print('stagePrediction replaced to ' + stagePrediction + ' at ' + str(segmentID))
-                    else:
-                        stagePrediction = 'M'
+                    stagePrediction = self.y_pred_L[len(self.y_pred_L)-1] if len(self.y_pred_L) > 0 else 'M'
 
                 # print('pred = ', stagePrediction)
                 self.writeToPredFile(stagePrediction, stagePrediction_before_overwrite, timeStampSegment)
