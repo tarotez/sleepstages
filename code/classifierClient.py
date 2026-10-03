@@ -148,7 +148,7 @@ class ClassifierClient:
 
         print('writes prediction results to ' + self.params.predDir + '/' + self.predFileID + '_pred.txt')
         self.predFile = open(self.params.predDir + '/' + self.predFileID + '_pred.txt', 'w')
-        self.predFileBeforeOverwrite = open(self.params.predDir + '/' + self.predFileID + '_pred_before_overwrite.txt', 'w')
+        # self.predFileBeforeOverwrite = open(self.params.predDir + '/' + self.predFileID + '_pred_before_overwrite.txt', 'w')
         self.predFileWithTimeStamps = open(self.params.predDir + '/' + self.predFileID + '_pred_with_timestamps.txt', 'w')
 
         self.max_storage_for_standardization = self.samplePointNum * self.params.standardization_max_storage_window_num
@@ -220,9 +220,9 @@ class ClassifierClient:
             # print('len(timeStampSegment) =', len(timeStampSegment))
             # print('sampleCnt =', sampleCnt)
             timeStampIncrementL.append(input_elems[0])
-            eegIncrementL.append(float(input_elems[1]))            
+            eegIncrementL.append(float(input_elems[1]))
             if len(input_elems) > 2:
-                ch2IncrementL.append(float(input_elems[2]))                
+                ch2IncrementL.append(float(input_elems[2]))
         self.timeStampIncrementQueue.append(timeStampIncrementL)
         self.eegIncrementQueue.append(eegIncrementL)
         self.ch2IncrementQueue.append(ch2IncrementL)
@@ -232,7 +232,7 @@ class ClassifierClient:
             self.windowStartTime = timeStampIncrementL[0]
 
         # print('eegFragment =', eegFragment)
-        
+
         stagePrediction = '-'
         if len(self.eegIncrementQueue) == self.eegIncrementQueue_lenMax:
             # print('self.predictionState =', self.predictionState)
@@ -309,9 +309,9 @@ class ClassifierClient:
         prediction_in_capital = self.params.capitalize_for_writing_prediction_to_file[prediction]
         self.predFile.write(prediction_in_capital + '\n')   # add at the end of the file
         self.predFile.flush()
-        prediction_before_overwrite_in_capital = self.params.capitalize_for_writing_prediction_to_file[prediction_before_overwrite]
-        self.predFileBeforeOverwrite.write(prediction_before_overwrite_in_capital + '\n')
-        self.predFileBeforeOverwrite.flush()
+        # prediction_before_overwrite_in_capital = self.params.capitalize_for_writing_prediction_to_file[prediction_before_overwrite]
+        # self.predFileBeforeOverwrite.write(prediction_before_overwrite_in_capital + '\n')
+        # self.predFileBeforeOverwrite.flush()
         self.predFileWithTimeStamps.write(prediction_in_capital + ',' + timeStampSegment[0] + '\n')   # add at the end of the file
         self.predFileWithTimeStamps.flush()
 
