@@ -2,6 +2,14 @@ import numpy as np
 from itertools import groupby
 from parameterSetup import ParameterSetup
 
+def downsample_by_sliding_window(signal_array, model_samplePointNum, observed_samplePointNum):
+    original_len = len(signal_array)
+    epoch_num = int(np.ceil(original_len / observed_samplePointNum))
+    target_len = epoch_num * model_samplePointNum
+    window_size = int(np.ceil(original_len / target_len))
+    step_size = int(np.round((original_len - window_size) / (target_len - 1)))
+    return [np.mean(signal_array[(i*step_size):(i*step_size)+window_size]) for i in range(target_len)]
+
 def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePointNum):
     # downsampling
     # print('-------')
@@ -11,16 +19,19 @@ def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePo
         # print('-> downsampling')
         # print('before downsampling: signal_rawarray.shape =', signal_rawarray.shape)
         # print('before downsampling: signal_rawarray[:20] =', signal_rawarray[:20])
-        
-        ##### code below uses array_split.
         epochNum = max(1, int(np.floor(1.0 * signal_rawarray.shape[0] / observed_samplePointNum)))
         # print('epochNum =', epochNum)
-        multiple = int(np.floor(1.0 * signal_rawarray.shape[0] / model_samplePointNum)) * model_samplePointNum * epochNum
-        split_signal = np.array_split(signal_rawarray[:multiple], model_samplePointNum * epochNum)
-        # for seg in split_signal:
-        #     print('len(seg) =', len(seg))
-        signal_rawarray = np.array([seg.mean() for seg in split_signal])
-        # print('len(split_signal) =', len(split_signal))
+        if observed_samplePointNum % model_samplePointNum == 0:
+            ##### code below uses array_split.
+            multiple = int(np.floor(1.0 * signal_rawarray.shape[0] / model_samplePointNum)) * model_samplePointNum * epochNum
+            split_signal = np.array_split(signal_rawarray[:multiple], model_samplePointNum * epochNum)
+            # for seg in split_signal:
+            #     print('len(seg) =', len(seg))
+            signal_rawarray = np.array([seg.mean() for seg in split_signal])
+        else:
+            signal_rawarray = np.array(downsample_by_sliding_window(signal_rawarray, model_samplePointNum, observed_samplePointNum))
+
+        # print('len(split_signal) =', len(split_signal))            
         # print('split_signal[0].shape =', split_signal[0].shape)
 
         ##### Code below uses a for-loop instead of split.
@@ -31,8 +42,8 @@ def up_or_down_sampling(signal_rawarray, model_samplePointNum, observed_samplePo
         # for magnitude in signal_rawarray:
         #     total_magnitude += float(magnitude)
         #     # print('total_magnitude =', total_magnitude)
-        #     sample_point_counter += 1        
-        #     if sample_point_counter == downsample_rate:            
+        #     sample_point_counter += 1
+        #     if sample_point_counter == downsample_rate:
         #         signal_list.append(total_magnitude / downsample_rate)
         #         total_magnitude, sample_point_counter = 0, 0
         # signal_rawarray = np.array(signal_list)
